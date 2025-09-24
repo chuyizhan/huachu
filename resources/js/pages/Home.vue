@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import ChineseLayout from '@/layouts/ChineseLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -127,71 +128,61 @@ const features = [
 </script>
 
 <template>
-    <div class="min-h-screen bg-gradient-to-b from-orange-50 to-white">
+    <ChineseLayout>
         <!-- Hero Section -->
-        <section class="relative overflow-hidden bg-gradient-to-r from-orange-500 via-red-500 to-pink-500 text-white">
-            <!-- Background Pattern -->
-            <div class="absolute inset-0 opacity-10">
-                <div class="absolute top-8 right-8 text-8xl animate-pulse">🍳</div>
-                <div class="absolute top-32 right-32 text-6xl animate-bounce">🥘</div>
-                <div class="absolute bottom-8 left-8 text-7xl animate-pulse">👨‍🍳</div>
-                <div class="absolute bottom-32 left-32 text-5xl animate-bounce">🍽️</div>
-                <div class="absolute top-64 left-1/2 text-4xl animate-pulse">🔥</div>
-            </div>
-
-            <div class="relative z-10 px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
-                <div class="max-w-7xl mx-auto text-center">
+        <section class="relative overflow-hidden bg-[#1c1c1c]">
+            <div class="max-w-[1000px] mx-auto px-4 py-12">
+                <div class="text-center">
                     <div class="flex justify-center mb-6">
-                        <div class="text-8xl animate-bounce">🍳</div>
+                        <div class="text-6xl">👨‍🍳</div>
                     </div>
 
-                    <h1 class="text-4xl sm:text-5xl lg:text-7xl font-bold mb-6 leading-tight">
-                        Welcome to the<br>
-                        <span class="text-yellow-300">Culinary Universe</span>
+                    <h1 class="text-3xl sm:text-4xl font-bold mb-6 leading-tight text-white">
+                        欢迎来到<br>
+                        <span class="text-[#ff6e02]">华厨社区</span>
                     </h1>
 
-                    <p class="text-xl sm:text-2xl mb-8 text-orange-100 max-w-3xl mx-auto leading-relaxed">
-                        Discover amazing recipes, learn from master chefs, and share your culinary creations
-                        with a passionate community of food lovers.
+                    <p class="text-lg mb-8 text-[#999999] max-w-2xl mx-auto leading-relaxed">
+                        发现精彩菜谱，向大厨学习，与热爱美食的朋友们分享你的烹饪创意
                     </p>
 
                     <!-- Hero Stats -->
-                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-12 max-w-4xl mx-auto">
-                        <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-                            <div class="text-2xl font-bold">{{ stats.total_recipes.toLocaleString() }}+</div>
-                            <div class="text-sm text-orange-200">Recipes</div>
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8 max-w-3xl mx-auto">
+                        <div class="bg-[#374151] rounded-lg p-4">
+                            <div class="text-xl font-bold text-white">{{ stats.total_recipes.toLocaleString() }}+</div>
+                            <div class="text-sm text-[#999999]">菜谱</div>
                         </div>
-                        <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-                            <div class="text-2xl font-bold">{{ stats.total_chefs.toLocaleString() }}+</div>
-                            <div class="text-sm text-orange-200">Master Chefs</div>
+                        <div class="bg-[#374151] rounded-lg p-4">
+                            <div class="text-xl font-bold text-white">{{ stats.total_chefs.toLocaleString() }}+</div>
+                            <div class="text-sm text-[#999999]">大厨</div>
                         </div>
-                        <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-                            <div class="text-2xl font-bold">{{ stats.total_cuisines }}+</div>
-                            <div class="text-sm text-orange-200">Cuisines</div>
+                        <div class="bg-[#374151] rounded-lg p-4">
+                            <div class="text-xl font-bold text-white">{{ stats.total_cuisines }}+</div>
+                            <div class="text-sm text-[#999999]">菜系</div>
                         </div>
-                        <div class="bg-white/10 backdrop-blur-sm rounded-lg p-4">
-                            <div class="text-2xl font-bold">{{ stats.total_members.toLocaleString() }}+</div>
-                            <div class="text-sm text-orange-200">Members</div>
+                        <div class="bg-[#374151] rounded-lg p-4">
+                            <div class="text-xl font-bold text-white">{{ stats.total_members.toLocaleString() }}+</div>
+                            <div class="text-sm text-[#999999]">会员</div>
                         </div>
                     </div>
 
                     <!-- CTA Buttons -->
                     <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                        <Button size="lg" class="bg-white text-orange-600 hover:bg-orange-50 text-lg px-8 py-4" as-child>
+                        <Button size="lg" class="bg-[#ff6e02] text-white hover:bg-[#e55a00] text-base px-6 py-3" as-child>
                             <Link href="/community">
-                                <Utensils class="w-5 h-5 mr-2" />
-                                Explore Recipes
+                                <Utensils class="w-4 h-4 mr-2" />
+                                浏览菜谱
                             </Link>
                         </Button>
                         <Button
                             size="lg"
                             variant="outline"
-                            class="text-white border-white hover:bg-white hover:text-orange-600 text-lg px-8 py-4"
+                            class="text-[#ff6e02] border-[#ff6e02] hover:bg-[#ff6e02] hover:text-white text-base px-6 py-3"
                             as-child
                         >
                             <Link href="/creators/apply">
-                                <ChefHat class="w-5 h-5 mr-2" />
-                                Join as Chef
+                                <ChefHat class="w-4 h-4 mr-2" />
+                                申请认证
                             </Link>
                         </Button>
                     </div>
@@ -199,236 +190,154 @@ const features = [
             </div>
         </section>
 
-        <!-- Features Section -->
-        <section class="py-20 px-4 sm:px-6 lg:px-8">
-            <div class="max-w-7xl mx-auto">
-                <div class="text-center mb-16">
-                    <div class="text-4xl mb-4">✨</div>
-                    <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                        Why Join Our Culinary Community?
-                    </h2>
-                    <p class="text-xl text-gray-600 max-w-3xl mx-auto">
-                        Experience the perfect blend of tradition and innovation in our thriving culinary ecosystem.
-                    </p>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                    <Card v-for="feature in features" :key="feature.title" class="text-center hover:shadow-lg transition-shadow">
-                        <CardHeader>
-                            <div class="w-16 h-16 mx-auto mb-4 bg-gradient-to-r from-orange-400 to-red-400 rounded-full flex items-center justify-center">
-                                <component :is="feature.icon" class="w-8 h-8 text-white" />
-                            </div>
-                            <CardTitle class="text-xl">{{ feature.title }}</CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <CardDescription class="text-gray-600">
-                                {{ feature.description }}
-                            </CardDescription>
-                        </CardContent>
-                    </Card>
-                </div>
-            </div>
-        </section>
-
-        <!-- Featured Recipes Section -->
-        <section v-if="featuredPosts.length > 0" class="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
-            <div class="max-w-7xl mx-auto">
-                <div class="flex items-center justify-between mb-12">
-                    <div class="text-center flex-1">
-                        <div class="text-4xl mb-4">🔥</div>
-                        <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                            Featured Recipes
-                        </h2>
-                        <p class="text-lg text-gray-600">
-                            Discover the most popular and trending recipes from our community
-                        </p>
+        <!-- Featured Categories Section -->
+        <section class="py-12 px-4">
+            <div class="max-w-[1000px] mx-auto">
+                <div class="mb-8">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-[#ff6e02] text-white px-4 py-2 rounded text-base font-medium">
+                            技术交流区
+                        </div>
+                        <Link href="/community/posts" class="text-[#ff6e02] text-sm hover:underline flex items-center">
+                            更多 >>
+                        </Link>
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <PostCard
-                        v-for="post in featuredPosts.slice(0, 6)"
-                        :key="post.id"
-                        :post="post"
-                        variant="featured"
-                    />
-                </div>
-
-                <div class="text-center mt-12">
-                    <Button size="lg" variant="outline" as-child>
-                        <Link href="/community/posts">
-                            View All Recipes
-                            <ArrowRight class="w-4 h-4 ml-2" />
-                        </Link>
-                    </Button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Popular Cuisines Section -->
-        <section v-if="popularCategories.length > 0" class="py-20 px-4 sm:px-6 lg:px-8">
-            <div class="max-w-7xl mx-auto">
-                <div class="text-center mb-12">
-                    <div class="text-4xl mb-4">🌍</div>
-                    <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                        Explore World Cuisines
-                    </h2>
-                    <p class="text-lg text-gray-600">
-                        Journey through diverse culinary traditions from around the globe
-                    </p>
-                </div>
-
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <Link
-                        v-for="category in popularCategories"
+                        v-for="category in popularCategories.slice(0, 8)"
                         :key="category.id"
                         :href="`/community/posts?category=${category.slug}`"
                         class="group"
                     >
-                        <Card class="text-center hover:shadow-lg transition-all duration-200 group-hover:scale-105">
-                            <CardContent class="p-6">
-                                <div class="text-4xl mb-3">{{ category.icon || '🍽️' }}</div>
-                                <h3 class="font-semibold text-lg mb-2">{{ category.name }}</h3>
-                                <Badge
-                                    :style="{ backgroundColor: category.color }"
-                                    class="text-white text-xs"
-                                >
-                                    {{ category.posts_count }} recipes
-                                </Badge>
-                            </CardContent>
-                        </Card>
+                        <div class="bg-[#374151] rounded-lg p-4 text-center hover:bg-[#1f2937] transition-colors">
+                            <div class="text-3xl mb-2">{{ category.icon || '🍽️' }}</div>
+                            <h3 class="text-white text-sm font-medium mb-1">{{ category.name }}</h3>
+                            <div class="text-[#999999] text-xs">{{ category.posts_count }} 个菜谱</div>
+                        </div>
                     </Link>
                 </div>
             </div>
         </section>
 
-        <!-- Featured Chefs Section -->
-        <section v-if="featuredCreators.length > 0" class="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
-            <div class="max-w-7xl mx-auto">
-                <div class="text-center mb-12">
-                    <div class="text-4xl mb-4">👨‍🍳</div>
-                    <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                        Meet Our Master Chefs
-                    </h2>
-                    <p class="text-lg text-gray-600">
-                        Learn from verified culinary experts and industry professionals
-                    </p>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <CreatorCard
-                        v-for="creator in featuredCreators"
-                        :key="creator.id"
-                        :creator="creator"
-                        variant="featured"
-                    />
-                </div>
-
-                <div class="text-center mt-12">
-                    <Button size="lg" variant="outline" as-child>
-                        <Link href="/community/creators">
-                            Meet All Chefs
-                            <ArrowRight class="w-4 h-4 ml-2" />
+        <!-- Featured Recipes Section -->
+        <section v-if="featuredPosts.length > 0" class="py-12 px-4 bg-[#1c1c1c]">
+            <div class="max-w-[1000px] mx-auto">
+                <div class="mb-8">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-[#ff6e02] text-white px-4 py-2 rounded text-base font-medium">
+                            热门帖子
+                        </div>
+                        <Link href="/community/posts" class="text-[#ff6e02] text-sm hover:underline flex items-center">
+                            更多 >>
                         </Link>
-                    </Button>
-                </div>
-            </div>
-        </section>
-
-        <!-- Testimonials Section -->
-        <section v-if="testimonials.length > 0" class="py-20 px-4 sm:px-6 lg:px-8">
-            <div class="max-w-7xl mx-auto">
-                <div class="text-center mb-12">
-                    <div class="text-4xl mb-4">💬</div>
-                    <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                        What Our Community Says
-                    </h2>
-                    <p class="text-lg text-gray-600">
-                        Real experiences from our passionate food community
-                    </p>
+                    </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <Card v-for="testimonial in testimonials" :key="testimonial.id" class="text-center">
-                        <CardContent class="p-8">
-                            <div class="flex justify-center mb-4">
-                                <div class="flex gap-1">
-                                    <Star
-                                        v-for="i in 5"
-                                        :key="i"
-                                        class="w-5 h-5"
-                                        :class="i <= testimonial.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'"
-                                    />
+                <div class="space-y-4">
+                    <div v-for="post in featuredPosts.slice(0, 6)" :key="post.id" class="bg-[#374151] rounded-lg p-4 hover:bg-[#1f2937] transition-colors">
+                        <div class="flex items-start gap-4">
+                            <div class="w-20 h-16 bg-[#1f2937] rounded-lg flex-shrink-0 flex items-center justify-center">
+                                <div class="text-2xl">🍳</div>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <Link :href="`/posts/${post.slug}`" class="text-white hover:text-[#ff6e02] font-medium text-base line-clamp-2 mb-2 block">
+                                    {{ post.title }}
+                                </Link>
+                                <p class="text-[#999999] text-sm line-clamp-2 mb-3">{{ post.excerpt }}</p>
+                                <div class="flex items-center justify-between text-xs text-[#999999]">
+                                    <div class="flex items-center gap-4">
+                                        <span>{{ post.user.creator_profile?.display_name || post.user.name }}</span>
+                                        <span>{{ new Date(post.published_at).toLocaleDateString('zh-CN') }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-3">
+                                        <span class="flex items-center gap-1">
+                                            <Eye class="w-3 h-3" />
+                                            {{ post.view_count }}
+                                        </span>
+                                        <span class="flex items-center gap-1">
+                                            <Heart class="w-3 h-3" />
+                                            {{ post.like_count }}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
-                            <p class="text-gray-600 mb-6 italic">
-                                "{{ testimonial.content }}"
-                            </p>
-                            <div>
-                                <div class="font-semibold text-gray-900">{{ testimonial.author }}</div>
-                                <div class="text-sm text-gray-500">{{ testimonial.specialty }}</div>
-                            </div>
-                        </CardContent>
-                    </Card>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
 
-        <!-- CTA Section -->
-        <section class="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-r from-orange-500 to-red-500 text-white">
-            <div class="max-w-4xl mx-auto text-center">
-                <div class="text-6xl mb-6">🚀</div>
-                <h2 class="text-3xl sm:text-4xl font-bold mb-6">
-                    Ready to Start Your Culinary Journey?
-                </h2>
-                <p class="text-xl mb-8 text-orange-100">
-                    Join thousands of food enthusiasts and master chefs in our vibrant community.
-                    Share recipes, learn techniques, and connect with fellow culinary artists.
-                </p>
-                <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                    <Button size="lg" class="bg-white text-orange-600 hover:bg-orange-50 text-lg px-8 py-4" as-child>
-                        <Link href="/register">
-                            <Users class="w-5 h-5 mr-2" />
-                            Join the Community
+        <!-- Featured Chefs Section -->
+        <section v-if="featuredCreators.length > 0" class="py-12 px-4 bg-[#1c1c1c]">
+            <div class="max-w-[1000px] mx-auto">
+                <div class="mb-8">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-[#ff6e02] text-white px-4 py-2 rounded text-base font-medium">
+                            推荐博主
+                        </div>
+                        <Link href="/community/creators" class="text-[#ff6e02] text-sm hover:underline flex items-center">
+                            更多 >>
                         </Link>
-                    </Button>
-                    <Button
-                        size="lg"
-                        variant="outline"
-                        class="text-white border-white hover:bg-white hover:text-orange-600 text-lg px-8 py-4"
-                        as-child
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <Link
+                        v-for="creator in featuredCreators.slice(0, 8)"
+                        :key="creator.id"
+                        :href="`/creators/${creator.id}`"
+                        class="group"
                     >
-                        <Link href="/vip">
-                            <Crown class="w-5 h-5 mr-2" />
-                            Go Premium
+                        <div class="bg-[#374151] rounded-lg p-4 text-center hover:bg-[#1f2937] transition-colors">
+                            <div class="w-12 h-12 bg-[#1f2937] rounded-full flex items-center justify-center mx-auto mb-3">
+                                <div class="text-lg">👨‍🍳</div>
+                            </div>
+                            <h3 class="text-white text-sm font-medium mb-1">{{ creator.display_name }}</h3>
+                            <div class="text-[#999999] text-xs mb-2">{{ creator.specialty }}</div>
+                            <div class="flex items-center justify-center gap-2 text-xs">
+                                <span class="text-[#ff6e02]">⭐ {{ creator.rating }}</span>
+                                <span class="text-[#999999]">{{ creator.follower_count }} 粉丝</span>
+                            </div>
+                        </div>
+                    </Link>
+                </div>
+            </div>
+        </section>
+
+        <!-- Recent Posts Section -->
+        <section v-if="recentPosts.length > 0" class="py-12 px-4 bg-[#1c1c1c]">
+            <div class="max-w-[1000px] mx-auto">
+                <div class="mb-8">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="bg-[#ff6e02] text-white px-4 py-2 rounded text-base font-medium">
+                            网站自制教学板块
+                        </div>
+                        <Link href="/community/posts" class="text-[#ff6e02] text-sm hover:underline flex items-center">
+                            更多 >>
                         </Link>
-                    </Button>
+                    </div>
+                </div>
+
+                <div class="space-y-3">
+                    <div v-for="post in recentPosts.slice(0, 8)" :key="post.id" class="bg-[#374151] rounded-lg p-3 hover:bg-[#1f2937] transition-colors">
+                        <div class="flex items-center justify-between">
+                            <Link :href="`/posts/${post.slug}`" class="text-white hover:text-[#ff6e02] text-sm font-medium line-clamp-1 flex-1 mr-4">
+                                {{ post.title }}
+                            </Link>
+                            <div class="flex items-center gap-4 text-xs text-[#999999] flex-shrink-0">
+                                <span>{{ post.user.creator_profile?.display_name || post.user.name }}</span>
+                                <span>{{ new Date(post.published_at).toLocaleDateString('zh-CN') }}</span>
+                                <span class="flex items-center gap-1">
+                                    <Eye class="w-3 h-3" />
+                                    {{ post.view_count }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
-
-        <!-- Recent Activity Section -->
-        <section v-if="recentPosts.length > 0" class="py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
-            <div class="max-w-7xl mx-auto">
-                <div class="text-center mb-12">
-                    <div class="text-4xl mb-4">🆕</div>
-                    <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                        Latest from the Kitchen
-                    </h2>
-                    <p class="text-lg text-gray-600">
-                        Fresh recipes and culinary insights from our community
-                    </p>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <PostCard
-                        v-for="post in recentPosts.slice(0, 8)"
-                        :key="post.id"
-                        :post="post"
-                        variant="compact"
-                    />
-                </div>
-            </div>
-        </section>
-    </div>
+    </ChineseLayout>
 </template>

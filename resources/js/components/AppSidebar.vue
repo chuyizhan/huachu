@@ -19,27 +19,27 @@ import AppLogo from './AppLogo.vue';
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
-        href: dashboard(),
+        title: '首页',
+        href: '/',
         icon: LayoutGrid,
     },
     {
-        title: 'Community',
+        title: '社区',
         href: '/community',
         icon: Users,
     },
     {
-        title: 'Recipes',
+        title: '菜谱',
         href: '/community/posts',
         icon: MessageSquare,
     },
     {
-        title: 'Chefs',
+        title: '大厨',
         href: '/community/creators',
         icon: Users,
     },
     {
-        title: 'Leaderboard',
+        title: '排行榜',
         href: '/community/leaderboard',
         icon: Trophy,
     },
@@ -47,17 +47,17 @@ const mainNavItems: NavItem[] = [
 
 const creatorNavItems: NavItem[] = [
     {
-        title: 'Share Recipe',
+        title: '发布菜谱',
         href: '/posts/create',
         icon: PlusCircle,
     },
     {
-        title: 'My Recipes',
+        title: '我的菜谱',
         href: '/posts',
         icon: MessageSquare,
     },
     {
-        title: 'Premium Access',
+        title: 'VIP会员',
         href: '/vip',
         icon: Crown,
     },
