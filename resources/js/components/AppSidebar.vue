@@ -14,7 +14,7 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-vue-next';
+import { BookOpen, Folder, LayoutGrid, Users, MessageSquare, Crown, Trophy, PlusCircle } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
 const mainNavItems: NavItem[] = [
@@ -22,6 +22,44 @@ const mainNavItems: NavItem[] = [
         title: 'Dashboard',
         href: dashboard(),
         icon: LayoutGrid,
+    },
+    {
+        title: 'Community',
+        href: '/community',
+        icon: Users,
+    },
+    {
+        title: 'Recipes',
+        href: '/community/posts',
+        icon: MessageSquare,
+    },
+    {
+        title: 'Chefs',
+        href: '/community/creators',
+        icon: Users,
+    },
+    {
+        title: 'Leaderboard',
+        href: '/community/leaderboard',
+        icon: Trophy,
+    },
+];
+
+const creatorNavItems: NavItem[] = [
+    {
+        title: 'Share Recipe',
+        href: '/posts/create',
+        icon: PlusCircle,
+    },
+    {
+        title: 'My Recipes',
+        href: '/posts',
+        icon: MessageSquare,
+    },
+    {
+        title: 'Premium Access',
+        href: '/vip',
+        icon: Crown,
     },
 ];
 
@@ -55,6 +93,7 @@ const footerNavItems: NavItem[] = [
 
         <SidebarContent>
             <NavMain :items="mainNavItems" />
+            <NavMain :items="creatorNavItems" />
         </SidebarContent>
 
         <SidebarFooter>

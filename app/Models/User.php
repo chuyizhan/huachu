@@ -46,4 +46,60 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Get the creator profile associated with the user.
+     */
+    public function creatorProfile()
+    {
+        return $this->hasOne(CreatorProfile::class);
+    }
+
+    /**
+     * Get the user's points record.
+     */
+    public function points()
+    {
+        return $this->hasOne(UserPoints::class);
+    }
+
+    /**
+     * Get all posts created by this user.
+     */
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
+
+    /**
+     * Get all favorites by this user.
+     */
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class);
+    }
+
+    /**
+     * Get all achievements earned by this user.
+     */
+    public function achievements()
+    {
+        return $this->belongsToMany(Achievement::class, 'user_achievements')->withTimestamps()->withPivot('earned_at');
+    }
+
+    /**
+     * Get all posts liked by this user.
+     */
+    public function likedPosts()
+    {
+        return $this->belongsToMany(Post::class, 'post_likes')->withTimestamps();
+    }
+
+    /**
+     * Get all subscriptions by this user.
+     */
+    public function subscriptions()
+    {
+        return $this->hasMany(UserSubscription::class, 'subscriber_id');
+    }
 }
