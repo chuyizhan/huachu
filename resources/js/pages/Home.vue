@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import ChineseLayout from '@/layouts/ChineseLayout.vue';
+import WebLayout from '@/layouts/WebLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -128,7 +128,7 @@ const features = [
 </script>
 
 <template>
-    <ChineseLayout>
+    <WebLayout>
         <!-- Hero Section -->
         <section class="relative overflow-hidden bg-[#1c1c1c]">
             <div class="max-w-[1000px] mx-auto px-4 py-12">
@@ -339,5 +339,5 @@ const features = [
                 </div>
             </div>
         </section>
-    </ChineseLayout>
+    </WebLayout>
 </template>

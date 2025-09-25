@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import ChineseAuthLayout from '@/layouts/ChineseAuthLayout.vue';
+import WebAuthLayout from '@/layouts/WebAuthLayout.vue';
 import { register } from '@/routes';
 import { request } from '@/routes/password';
 import { Form, Head, Link } from '@inertiajs/vue3';
@@ -19,7 +19,7 @@ defineProps<{
 </script>
 
 <template>
-    <ChineseAuthLayout
+    <WebAuthLayout
         title="登录账户"
         description="输入邮箱和密码登录华厨社区"
     >
@@ -120,5 +120,5 @@ defineProps<{
                 </Link>
             </div>
         </Form>
-    </ChineseAuthLayout>
+    </WebAuthLayout>
 </template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import ChineseLayout from '@/layouts/ChineseLayout.vue';
+import WebLayout from '@/layouts/WebLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -170,7 +170,7 @@ const postTypes = [
 </script>
 
 <template>
-    <ChineseLayout>
+    <WebLayout>
         <div class="max-w-[1000px] mx-auto px-4 py-6">
             <!-- Header -->
             <div class="mb-8">
@@ -438,5 +438,5 @@ const postTypes = [
                 </div>
             </div>
         </div>
-    </ChineseLayout>
+    </WebLayout>
 </template>

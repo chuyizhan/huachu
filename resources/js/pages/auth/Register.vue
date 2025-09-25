@@ -5,14 +5,14 @@ import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import ChineseAuthLayout from '@/layouts/ChineseAuthLayout.vue';
+import WebAuthLayout from '@/layouts/WebAuthLayout.vue';
 import { login } from '@/routes';
 import { Form, Head, Link } from '@inertiajs/vue3';
 import { LoaderCircle, User, Mail, Lock, UserPlus } from 'lucide-vue-next';
 </script>
 
 <template>
-    <ChineseAuthLayout
+    <WebAuthLayout
         title="注册账户"
         description="填写信息加入华厨社区"
     >
@@ -125,5 +125,5 @@ import { LoaderCircle, User, Mail, Lock, UserPlus } from 'lucide-vue-next';
                 </Link>
             </div>
         </Form>
-    </ChineseAuthLayout>
+    </WebAuthLayout>
 </template>

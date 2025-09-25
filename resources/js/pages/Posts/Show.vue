@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import ChineseLayout from '@/layouts/ChineseLayout.vue';
+import WebLayout from '@/layouts/WebLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -102,7 +102,7 @@ const getPostTypeText = (type: string) => {
 </script>
 
 <template>
-    <ChineseLayout>
+    <WebLayout>
         <div class="max-w-[1000px] mx-auto px-4 py-6">
             <!-- Back Button -->
             <div class="mb-6">
@@ -362,5 +362,5 @@ const getPostTypeText = (type: string) => {
                 </div>
             </div>
         </div>
-    </ChineseLayout>
+    </WebLayout>
 </template>
