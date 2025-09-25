@@ -57,12 +57,14 @@ class CommunityController extends Controller
 
     public function posts(Request $request)
     {
-        $query = Post::with(['user', 'category'])
+        $query = Post::with(['user.creatorProfile', 'category'])
             ->published()
             ->orderBy('published_at', 'desc');
 
         // Filter by category
+        $selectedCategory = null;
         if ($request->filled('category')) {
+            $selectedCategory = PostCategory::where('slug', $request->category)->first();
             $query->whereHas('category', function($q) use ($request) {
                 $q->where('slug', $request->category);
             });
@@ -86,9 +88,16 @@ class CommunityController extends Controller
         $posts = $query->paginate(15);
         $categories = PostCategory::active()->orderBy('sort_order')->get();
 
+        // Get navigation categories
+        $navCategories = PostCategory::where('is_nav_item', true)
+            ->orderBy('sort_order')
+            ->get();
+
         return Inertia::render('Community/Posts', [
             'posts' => $posts,
             'categories' => $categories,
+            'selectedCategory' => $selectedCategory,
+            'navCategories' => $navCategories,
             'filters' => $request->only(['category', 'type', 'search']),
         ]);
     }

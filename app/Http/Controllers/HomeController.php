@@ -36,8 +36,14 @@ class HomeController extends Controller
             ->limit(6)
             ->get();
 
+        // Get navigation categories
+        $navCategories = PostCategory::where('is_nav_item', true)
+            ->orderBy('sort_order')
+            ->get();
+
         // Get popular categories (cuisines)
-        $popularCategories = PostCategory::withCount(['posts' => function($query) {
+        $popularCategories = PostCategory::where('is_nav_item', false)
+            ->withCount(['posts' => function($query) {
                 $query->published();
             }])
             ->orderBy('posts_count', 'desc')
@@ -73,6 +79,7 @@ class HomeController extends Controller
             'featuredPosts' => $featuredPosts,
             'recentPosts' => $recentPosts,
             'featuredCreators' => $featuredCreators,
+            'navCategories' => $navCategories,
             'popularCategories' => $popularCategories,
             'stats' => $stats,
             'testimonials' => $testimonials,

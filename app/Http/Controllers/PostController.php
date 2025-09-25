@@ -69,10 +69,16 @@ class PostController extends Controller
             ];
         }
 
+        // Get navigation categories
+        $navCategories = PostCategory::where('is_nav_item', true)
+            ->orderBy('sort_order')
+            ->get();
+
         return Inertia::render('Posts/Show', [
             'post' => $post,
             'relatedPosts' => $relatedPosts,
             'userInteractions' => $userInteractions,
+            'navCategories' => $navCategories,
         ]);
     }
 

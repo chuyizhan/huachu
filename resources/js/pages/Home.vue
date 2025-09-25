@@ -95,6 +95,7 @@ interface Props {
     popularCategories: Category[];
     stats: Stats;
     testimonials: Testimonial[];
+    navCategories: Category[];
 }
 
 defineProps<Props>();
@@ -128,7 +129,7 @@ const features = [
 </script>
 
 <template>
-    <ChineseLayout>
+    <ChineseLayout :nav-categories="navCategories">
         <!-- Hero Section -->
         <section class="relative overflow-hidden bg-[#1c1c1c]">
             <div class="max-w-[1000px] mx-auto px-4 py-12">

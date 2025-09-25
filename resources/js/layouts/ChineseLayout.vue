@@ -2,16 +2,21 @@
 import { Link } from '@inertiajs/vue3';
 import { Users, MessageSquare, ChefHat, Trophy, Crown, PlusCircle } from 'lucide-vue-next';
 
-const navItems = [
-    { title: '首页', href: '/' },
-    { title: '大厨献菜', href: '/community/posts?category=chef-special' },
-    { title: '网友技术珍藏区', href: '/community/posts?type=tutorial' },
-    { title: '特色小吃区', href: '/community/posts?category=snacks' },
-    { title: '家常菜', href: '/community/posts?category=home-cooking' },
-    { title: '火锅区', href: '/community/posts?category=hotpot' },
-    { title: '厨师认证', href: '/creators/apply' },
-    { title: '博主大厨', href: '/community/creators' },
-];
+interface Category {
+    id: number;
+    name: string;
+    slug: string;
+    nav_route: string | null;
+    is_nav_item: boolean;
+}
+
+interface Props {
+    navCategories?: Category[];
+}
+
+withDefaults(defineProps<Props>(), {
+    navCategories: () => []
+});
 </script>
 
 <template>
@@ -29,12 +34,12 @@ const navItems = [
                     <!-- Navigation -->
                     <nav class="hidden lg:flex items-center gap-6">
                         <Link
-                            v-for="item in navItems"
-                            :key="item.href"
-                            :href="item.href"
+                            v-for="category in navCategories"
+                            :key="category.id"
+                            :href="category.nav_route || '/'"
                             class="text-sm text-white hover:text-[#ff6e02] transition-colors"
                         >
-                            {{ item.title }}
+                            {{ category.name }}
                         </Link>
                     </nav>
 

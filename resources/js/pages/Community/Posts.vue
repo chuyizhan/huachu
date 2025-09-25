@@ -1,39 +1,42 @@
 <script setup lang="ts">
-import AppLayout from '@/layouts/AppLayout.vue';
+import ChineseLayout from '@/layouts/ChineseLayout.vue';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Link, router, usePage } from '@inertiajs/vue3';
-import { Search, Eye, Heart, MessageSquare, Crown, Filter } from 'lucide-vue-next';
+import { Link, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
+import {
+    Search,
+    Filter,
+    Eye,
+    Heart,
+    MessageSquare,
+    Calendar,
+    ChefHat,
+    Tag,
+    Grid,
+    List,
+    TrendingUp,
+    Clock,
+    Star,
+    Users
+} from 'lucide-vue-next';
 
-interface Post {
+interface Creator {
     id: number;
-    title: string;
-    excerpt: string;
-    slug: string;
-    user: {
-        id: number;
-        name: string;
-        creator_profile?: {
-            display_name: string;
-            specialty: string;
-            verification_status: string;
-        };
-    };
-    category: {
-        id: number;
-        name: string;
-        color: string;
-    };
-    type: string;
-    view_count: number;
-    like_count: number;
-    is_premium: boolean;
-    published_at: string;
+    display_name: string;
+    specialty: string;
+    verification_status: string;
+    rating?: number;
+    follower_count?: number;
+}
+
+interface User {
+    id: number;
+    name: string;
+    creator_profile?: Creator;
 }
 
 interface Category {
@@ -41,22 +44,51 @@ interface Category {
     name: string;
     slug: string;
     color: string;
+    icon?: string;
+    is_nav_item?: boolean;
+    nav_route?: string;
+    posts_count?: number;
+}
+
+interface Post {
+    id: number;
+    title: string;
+    content: string;
+    excerpt: string;
+    slug: string;
+    type: string;
+    status: string;
+    is_featured: boolean;
+    is_premium: boolean;
+    view_count: number;
+    like_count: number;
+    comment_count: number;
+    share_count: number;
+    tags: string[];
+    published_at: string;
+    created_at: string;
+    user: User;
+    category: Category;
 }
 
 interface PaginatedPosts {
     data: Post[];
-    links: any[];
-    meta: {
-        current_page: number;
-        last_page: number;
-        per_page: number;
-        total: number;
-    };
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    links: Array<{
+        url: string | null;
+        label: string;
+        active: boolean;
+    }>;
 }
 
 interface Props {
     posts: PaginatedPosts;
     categories: Category[];
+    selectedCategory?: Category | null;
+    navCategories: Category[];
     filters: {
         category?: string;
         type?: string;
@@ -65,281 +97,347 @@ interface Props {
 }
 
 const props = defineProps<Props>();
-const page = usePage();
 
-const searchQuery = ref(props.filters.search || '');
-const selectedCategory = ref(props.filters.category || '');
+const searchTerm = ref(props.filters.search || '');
 const selectedType = ref(props.filters.type || '');
-
-const typeOptions = [
-    { value: '', label: 'All Types' },
-    { value: 'discussion', label: 'Discussions' },
-    { value: 'tutorial', label: 'Tutorials' },
-    { value: 'showcase', label: 'Showcases' },
-    { value: 'question', label: 'Questions' },
-];
-
-const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-    });
-};
 
 const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
 };
 
-const getTypeColor = (type: string) => {
-    const colors = {
-        discussion: 'bg-blue-100 text-blue-800',
-        tutorial: 'bg-green-100 text-green-800',
-        showcase: 'bg-purple-100 text-purple-800',
-        question: 'bg-orange-100 text-orange-800',
-    };
-    return colors[type as keyof typeof colors] || colors.discussion;
-};
-
-const getTypeIcon = (type: string) => {
-    const icons = {
-        discussion: MessageSquare,
-        tutorial: '📚',
-        showcase: '🎨',
-        question: '❓',
-    };
-    return icons[type as keyof typeof icons] || MessageSquare;
-};
-
-const applyFilters = () => {
-    const params = new URLSearchParams();
-
-    if (searchQuery.value) params.set('search', searchQuery.value);
-    if (selectedCategory.value) params.set('category', selectedCategory.value);
-    if (selectedType.value) params.set('type', selectedType.value);
-
-    const queryString = params.toString();
-    const url = queryString ? `/community/posts?${queryString}` : '/community/posts';
-
-    router.visit(url, {
-        preserveState: true,
-        preserveScroll: true,
-        replace: true,
+const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('zh-CN', {
+        month: 'short',
+        day: 'numeric'
     });
 };
 
-const clearFilters = () => {
-    searchQuery.value = '';
-    selectedCategory.value = '';
-    selectedType.value = '';
-    router.visit('/community/posts', {
+const getPostTypeText = (type: string) => {
+    const typeMap = {
+        'tutorial': '教程',
+        'discussion': '讨论',
+        'showcase': '展示',
+        'question': '问答'
+    };
+    return typeMap[type as keyof typeof typeMap] || type;
+};
+
+const handleSearch = () => {
+    const params: any = {};
+
+    if (searchTerm.value) params.search = searchTerm.value;
+    if (selectedType.value) params.type = selectedType.value;
+    if (props.filters.category) params.category = props.filters.category;
+
+    router.get('/community/posts', params, {
         preserveState: true,
-        preserveScroll: true,
-        replace: true,
+        replace: true
     });
 };
 
-watch([searchQuery, selectedCategory, selectedType], () => {
-    applyFilters();
-}, { debounce: 300 });
+const handleCategoryFilter = (categorySlug: string | null) => {
+    const params: any = {};
+
+    if (categorySlug) params.category = categorySlug;
+    if (searchTerm.value) params.search = searchTerm.value;
+    if (selectedType.value) params.type = selectedType.value;
+
+    router.get('/community/posts', params, {
+        preserveState: true,
+        replace: true
+    });
+};
+
+const handleTypeFilter = (type: string | null) => {
+    selectedType.value = type || '';
+    const params: any = {};
+
+    if (type) params.type = type;
+    if (props.filters.category) params.category = props.filters.category;
+    if (searchTerm.value) params.search = searchTerm.value;
+
+    router.get('/community/posts', params, {
+        preserveState: true,
+        replace: true
+    });
+};
+
+const postTypes = [
+    { value: 'tutorial', label: '教程', icon: '📚' },
+    { value: 'discussion', label: '讨论', icon: '💬' },
+    { value: 'showcase', label: '展示', icon: '🎨' },
+    { value: 'question', label: '问答', icon: '❓' }
+];
 </script>
 
 <template>
-    <AppLayout>
-        <div class="space-y-6">
+    <ChineseLayout :nav-categories="navCategories">
+        <div class="max-w-[1000px] mx-auto px-4 py-6">
             <!-- Header -->
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                    <div class="flex items-center gap-2 mb-2">
-                        <div class="text-3xl">🍳</div>
-                        <h1 class="text-3xl font-bold">Recipe Collection</h1>
-                    </div>
-                    <p class="text-muted-foreground">
-                        Discover and share amazing recipes with our culinary community
-                    </p>
+            <div class="mb-8">
+                <!-- Breadcrumb -->
+                <div class="flex items-center gap-2 mb-4 text-sm text-[#999999]">
+                    <Link href="/" class="hover:text-[#ff6e02]">首页</Link>
+                    <span>/</span>
+                    <span v-if="selectedCategory" class="text-white">{{ selectedCategory.name }}</span>
+                    <span v-else class="text-white">社区帖子</span>
                 </div>
-                <Button class="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600" as-child>
-                    <Link href="/posts/create">
-                        <MessageSquare class="w-4 h-4 mr-2" />
-                        Share Recipe
-                    </Link>
-                </Button>
-            </div>
 
-            <!-- Filters -->
-            <Card>
-                <CardContent class="p-6">
-                    <div class="flex flex-col lg:flex-row gap-4">
+                <!-- Title -->
+                <div class="flex items-center justify-between mb-6">
+                    <div>
+                        <h1 class="text-2xl sm:text-3xl font-bold text-white mb-2">
+                            <span v-if="selectedCategory" class="flex items-center gap-2">
+                                <span class="text-2xl">{{ selectedCategory.icon || '📝' }}</span>
+                                {{ selectedCategory.name }}
+                            </span>
+                            <span v-else>社区帖子</span>
+                        </h1>
+                        <p class="text-[#999999]">
+                            <span v-if="selectedCategory">浏览 {{ selectedCategory.name }} 分类下的所有内容</span>
+                            <span v-else>探索社区中的精彩内容和讨论</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Search and Filters -->
+                <div class="bg-[#374151] rounded-lg p-4 mb-6">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <!-- Search -->
-                        <div class="flex-1">
+                        <div class="md:col-span-2">
                             <div class="relative">
-                                <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                                <Search class="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#999999] w-4 h-4" />
                                 <Input
-                                    v-model="searchQuery"
-                                    placeholder="Search recipes..."
-                                    class="pl-10"
+                                    v-model="searchTerm"
+                                    placeholder="搜索帖子..."
+                                    class="pl-10 bg-[#1f2937] border-[#1f2937] text-white placeholder:text-[#999999]"
+                                    @keyup.enter="handleSearch"
                                 />
                             </div>
                         </div>
 
-                        <!-- Category Filter -->
-                        <Select v-model="selectedCategory">
-                            <SelectTrigger class="w-full lg:w-[200px]">
-                                <SelectValue placeholder="All Categories" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="">All Categories</SelectItem>
-                                <SelectItem v-for="category in categories" :key="category.id" :value="category.slug">
-                                    <div class="flex items-center gap-2">
-                                        <div
-                                            class="w-3 h-3 rounded-full"
-                                            :style="{ backgroundColor: category.color }"
-                                        ></div>
-                                        {{ category.name }}
-                                    </div>
-                                </SelectItem>
-                            </SelectContent>
-                        </Select>
-
                         <!-- Type Filter -->
-                        <Select v-model="selectedType">
-                            <SelectTrigger class="w-full lg:w-[200px]">
-                                <SelectValue placeholder="All Types" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem v-for="option in typeOptions" :key="option.value" :value="option.value">
-                                    {{ option.label }}
-                                </SelectItem>
-                            </SelectContent>
-                        </Select>
+                        <div>
+                            <select
+                                v-model="selectedType"
+                                @change="handleTypeFilter(selectedType)"
+                                class="w-full px-3 py-2 bg-[#1f2937] border border-[#1f2937] rounded-md text-white"
+                            >
+                                <option value="">所有类型</option>
+                                <option v-for="type in postTypes" :key="type.value" :value="type.value">
+                                    {{ type.icon }} {{ type.label }}
+                                </option>
+                            </select>
+                        </div>
 
-                        <!-- Clear Filters -->
-                        <Button
-                            variant="outline"
-                            @click="clearFilters"
-                            :disabled="!searchQuery && !selectedCategory && !selectedType"
-                        >
-                            <Filter class="w-4 h-4 mr-2" />
-                            Clear
-                        </Button>
+                        <!-- Search Button -->
+                        <div>
+                            <Button @click="handleSearch" class="w-full bg-[#ff6e02] text-white hover:bg-[#e55a00]">
+                                <Search class="w-4 h-4 mr-2" />
+                                搜索
+                            </Button>
+                        </div>
                     </div>
-                </CardContent>
-            </Card>
-
-            <!-- Results Count -->
-            <div class="flex items-center justify-between">
-                <p class="text-sm text-muted-foreground">
-                    Showing {{ posts.meta.total }} {{ posts.meta.total === 1 ? 'recipe' : 'recipes' }}
-                </p>
-                <div class="text-sm text-muted-foreground">
-                    Page {{ posts.meta.current_page }} of {{ posts.meta.last_page }}
                 </div>
             </div>
 
-            <!-- Posts Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <Card v-for="post in posts.data" :key="post.id" class="hover:shadow-lg transition-all duration-200">
-                    <CardHeader class="pb-3">
-                        <div class="flex items-center gap-2 mb-3">
-                            <Badge :style="{ backgroundColor: post.category.color }" class="text-white text-xs">
-                                {{ post.category.name }}
-                            </Badge>
-                            <Badge :class="getTypeColor(post.type)" variant="secondary" class="text-xs">
-                                {{ post.type }}
-                            </Badge>
-                            <Badge v-if="post.is_premium" variant="default" class="bg-amber-500 text-xs">
-                                <Crown class="w-3 h-3 mr-1" />
-                                Premium
-                            </Badge>
-                        </div>
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                <!-- Sidebar - Categories -->
+                <div class="lg:col-span-1">
+                    <Card class="bg-[#374151] border-0 mb-6">
+                        <CardHeader class="pb-3">
+                            <CardTitle class="text-white text-base flex items-center gap-2">
+                                <Tag class="w-4 h-4" />
+                                分类筛选
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent class="space-y-2">
+                            <!-- All Categories -->
+                            <button
+                                @click="handleCategoryFilter(null)"
+                                :class="[
+                                    'w-full text-left p-2 rounded-lg transition-colors flex items-center gap-2',
+                                    !filters.category ? 'bg-[#ff6e02] text-white' : 'text-[#999999] hover:text-white hover:bg-[#1f2937]'
+                                ]"
+                            >
+                                <Grid class="w-4 h-4" />
+                                <span class="text-sm">全部分类</span>
+                            </button>
 
-                        <CardTitle class="line-clamp-2 text-lg">
-                            <Link :href="`/posts/${post.slug}`" class="hover:text-primary">
-                                {{ post.title }}
-                            </Link>
-                        </CardTitle>
+                            <!-- Individual Categories -->
+                            <button
+                                v-for="category in categories"
+                                :key="category.id"
+                                @click="handleCategoryFilter(category.slug)"
+                                :class="[
+                                    'w-full text-left p-2 rounded-lg transition-colors flex items-center justify-between',
+                                    filters.category === category.slug ? 'bg-[#ff6e02] text-white' : 'text-[#999999] hover:text-white hover:bg-[#1f2937]'
+                                ]"
+                            >
+                                <div class="flex items-center gap-2">
+                                    <span class="text-sm">{{ category.icon || '📝' }}</span>
+                                    <span class="text-sm">{{ category.name }}</span>
+                                </div>
+                                <span v-if="category.posts_count" class="text-xs bg-[#1f2937] px-2 py-1 rounded">
+                                    {{ category.posts_count }}
+                                </span>
+                            </button>
+                        </CardContent>
+                    </Card>
 
-                        <CardDescription class="line-clamp-3">
-                            {{ post.excerpt }}
-                        </CardDescription>
-                    </CardHeader>
+                    <!-- Stats -->
+                    <Card class="bg-[#374151] border-0">
+                        <CardHeader class="pb-3">
+                            <CardTitle class="text-white text-base flex items-center gap-2">
+                                <TrendingUp class="w-4 h-4" />
+                                统计信息
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent class="space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm text-[#999999]">总帖子数</span>
+                                <span class="text-white font-medium">{{ posts.total }}</span>
+                            </div>
+                            <div v-if="selectedCategory" class="flex items-center justify-between">
+                                <span class="text-sm text-[#999999]">当前分类</span>
+                                <span class="text-white font-medium">{{ posts.data.length }}</span>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
 
-                    <CardContent>
-                        <div class="flex items-center justify-between">
-                            <!-- Author Info -->
-                            <div class="flex items-center gap-2">
-                                <Avatar class="h-7 w-7">
-                                    <AvatarFallback class="text-xs">
-                                        {{ getInitials(post.user.creator_profile?.display_name || post.user.name) }}
-                                    </AvatarFallback>
-                                </Avatar>
-                                <div class="min-w-0 flex-1">
-                                    <div class="flex items-center gap-1">
-                                        <span class="text-sm font-medium truncate">
-                                            {{ post.user.creator_profile?.display_name || post.user.name }}
-                                        </span>
-                                        <Badge
-                                            v-if="post.user.creator_profile?.verification_status === 'verified'"
-                                            variant="secondary"
-                                            class="text-xs px-1"
-                                        >
-                                            ✓
-                                        </Badge>
+                <!-- Main Content -->
+                <div class="lg:col-span-3">
+                    <!-- Posts List -->
+                    <div v-if="posts.data.length > 0" class="space-y-4">
+                        <Link
+                            v-for="post in posts.data"
+                            :key="post.id"
+                            :href="`/posts/${post.slug}`"
+                            class="block group"
+                        >
+                            <Card class="bg-[#374151] border-0 hover:bg-[#1f2937] transition-colors">
+                                <CardContent class="p-4">
+                                    <div class="flex items-start gap-4">
+                                        <!-- Post Icon/Image -->
+                                        <div class="w-16 h-12 bg-[#1f2937] rounded-lg flex-shrink-0 flex items-center justify-center">
+                                            <span class="text-lg">{{ post.category.icon || '📝' }}</span>
+                                        </div>
+
+                                        <!-- Post Content -->
+                                        <div class="flex-1 min-w-0">
+                                            <!-- Header -->
+                                            <div class="flex items-start justify-between mb-2">
+                                                <div class="flex items-center gap-2 mb-1">
+                                                    <Badge
+                                                        class="text-white text-xs px-2 py-1"
+                                                        :style="{ backgroundColor: post.category.color }"
+                                                    >
+                                                        {{ post.category.name }}
+                                                    </Badge>
+                                                    <Badge variant="outline" class="text-[#999999] border-[#999999] text-xs">
+                                                        {{ getPostTypeText(post.type) }}
+                                                    </Badge>
+                                                    <Badge v-if="post.is_featured" class="bg-[#ff6e02] text-white text-xs">
+                                                        精选
+                                                    </Badge>
+                                                    <Badge v-if="post.is_premium" class="bg-yellow-500 text-white text-xs">
+                                                        ⭐ VIP
+                                                    </Badge>
+                                                </div>
+                                            </div>
+
+                                            <!-- Title -->
+                                            <h3 class="text-white font-medium text-base group-hover:text-[#ff6e02] transition-colors line-clamp-2 mb-2">
+                                                {{ post.title }}
+                                            </h3>
+
+                                            <!-- Excerpt -->
+                                            <p class="text-[#999999] text-sm line-clamp-2 mb-3">
+                                                {{ post.excerpt }}
+                                            </p>
+
+                                            <!-- Meta -->
+                                            <div class="flex items-center justify-between">
+                                                <div class="flex items-center gap-3">
+                                                    <!-- Author -->
+                                                    <div class="flex items-center gap-2">
+                                                        <Avatar class="w-6 h-6">
+                                                            <AvatarFallback class="bg-[#1f2937] text-white text-xs">
+                                                                {{ getInitials(post.user.creator_profile?.display_name || post.user.name) }}
+                                                            </AvatarFallback>
+                                                        </Avatar>
+                                                        <span class="text-xs text-[#999999]">
+                                                            {{ post.user.creator_profile?.display_name || post.user.name }}
+                                                        </span>
+                                                        <ChefHat v-if="post.user.creator_profile?.verification_status === 'verified'"
+                                                                class="w-3 h-3 text-[#ff6e02]" />
+                                                    </div>
+
+                                                    <!-- Date -->
+                                                    <div class="flex items-center gap-1 text-xs text-[#999999]">
+                                                        <Calendar class="w-3 h-3" />
+                                                        {{ formatDate(post.published_at) }}
+                                                    </div>
+                                                </div>
+
+                                                <!-- Stats -->
+                                                <div class="flex items-center gap-4 text-xs text-[#999999]">
+                                                    <span class="flex items-center gap-1">
+                                                        <Eye class="w-3 h-3" />
+                                                        {{ post.view_count }}
+                                                    </span>
+                                                    <span class="flex items-center gap-1">
+                                                        <Heart class="w-3 h-3" />
+                                                        {{ post.like_count }}
+                                                    </span>
+                                                    <span class="flex items-center gap-1">
+                                                        <MessageSquare class="w-3 h-3" />
+                                                        {{ post.comment_count }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <p class="text-xs text-muted-foreground">
-                                        {{ formatDate(post.published_at) }}
-                                    </p>
-                                </div>
-                            </div>
+                                </CardContent>
+                            </Card>
+                        </Link>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div v-else class="text-center py-12">
+                        <div class="text-6xl mb-4">📝</div>
+                        <h3 class="text-white text-lg font-medium mb-2">暂无帖子</h3>
+                        <p class="text-[#999999] mb-4">
+                            <span v-if="selectedCategory">该分类下暂时没有帖子</span>
+                            <span v-else>暂时没有符合条件的帖子</span>
+                        </p>
+                        <Button @click="handleCategoryFilter(null)" variant="outline" class="text-[#ff6e02] border-[#ff6e02]">
+                            浏览所有帖子
+                        </Button>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div v-if="posts.last_page > 1" class="mt-8">
+                        <div class="flex items-center justify-center gap-2">
+                            <Link
+                                v-for="link in posts.links"
+                                :key="link.label"
+                                :href="link.url || '#'"
+                                :class="[
+                                    'px-3 py-2 rounded text-sm transition-colors',
+                                    link.active
+                                        ? 'bg-[#ff6e02] text-white'
+                                        : link.url
+                                            ? 'bg-[#374151] text-white hover:bg-[#1f2937]'
+                                            : 'bg-[#374151] text-[#999999] cursor-not-allowed'
+                                ]"
+                                v-html="link.label"
+                            />
                         </div>
-
-                        <!-- Stats -->
-                        <div class="flex items-center justify-between mt-4 pt-3 border-t">
-                            <div class="flex items-center gap-4 text-sm text-muted-foreground">
-                                <div class="flex items-center gap-1">
-                                    <Eye class="w-4 h-4" />
-                                    <span>{{ post.view_count }}</span>
-                                </div>
-                                <div class="flex items-center gap-1">
-                                    <Heart class="w-4 h-4" />
-                                    <span>{{ post.like_count }}</span>
-                                </div>
-                            </div>
-
-                            <Button size="sm" variant="ghost" as-child>
-                                <Link :href="`/posts/${post.slug}`">
-                                    Read More
-                                </Link>
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
-
-            <!-- Empty State -->
-            <div v-if="posts.data.length === 0" class="text-center py-12">
-                <div class="text-6xl mb-4">🍽️</div>
-                <h3 class="text-lg font-semibold mb-2">No recipes found</h3>
-                <p class="text-muted-foreground mb-4">
-                    Try adjusting your filters or share the first recipe!
-                </p>
-                <Button class="bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600" as-child>
-                    <Link href="/posts/create">Share First Recipe</Link>
-                </Button>
-            </div>
-
-            <!-- Pagination -->
-            <div v-if="posts.meta.last_page > 1" class="flex items-center justify-center gap-2">
-                <Button
-                    v-for="link in posts.links"
-                    :key="link.label"
-                    :variant="link.active ? 'default' : 'outline'"
-                    :disabled="!link.url"
-                    size="sm"
-                    @click="link.url && router.visit(link.url, { preserveState: true })"
-                    v-html="link.label"
-                />
+                    </div>
+                </div>
             </div>
         </div>
-    </AppLayout>
+    </ChineseLayout>
 </template>

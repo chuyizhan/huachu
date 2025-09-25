@@ -17,12 +17,15 @@ class PostCategory extends Model
         'icon',
         'sort_order',
         'is_active',
+        'is_nav_item',
+        'nav_route',
     ];
 
     protected function casts(): array
     {
         return [
             'is_active' => 'boolean',
+            'is_nav_item' => 'boolean',
         ];
     }
 
