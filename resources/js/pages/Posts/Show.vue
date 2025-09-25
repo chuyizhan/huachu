@@ -200,18 +200,27 @@ const getPostTypeText = (type: string) => {
                             <!-- Action Buttons -->
                             <div class="flex items-center gap-2">
                                 <Button size="sm"
-                                        :variant="userInteractions.liked ? 'default' : 'outline'"
-                                        class="text-xs">
+                                        :class="[
+                                            'text-xs border',
+                                            userInteractions.liked
+                                                ? 'bg-[#ff6e02] text-white border-[#ff6e02] hover:bg-[#e55a00]'
+                                                : 'bg-transparent text-[#ff6e02] border-[#ff6e02] hover:bg-[#ff6e02] hover:text-white'
+                                        ]">
                                     <Heart class="w-3 h-3 mr-1" />
                                     {{ userInteractions.liked ? '已赞' : '点赞' }}
                                 </Button>
                                 <Button size="sm"
-                                        :variant="userInteractions.favorited ? 'default' : 'outline'"
-                                        class="text-xs">
+                                        :class="[
+                                            'text-xs border',
+                                            userInteractions.favorited
+                                                ? 'bg-[#ff6e02] text-white border-[#ff6e02] hover:bg-[#e55a00]'
+                                                : 'bg-transparent text-[#ff6e02] border-[#ff6e02] hover:bg-[#ff6e02] hover:text-white'
+                                        ]">
                                     <Bookmark class="w-3 h-3 mr-1" />
                                     {{ userInteractions.favorited ? '已收藏' : '收藏' }}
                                 </Button>
-                                <Button size="sm" variant="outline" class="text-xs">
+                                <Button size="sm"
+                                        class="text-xs border bg-transparent text-[#ff6e02] border-[#ff6e02] hover:bg-[#ff6e02] hover:text-white">
                                     <Share2 class="w-3 h-3 mr-1" />
                                     分享
                                 </Button>
