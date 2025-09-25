@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
 import { Users, MessageSquare, ChefHat, Trophy, Crown, PlusCircle } from 'lucide-vue-next';
+import { computed } from 'vue';
 
 interface Category {
     id: number;
@@ -10,12 +11,11 @@ interface Category {
     is_nav_item: boolean;
 }
 
-interface Props {
-    navCategories?: Category[];
-}
+const page = usePage();
 
-withDefaults(defineProps<Props>(), {
-    navCategories: () => []
+// Access globally shared navigation categories
+const navCategories = computed(() => {
+    return (page.props.navCategories as Category[]) || [];
 });
 </script>
 

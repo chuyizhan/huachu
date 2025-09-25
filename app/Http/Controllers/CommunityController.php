@@ -88,16 +88,10 @@ class CommunityController extends Controller
         $posts = $query->paginate(15);
         $categories = PostCategory::active()->orderBy('sort_order')->get();
 
-        // Get navigation categories
-        $navCategories = PostCategory::where('is_nav_item', true)
-            ->orderBy('sort_order')
-            ->get();
-
         return Inertia::render('Community/Posts', [
             'posts' => $posts,
             'categories' => $categories,
             'selectedCategory' => $selectedCategory,
-            'navCategories' => $navCategories,
             'filters' => $request->only(['category', 'type', 'search']),
         ]);
     }

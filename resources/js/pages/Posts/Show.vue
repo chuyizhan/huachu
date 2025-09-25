@@ -74,7 +74,6 @@ interface Props {
         liked: boolean;
         favorited: boolean;
     };
-    navCategories: Category[];
 }
 
 defineProps<Props>();
@@ -103,7 +102,7 @@ const getPostTypeText = (type: string) => {
 </script>
 
 <template>
-    <ChineseLayout :nav-categories="navCategories">
+    <ChineseLayout>
         <div class="max-w-[1000px] mx-auto px-4 py-6">
             <!-- Back Button -->
             <div class="mb-6">

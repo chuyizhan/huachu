@@ -88,7 +88,6 @@ interface Props {
     posts: PaginatedPosts;
     categories: Category[];
     selectedCategory?: Category | null;
-    navCategories: Category[];
     filters: {
         category?: string;
         type?: string;
@@ -171,7 +170,7 @@ const postTypes = [
 </script>
 
 <template>
-    <ChineseLayout :nav-categories="navCategories">
+    <ChineseLayout>
         <div class="max-w-[1000px] mx-auto px-4 py-6">
             <!-- Header -->
             <div class="mb-8">
