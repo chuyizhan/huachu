@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import WebLayout from '@/layouts/WebLayout.vue';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
+import { ref, computed } from 'vue';
 import {
     Heart,
     Eye,
     MessageSquare,
     Share2,
     Bookmark,
-    Clock,
     User,
     Tag,
     ChefHat,
@@ -76,7 +76,61 @@ interface Props {
     };
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
+const page = usePage();
+
+// Reactive state for like functionality
+const isLiked = ref(props.userInteractions.liked);
+const likeCount = ref(props.post.like_count);
+const isLiking = ref(false);
+
+// Check if user is authenticated
+const isAuthenticated = computed(() => page.props.auth?.user);
+
+// Toggle like function
+const toggleLike = async () => {
+    if (!isAuthenticated.value) {
+        // Redirect to login or show login modal
+        window.location.href = '/login';
+        return;
+    }
+
+    if (isLiking.value) return; // Prevent multiple clicks
+
+    isLiking.value = true;
+
+    try {
+        // Get CSRF token from meta tag
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+        const response = await fetch(`/posts/${props.post.id}/like`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': csrfToken || '',
+            },
+            credentials: 'same-origin',
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            isLiked.value = data.liked;
+            likeCount.value = data.like_count;
+        } else {
+            console.error('Failed to toggle like:', data.message);
+            // Show user-friendly error message
+            alert(data.message || 'Failed to process like. Please try again.');
+        }
+    } catch (error) {
+        console.error('Error toggling like:', error);
+        alert('Network error. Please check your connection and try again.');
+    } finally {
+        isLiking.value = false;
+    }
+};
 
 const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
@@ -184,7 +238,7 @@ const getPostTypeText = (type: string) => {
                             <div class="flex items-center gap-6">
                                 <span class="flex items-center gap-1 text-sm text-[#999999]">
                                     <Heart class="w-4 h-4" />
-                                    {{ post.like_count }} 赞
+                                    {{ likeCount }} 赞
                                 </span>
                                 <span class="flex items-center gap-1 text-sm text-[#999999]">
                                     <MessageSquare class="w-4 h-4" />
@@ -198,15 +252,25 @@ const getPostTypeText = (type: string) => {
 
                             <!-- Action Buttons -->
                             <div class="flex items-center gap-2">
-                                <Button size="sm"
+                                <Button
+                                    size="sm"
+                                    @click="toggleLike"
+                                    :disabled="isLiking"
+                                    :class="[
+                                        'text-xs border transition-all duration-200 transform',
+                                        isLiked
+                                            ? 'bg-[#ff6e02] text-white border-[#ff6e02] hover:bg-[#e55a00] shadow-md'
+                                            : 'bg-transparent text-[#ff6e02] border-[#ff6e02] hover:bg-[#ff6e02] hover:text-white',
+                                        isLiking ? 'scale-95 opacity-75' : 'hover:scale-105'
+                                    ]">
+                                    <Heart
                                         :class="[
-                                            'text-xs border',
-                                            userInteractions.liked
-                                                ? 'bg-[#ff6e02] text-white border-[#ff6e02] hover:bg-[#e55a00]'
-                                                : 'bg-transparent text-[#ff6e02] border-[#ff6e02] hover:bg-[#ff6e02] hover:text-white'
-                                        ]">
-                                    <Heart class="w-3 h-3 mr-1" />
-                                    {{ userInteractions.liked ? '已赞' : '点赞' }}
+                                            'w-3 h-3 mr-1 transition-all duration-200',
+                                            isLiked ? 'fill-current animate-pulse' : '',
+                                            isLiking ? 'animate-spin' : ''
+                                        ]"
+                                    />
+                                    {{ isLiking ? '处理中...' : (isLiked ? '已赞' : '点赞') }}
                                 </Button>
                                 <Button size="sm"
                                         :class="[

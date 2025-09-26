@@ -5,6 +5,7 @@ use Inertia\Inertia;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\CommunityController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\PostLikeController;
 use App\Http\Controllers\CreatorController;
 use App\Http\Controllers\VipController;
 
@@ -31,6 +32,10 @@ Route::prefix('posts')->name('posts.')->group(function () {
     Route::get('/{id}/edit', [PostController::class, 'edit'])->name('edit');
     Route::put('/{id}', [PostController::class, 'update'])->name('update');
     Route::delete('/{id}', [PostController::class, 'destroy'])->name('destroy');
+
+    // Like functionality
+    Route::post('/{post}/like', [PostLikeController::class, 'toggle'])->name('like');
+    Route::get('/{post}/like-status', [PostLikeController::class, 'status'])->name('like.status');
 });
 
 // Creator routes

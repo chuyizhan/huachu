@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\PostController;
+use App\Http\Controllers\Api\PostLikeController;
 use App\Http\Controllers\Api\PostCategoryController;
 use App\Http\Controllers\Api\CreatorProfileController;
 use App\Http\Controllers\Api\VipTierController;
@@ -24,6 +25,7 @@ Route::prefix('v1')->group(function () {
     // Posts
     Route::get('posts', [PostController::class, 'index']);
     Route::get('posts/{id}', [PostController::class, 'show']);
+    Route::get('posts/{post}/like-status', [PostLikeController::class, 'status']);
 
     // Post Categories
     Route::get('categories', [PostCategoryController::class, 'index']);
@@ -47,7 +49,7 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
     Route::post('posts', [PostController::class, 'store']);
     Route::put('posts/{id}', [PostController::class, 'update']);
     Route::delete('posts/{id}', [PostController::class, 'destroy']);
-    Route::post('posts/{id}/like', [PostController::class, 'like']);
+    Route::post('posts/{post}/like', [PostLikeController::class, 'toggle']);
     Route::post('posts/{id}/favorite', [PostController::class, 'favorite']);
 
     // Creator Profiles - authenticated actions
