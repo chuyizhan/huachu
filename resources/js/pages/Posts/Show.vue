@@ -84,6 +84,10 @@ const isLiked = ref(props.userInteractions.liked);
 const likeCount = ref(props.post.like_count);
 const isLiking = ref(false);
 
+// Reactive state for favorite functionality
+const isFavorited = ref(props.userInteractions.favorited);
+const isFavoriting = ref(false);
+
 // Check if user is authenticated
 const isAuthenticated = computed(() => page.props.auth?.user);
 
@@ -129,6 +133,50 @@ const toggleLike = async () => {
         alert('Network error. Please check your connection and try again.');
     } finally {
         isLiking.value = false;
+    }
+};
+
+// Toggle favorite function
+const toggleFavorite = async () => {
+    if (!isAuthenticated.value) {
+        // Redirect to login or show login modal
+        window.location.href = '/login';
+        return;
+    }
+
+    if (isFavoriting.value) return; // Prevent multiple clicks
+
+    isFavoriting.value = true;
+
+    try {
+        // Get CSRF token from meta tag
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+        const response = await fetch(`/posts/${props.post.id}/favorite`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': csrfToken || '',
+            },
+            credentials: 'same-origin',
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            isFavorited.value = data.favorited;
+        } else {
+            console.error('Failed to toggle favorite:', data.message);
+            // Show user-friendly error message
+            alert(data.message || '收藏操作失败，请重试');
+        }
+    } catch (error) {
+        console.error('Error toggling favorite:', error);
+        alert('网络错误，请检查网络连接后重试');
+    } finally {
+        isFavoriting.value = false;
     }
 };
 
@@ -272,15 +320,25 @@ const getPostTypeText = (type: string) => {
                                     />
                                     {{ isLiking ? '处理中...' : (isLiked ? '已赞' : '点赞') }}
                                 </Button>
-                                <Button size="sm"
+                                <Button
+                                    size="sm"
+                                    @click="toggleFavorite"
+                                    :disabled="isFavoriting"
+                                    :class="[
+                                        'text-xs border transition-all duration-200 transform',
+                                        isFavorited
+                                            ? 'bg-[#ff6e02] text-white border-[#ff6e02] hover:bg-[#e55a00] shadow-md'
+                                            : 'bg-transparent text-[#ff6e02] border-[#ff6e02] hover:bg-[#ff6e02] hover:text-white',
+                                        isFavoriting ? 'scale-95 opacity-75' : 'hover:scale-105'
+                                    ]">
+                                    <Bookmark
                                         :class="[
-                                            'text-xs border',
-                                            userInteractions.favorited
-                                                ? 'bg-[#ff6e02] text-white border-[#ff6e02] hover:bg-[#e55a00]'
-                                                : 'bg-transparent text-[#ff6e02] border-[#ff6e02] hover:bg-[#ff6e02] hover:text-white'
-                                        ]">
-                                    <Bookmark class="w-3 h-3 mr-1" />
-                                    {{ userInteractions.favorited ? '已收藏' : '收藏' }}
+                                            'w-3 h-3 mr-1 transition-all duration-200',
+                                            isFavorited ? 'fill-current animate-pulse' : '',
+                                            isFavoriting ? 'animate-spin' : ''
+                                        ]"
+                                    />
+                                    {{ isFavoriting ? '处理中...' : (isFavorited ? '已收藏' : '收藏') }}
                                 </Button>
                                 <Button size="sm"
                                         class="text-xs border bg-transparent text-[#ff6e02] border-[#ff6e02] hover:bg-[#ff6e02] hover:text-white">

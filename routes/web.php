@@ -6,6 +6,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\CommunityController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\PostLikeController;
+use App\Http\Controllers\PostFavoriteController;
 use App\Http\Controllers\CreatorController;
 use App\Http\Controllers\VipController;
 
@@ -14,6 +15,9 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+// User favorites
+Route::get('/favorites', [PostFavoriteController::class, 'index'])->middleware('auth')->name('favorites');
 
 // Community routes
 Route::prefix('community')->name('community.')->group(function () {
@@ -36,6 +40,10 @@ Route::prefix('posts')->name('posts.')->group(function () {
     // Like functionality
     Route::post('/{post}/like', [PostLikeController::class, 'toggle'])->name('like');
     Route::get('/{post}/like-status', [PostLikeController::class, 'status'])->name('like.status');
+
+    // Favorite functionality
+    Route::post('/{post}/favorite', [PostFavoriteController::class, 'toggle'])->name('favorite');
+    Route::get('/{post}/favorite-status', [PostFavoriteController::class, 'status'])->name('favorite.status');
 });
 
 // Creator routes
