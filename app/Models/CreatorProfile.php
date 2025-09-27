@@ -59,6 +59,22 @@ class CreatorProfile extends Model
     }
 
     /**
+     * Get all follows for this creator.
+     */
+    public function follows()
+    {
+        return $this->hasMany(Follow::class, 'creator_id');
+    }
+
+    /**
+     * Get all users following this creator.
+     */
+    public function followers()
+    {
+        return $this->belongsToMany(User::class, 'follows', 'creator_id', 'follower_id')->withTimestamps();
+    }
+
+    /**
      * Scope for verified creators.
      */
     public function scopeVerified($query)

@@ -102,4 +102,27 @@ class User extends Authenticatable
     {
         return $this->hasMany(UserSubscription::class, 'subscriber_id');
     }
+
+    /**
+     * Get all creators this user is following.
+     */
+    public function following()
+    {
+        return $this->hasMany(Follow::class, 'follower_id');
+    }
+
+    /**
+     * Get all users following this user's creator profile.
+     */
+    public function followers()
+    {
+        return $this->hasManyThrough(
+            Follow::class,
+            CreatorProfile::class,
+            'user_id', // Foreign key on creator_profiles table
+            'creator_id', // Foreign key on follows table
+            'id', // Local key on users table
+            'id' // Local key on creator_profiles table
+        );
+    }
 }

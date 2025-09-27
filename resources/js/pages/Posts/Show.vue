@@ -18,7 +18,9 @@ import {
     Star,
     Calendar,
     ArrowLeft,
-    ThumbsUp
+    ThumbsUp,
+    UserPlus,
+    UserMinus
 } from 'lucide-vue-next';
 
 interface Creator {
@@ -73,6 +75,7 @@ interface Props {
     userInteractions: {
         liked: boolean;
         favorited: boolean;
+        following_creator: boolean;
     };
 }
 
@@ -87,6 +90,11 @@ const isLiking = ref(false);
 // Reactive state for favorite functionality
 const isFavorited = ref(props.userInteractions.favorited);
 const isFavoriting = ref(false);
+
+// Reactive state for follow functionality
+const isFollowingCreator = ref(props.userInteractions.following_creator);
+const followerCount = ref(props.post.user.creator_profile?.follower_count || 0);
+const isFollowing = ref(false);
 
 // Check if user is authenticated
 const isAuthenticated = computed(() => page.props.auth?.user);
@@ -177,6 +185,56 @@ const toggleFavorite = async () => {
         alert('网络错误，请检查网络连接后重试');
     } finally {
         isFavoriting.value = false;
+    }
+};
+
+// Toggle follow function
+const toggleFollow = async () => {
+    if (!isAuthenticated.value) {
+        // Redirect to login or show login modal
+        window.location.href = '/login';
+        return;
+    }
+
+    if (!props.post.user.creator_profile) {
+        alert('该用户没有创作者档案');
+        return;
+    }
+
+    if (isFollowing.value) return; // Prevent multiple clicks
+
+    isFollowing.value = true;
+
+    try {
+        // Get CSRF token from meta tag
+        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+        const response = await fetch(`/creators/${props.post.user.creator_profile.id}/follow`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': csrfToken || '',
+            },
+            credentials: 'same-origin',
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            isFollowingCreator.value = data.following;
+            followerCount.value = data.followers_count;
+        } else {
+            console.error('Failed to toggle follow:', data.message);
+            // Show user-friendly error message
+            alert(data.message || '关注操作失败，请重试');
+        }
+    } catch (error) {
+        console.error('Error toggling follow:', error);
+        alert('网络错误，请检查网络连接后重试');
+    } finally {
+        isFollowing.value = false;
     }
 };
 
@@ -482,8 +540,8 @@ const getPostTypeText = (type: string) => {
                                                 <Star class="w-3 h-3 text-yellow-400" />
                                                 {{ post.user.creator_profile.rating }}
                                             </span>
-                                            <span v-if="post.user.creator_profile.follower_count">
-                                                {{ post.user.creator_profile.follower_count }} 粉丝
+                                            <span v-if="followerCount > 0">
+                                                {{ followerCount }} 粉丝
                                             </span>
                                         </div>
                                     </div>
@@ -503,8 +561,24 @@ const getPostTypeText = (type: string) => {
                                         美食爱好者
                                     </div>
                                 </div>
-                                <Button v-if="post.user.creator_profile" size="sm" class="bg-[#ff6e02] text-white hover:bg-[#e55a00] text-xs w-full">
-                                    + 关注
+                                <Button
+                                    v-if="post.user.creator_profile"
+                                    size="sm"
+                                    :class="isFollowingCreator
+                                        ? 'bg-transparent border-[#ff6e02] text-[#ff6e02] hover:bg-[#ff6e02] hover:text-white'
+                                        : 'bg-[#ff6e02] text-white hover:bg-[#e55a00]'"
+                                    class="text-xs w-full transition-colors"
+                                    @click="toggleFollow"
+                                    :disabled="isFollowing"
+                                >
+                                    <span v-if="isFollowing" class="flex items-center justify-center gap-1">
+                                        处理中...
+                                    </span>
+                                    <span v-else class="flex items-center justify-center gap-1">
+                                        <UserPlus v-if="!isFollowingCreator" class="w-3 h-3" />
+                                        <UserMinus v-else class="w-3 h-3" />
+                                        {{ isFollowingCreator ? '已关注' : '关注' }}
+                                    </span>
                                 </Button>
                             </div>
                         </CardContent>

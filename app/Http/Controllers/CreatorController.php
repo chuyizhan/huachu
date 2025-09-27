@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\CreatorProfile;
 use App\Models\Post;
-use App\Models\Favorite;
+use App\Models\Follow;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -34,9 +34,7 @@ class CreatorController extends Controller
         $likesReceived = $creator->user->posts()->sum('like_count');
 
         // Get followers count
-        $followersCount = Favorite::where('favoritable_type', CreatorProfile::class)
-            ->where('favoritable_id', $id)
-            ->count();
+        $followersCount = Follow::getFollowersCount($id);
 
         // Update creator with calculated stats
         $creator->posts_count = $postsCount;
@@ -49,10 +47,7 @@ class CreatorController extends Controller
         $canFollow = Auth::check() && Auth::id() !== $creator->user_id;
 
         if (Auth::check()) {
-            $isFollowing = Favorite::where('user_id', Auth::id())
-                ->where('favoritable_type', CreatorProfile::class)
-                ->where('favoritable_id', $id)
-                ->exists();
+            $isFollowing = Follow::isFollowing(Auth::id(), $id);
         }
 
         return Inertia::render('Creator/Show', [
@@ -202,9 +197,8 @@ class CreatorController extends Controller
         try {
             DB::beginTransaction();
 
-            $existingFollow = Favorite::where('user_id', $user->id)
-                ->where('favoritable_type', CreatorProfile::class)
-                ->where('favoritable_id', $id)
+            $existingFollow = Follow::where('follower_id', $user->id)
+                ->where('creator_id', $id)
                 ->first();
 
             if ($existingFollow) {
@@ -214,19 +208,16 @@ class CreatorController extends Controller
                 $message = '已取消关注';
             } else {
                 // Follow the creator
-                Favorite::create([
-                    'user_id' => $user->id,
-                    'favoritable_type' => CreatorProfile::class,
-                    'favoritable_id' => $id,
+                Follow::create([
+                    'follower_id' => $user->id,
+                    'creator_id' => $id,
                 ]);
                 $following = true;
                 $message = '关注成功';
             }
 
             // Get updated followers count
-            $followersCount = Favorite::where('favoritable_type', CreatorProfile::class)
-                ->where('favoritable_id', $id)
-                ->count();
+            $followersCount = Follow::getFollowersCount($id);
 
             DB::commit();
 

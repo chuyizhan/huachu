@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Post;
 use App\Models\PostCategory;
+use App\Models\Follow;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
@@ -56,16 +57,24 @@ class PostController extends Controller
             ->take(4)
             ->get();
 
-        // Check if current user has liked/favorited
+        // Check if current user has liked/favorited/following
         $userInteractions = [];
         if (Auth::check()) {
             $user = Auth::user();
+            $isFollowingCreator = false;
+
+            // Check if following the post author (if they have a creator profile)
+            if ($post->user->creatorProfile) {
+                $isFollowingCreator = Follow::isFollowing($user->id, $post->user->creatorProfile->id);
+            }
+
             $userInteractions = [
                 'liked' => $user->likedPosts()->where('post_id', $post->id)->exists(),
                 'favorited' => $user->favorites()
                     ->where('favoritable_type', Post::class)
                     ->where('favoritable_id', $post->id)
                     ->exists(),
+                'following_creator' => $isFollowingCreator,
             ];
         }
 
