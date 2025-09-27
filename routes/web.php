@@ -51,6 +51,9 @@ Route::prefix('creators')->name('creator.')->group(function () {
     Route::get('/{id}', [CreatorController::class, 'show'])->name('show');
 
     Route::middleware('auth')->group(function () {
+        // Follow functionality
+        Route::post('/{id}/follow', [CreatorController::class, 'toggleFollow'])->name('follow');
+
         Route::get('/profile/me', [CreatorController::class, 'profile'])->name('profile');
         Route::get('/apply', [CreatorController::class, 'apply'])->name('apply');
         Route::post('/apply', [CreatorController::class, 'storeApplication'])->name('apply.store');

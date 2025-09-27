@@ -251,21 +251,44 @@ const getPostTypeText = (type: string) => {
                         <!-- Author & Meta Info -->
                         <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
                             <div class="flex items-center gap-3">
-                                <Avatar class="w-10 h-10">
-                                    <AvatarFallback class="bg-[#1f2937] text-white text-sm">
-                                        {{ getInitials(post.user.creator_profile?.display_name || post.user.name) }}
-                                    </AvatarFallback>
-                                </Avatar>
-                                <div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-white font-medium">
-                                            {{ post.user.creator_profile?.display_name || post.user.name }}
-                                        </span>
-                                        <ChefHat v-if="post.user.creator_profile?.verification_status === 'verified'"
-                                                class="w-4 h-4 text-[#ff6e02]" />
+                                <Link
+                                    v-if="post.user.creator_profile"
+                                    :href="`/creators/${post.user.creator_profile.id}`"
+                                    class="flex items-center gap-3 hover:opacity-80 transition-opacity"
+                                >
+                                    <Avatar class="w-10 h-10">
+                                        <AvatarFallback class="bg-[#1f2937] text-white text-sm">
+                                            {{ getInitials(post.user.creator_profile?.display_name || post.user.name) }}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-white font-medium hover:text-[#ff6e02] transition-colors">
+                                                {{ post.user.creator_profile.display_name }}
+                                            </span>
+                                            <ChefHat v-if="post.user.creator_profile.verification_status === 'verified'"
+                                                    class="w-4 h-4 text-[#ff6e02]" />
+                                        </div>
+                                        <div class="text-xs text-[#999999]">
+                                            {{ post.user.creator_profile.specialty }}
+                                        </div>
                                     </div>
-                                    <div class="text-xs text-[#999999]">
-                                        {{ post.user.creator_profile?.specialty || '美食爱好者' }}
+                                </Link>
+                                <div v-else class="flex items-center gap-3">
+                                    <Avatar class="w-10 h-10">
+                                        <AvatarFallback class="bg-[#1f2937] text-white text-sm">
+                                            {{ getInitials(post.user.name) }}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="text-white font-medium">
+                                                {{ post.user.name }}
+                                            </span>
+                                        </div>
+                                        <div class="text-xs text-[#999999]">
+                                            美食爱好者
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -396,7 +419,15 @@ const getPostTypeText = (type: string) => {
                                             {{ relatedPost.excerpt }}
                                         </p>
                                         <div class="flex items-center gap-3 text-xs text-[#999999]">
-                                            <span>{{ relatedPost.user.creator_profile?.display_name || relatedPost.user.name }}</span>
+                                            <Link
+                                                v-if="relatedPost.user.creator_profile"
+                                                :href="`/creators/${relatedPost.user.creator_profile.id}`"
+                                                class="hover:text-[#ff6e02] transition-colors"
+                                                @click.stop
+                                            >
+                                                {{ relatedPost.user.creator_profile.display_name }}
+                                            </Link>
+                                            <span v-else>{{ relatedPost.user.name }}</span>
                                             <span class="flex items-center gap-1">
                                                 <Eye class="w-3 h-3" />
                                                 {{ relatedPost.view_count }}
@@ -425,33 +456,54 @@ const getPostTypeText = (type: string) => {
                         </CardHeader>
                         <CardContent>
                             <div class="text-center">
-                                <Avatar class="w-16 h-16 mx-auto mb-3">
-                                    <AvatarFallback class="bg-[#1f2937] text-white text-lg">
-                                        {{ getInitials(post.user.creator_profile?.display_name || post.user.name) }}
-                                    </AvatarFallback>
-                                </Avatar>
-                                <div class="mb-2">
+                                <Link
+                                    v-if="post.user.creator_profile"
+                                    :href="`/creators/${post.user.creator_profile.id}`"
+                                    class="block hover:opacity-80 transition-opacity"
+                                >
+                                    <Avatar class="w-16 h-16 mx-auto mb-3">
+                                        <AvatarFallback class="bg-[#1f2937] text-white text-lg">
+                                            {{ getInitials(post.user.creator_profile.display_name) }}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <div class="mb-2">
+                                        <div class="flex items-center justify-center gap-1 mb-1">
+                                            <span class="text-white font-medium hover:text-[#ff6e02] transition-colors">
+                                                {{ post.user.creator_profile.display_name }}
+                                            </span>
+                                            <ChefHat v-if="post.user.creator_profile.verification_status === 'verified'"
+                                                    class="w-4 h-4 text-[#ff6e02]" />
+                                        </div>
+                                        <div class="text-xs text-[#999999] mb-2">
+                                            {{ post.user.creator_profile.specialty }}
+                                        </div>
+                                        <div class="flex items-center justify-center gap-4 text-xs text-[#999999] mb-3">
+                                            <span v-if="post.user.creator_profile.rating" class="flex items-center gap-1">
+                                                <Star class="w-3 h-3 text-yellow-400" />
+                                                {{ post.user.creator_profile.rating }}
+                                            </span>
+                                            <span v-if="post.user.creator_profile.follower_count">
+                                                {{ post.user.creator_profile.follower_count }} 粉丝
+                                            </span>
+                                        </div>
+                                    </div>
+                                </Link>
+                                <div v-else class="mb-2">
+                                    <Avatar class="w-16 h-16 mx-auto mb-3">
+                                        <AvatarFallback class="bg-[#1f2937] text-white text-lg">
+                                            {{ getInitials(post.user.name) }}
+                                        </AvatarFallback>
+                                    </Avatar>
                                     <div class="flex items-center justify-center gap-1 mb-1">
                                         <span class="text-white font-medium">
-                                            {{ post.user.creator_profile?.display_name || post.user.name }}
+                                            {{ post.user.name }}
                                         </span>
-                                        <ChefHat v-if="post.user.creator_profile?.verification_status === 'verified'"
-                                                class="w-4 h-4 text-[#ff6e02]" />
                                     </div>
                                     <div class="text-xs text-[#999999] mb-2">
-                                        {{ post.user.creator_profile?.specialty || '美食爱好者' }}
-                                    </div>
-                                    <div v-if="post.user.creator_profile" class="flex items-center justify-center gap-4 text-xs text-[#999999] mb-3">
-                                        <span v-if="post.user.creator_profile.rating" class="flex items-center gap-1">
-                                            <Star class="w-3 h-3 text-yellow-400" />
-                                            {{ post.user.creator_profile.rating }}
-                                        </span>
-                                        <span v-if="post.user.creator_profile.follower_count">
-                                            {{ post.user.creator_profile.follower_count }} 粉丝
-                                        </span>
+                                        美食爱好者
                                     </div>
                                 </div>
-                                <Button size="sm" class="bg-[#ff6e02] text-white hover:bg-[#e55a00] text-xs w-full">
+                                <Button v-if="post.user.creator_profile" size="sm" class="bg-[#ff6e02] text-white hover:bg-[#e55a00] text-xs w-full">
                                     + 关注
                                 </Button>
                             </div>

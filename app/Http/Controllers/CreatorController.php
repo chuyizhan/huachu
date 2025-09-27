@@ -6,7 +6,9 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\CreatorProfile;
 use App\Models\Post;
+use App\Models\Favorite;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class CreatorController extends Controller
 {
@@ -18,39 +20,46 @@ class CreatorController extends Controller
     public function show($id)
     {
         $creator = CreatorProfile::with(['user'])
-            ->verified()
             ->findOrFail($id);
 
-        // Get creator's recent posts
-        $recentPosts = $creator->user->posts()
+        // Get creator's posts with pagination
+        $posts = $creator->user->posts()
             ->published()
-            ->with('category')
+            ->with(['category', 'user.creatorProfile'])
             ->latest('published_at')
-            ->take(6)
-            ->get();
+            ->paginate(12);
 
-        // Get creator stats
-        $stats = [
-            'total_posts' => $creator->user->posts()->published()->count(),
-            'total_likes' => $creator->user->posts()->sum('like_count'),
-            'total_views' => $creator->user->posts()->sum('view_count'),
-            'followers' => $creator->follower_count,
-        ];
+        // Calculate stats
+        $postsCount = $creator->user->posts()->published()->count();
+        $likesReceived = $creator->user->posts()->sum('like_count');
 
-        // Check if current user is following
+        // Get followers count
+        $followersCount = Favorite::where('favoritable_type', CreatorProfile::class)
+            ->where('favoritable_id', $id)
+            ->count();
+
+        // Update creator with calculated stats
+        $creator->posts_count = $postsCount;
+        $creator->likes_received = $likesReceived;
+        $creator->followers_count = $followersCount;
+        $creator->joined_at = $creator->created_at;
+
+        // Check if current user is following and can follow
         $isFollowing = false;
+        $canFollow = Auth::check() && Auth::id() !== $creator->user_id;
+
         if (Auth::check()) {
-            $isFollowing = Auth::user()->favorites()
+            $isFollowing = Favorite::where('user_id', Auth::id())
                 ->where('favoritable_type', CreatorProfile::class)
                 ->where('favoritable_id', $id)
                 ->exists();
         }
 
-        return Inertia::render('Creators/Show', [
+        return Inertia::render('Creator/Show', [
             'creator' => $creator,
-            'recentPosts' => $recentPosts,
-            'stats' => $stats,
+            'posts' => $posts,
             'isFollowing' => $isFollowing,
+            'canFollow' => $canFollow,
         ]);
     }
 
@@ -172,5 +181,69 @@ class CreatorController extends Controller
 
         return redirect()->route('creator.profile')
             ->with('success', 'Creator profile updated successfully!');
+    }
+
+    /**
+     * Toggle follow status for a creator
+     */
+    public function toggleFollow(Request $request, $id)
+    {
+        $user = Auth::user();
+        $creator = CreatorProfile::findOrFail($id);
+
+        // Users cannot follow themselves
+        if ($user->id === $creator->user_id) {
+            return response()->json([
+                'success' => false,
+                'message' => '不能关注自己',
+            ], 400);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $existingFollow = Favorite::where('user_id', $user->id)
+                ->where('favoritable_type', CreatorProfile::class)
+                ->where('favoritable_id', $id)
+                ->first();
+
+            if ($existingFollow) {
+                // Unfollow the creator
+                $existingFollow->delete();
+                $following = false;
+                $message = '已取消关注';
+            } else {
+                // Follow the creator
+                Favorite::create([
+                    'user_id' => $user->id,
+                    'favoritable_type' => CreatorProfile::class,
+                    'favoritable_id' => $id,
+                ]);
+                $following = true;
+                $message = '关注成功';
+            }
+
+            // Get updated followers count
+            $followersCount = Favorite::where('favoritable_type', CreatorProfile::class)
+                ->where('favoritable_id', $id)
+                ->count();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'following' => $following,
+                'followers_count' => $followersCount,
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => '操作失败，请重试',
+            ], 500);
+        }
     }
 }
