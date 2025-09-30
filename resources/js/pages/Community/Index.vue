@@ -195,6 +195,14 @@ const getTypeColor = (type: string) => {
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <Card v-for="post in featuredPosts.slice(0, 4)" :key="post.id" class="hover:shadow-lg transition-shadow">
+                                <Link :href="`/posts/${post.slug}`" class="block">
+                                    <div v-if="post.first_image" class="w-full h-48 overflow-hidden rounded-t-lg">
+                                        <img :src="post.first_image.thumb" :alt="post.title" class="w-full h-full object-cover hover:scale-105 transition-transform duration-300" />
+                                    </div>
+                                    <div v-else class="w-full h-48 bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center rounded-t-lg">
+                                        <span class="text-6xl">🍳</span>
+                                    </div>
+                                </Link>
                                 <CardHeader class="pb-3">
                                     <div class="flex items-center gap-2 mb-2">
                                         <Badge :class="getTypeColor(post.type)" variant="secondary">
@@ -260,11 +268,14 @@ const getTypeColor = (type: string) => {
                             <Card v-for="post in recentPosts.slice(0, 6)" :key="post.id">
                                 <CardContent class="p-4">
                                     <div class="flex items-start gap-4">
-                                        <Avatar>
-                                            <AvatarFallback>
-                                                {{ getInitials(post.user.creator_profile?.display_name || post.user.name) }}
-                                            </AvatarFallback>
-                                        </Avatar>
+                                        <Link :href="`/posts/${post.slug}`" class="flex-shrink-0">
+                                            <div v-if="post.first_image" class="w-20 h-20 rounded-lg overflow-hidden">
+                                                <img :src="post.first_image.thumb" :alt="post.title" class="w-full h-full object-cover hover:opacity-80 transition-opacity" />
+                                            </div>
+                                            <div v-else class="w-20 h-20 rounded-lg bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center">
+                                                <span class="text-3xl">🍳</span>
+                                            </div>
+                                        </Link>
                                         <div class="flex-1 min-w-0">
                                             <div class="flex items-center gap-2 mb-1">
                                                 <Badge :style="{ backgroundColor: post.category.color }" class="text-white text-xs">
@@ -286,9 +297,16 @@ const getTypeColor = (type: string) => {
                                                 {{ post.excerpt }}
                                             </p>
                                             <div class="flex items-center justify-between">
-                                                <span class="text-sm text-muted-foreground">
-                                                    by {{ post.user.creator_profile?.display_name || post.user.name }}
-                                                </span>
+                                                <div class="flex items-center gap-2">
+                                                    <Avatar class="h-5 w-5">
+                                                        <AvatarFallback class="text-xs">
+                                                            {{ getInitials(post.user.creator_profile?.display_name || post.user.name) }}
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                    <span class="text-sm text-muted-foreground">
+                                                        {{ post.user.creator_profile?.display_name || post.user.name }}
+                                                    </span>
+                                                </div>
                                                 <div class="flex items-center gap-3 text-xs text-muted-foreground">
                                                     <span class="flex items-center gap-1">
                                                         <Eye class="w-3 h-3" />
