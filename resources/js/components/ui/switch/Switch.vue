@@ -6,8 +6,8 @@ import {
   type SwitchRootProps,
   SwitchThumb,
   useForwardPropsEmits,
-} from 'reka-ui/switch'
-import { cn } from '@/utils'
+} from 'reka-ui'
+import { cn } from '@/lib/utils'
 
 const props = defineProps<SwitchRootProps & { class?: HTMLAttributes['class'] }>()
 

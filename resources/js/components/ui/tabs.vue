@@ -8,8 +8,8 @@ import {
   type TabsRootProps,
   TabsTrigger,
   useForwardPropsEmits,
-} from 'reka-ui/tabs'
-import { cn } from '@/utils'
+} from 'reka-ui'
+import { cn } from '@/lib/utils'
 
 const props = defineProps<TabsRootProps & { class?: HTMLAttributes['class'] }>()
 const emits = defineEmits<TabsRootEmits>()
