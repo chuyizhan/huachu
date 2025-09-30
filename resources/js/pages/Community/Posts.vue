@@ -69,6 +69,10 @@ interface Post {
     created_at: string;
     user: User;
     category: Category;
+    first_image?: {
+        url: string;
+        thumb: string;
+    } | null;
 }
 
 interface PaginatedPosts {
@@ -319,8 +323,11 @@ const postTypes = [
                                 <CardContent class="p-4">
                                     <div class="flex items-start gap-4">
                                         <!-- Post Icon/Image -->
-                                        <div class="w-16 h-12 bg-[#1f2937] rounded-lg flex-shrink-0 flex items-center justify-center">
-                                            <span class="text-lg">{{ post.category.icon || '📝' }}</span>
+                                        <div class="w-16 h-12 bg-[#1f2937] rounded-lg flex-shrink-0 overflow-hidden">
+                                            <img v-if="post.first_image" :src="post.first_image.thumb" :alt="post.title" class="w-full h-full object-cover" />
+                                            <div v-else class="w-full h-full flex items-center justify-center">
+                                                <span class="text-lg">{{ post.category.icon || '📝' }}</span>
+                                            </div>
                                         </div>
 
                                         <!-- Post Content -->

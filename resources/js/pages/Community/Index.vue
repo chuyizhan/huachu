@@ -32,6 +32,10 @@ interface Post {
     like_count: number;
     is_premium: boolean;
     published_at: string;
+    first_image?: {
+        url: string;
+        thumb: string;
+    } | null;
 }
 
 interface Creator {

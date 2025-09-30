@@ -14,18 +14,34 @@ class CommunityController extends Controller
     public function index(Request $request)
     {
         // Get featured posts
-        $featuredPosts = Post::with(['user', 'category'])
+        $featuredPosts = Post::with(['user', 'category', 'media'])
             ->published()
             ->featured()
             ->take(6)
-            ->get();
+            ->get()
+            ->map(function ($post) {
+                $firstMedia = $post->getFirstMedia('images');
+                $post->first_image = $firstMedia ? [
+                    'url' => $firstMedia->getUrl(),
+                    'thumb' => $firstMedia->getUrl('thumb'),
+                ] : null;
+                return $post;
+            });
 
         // Get recent posts
-        $recentPosts = Post::with(['user', 'category'])
+        $recentPosts = Post::with(['user', 'category', 'media'])
             ->published()
             ->latest('published_at')
             ->take(12)
-            ->get();
+            ->get()
+            ->map(function ($post) {
+                $firstMedia = $post->getFirstMedia('images');
+                $post->first_image = $firstMedia ? [
+                    'url' => $firstMedia->getUrl(),
+                    'thumb' => $firstMedia->getUrl('thumb'),
+                ] : null;
+                return $post;
+            });
 
         // Get categories with post counts
         $categories = PostCategory::active()
@@ -57,7 +73,7 @@ class CommunityController extends Controller
 
     public function posts(Request $request)
     {
-        $query = Post::with(['user.creatorProfile', 'category'])
+        $query = Post::with(['user.creatorProfile', 'category', 'media'])
             ->published()
             ->orderBy('published_at', 'desc');
 
@@ -86,6 +102,17 @@ class CommunityController extends Controller
         }
 
         $posts = $query->paginate(15);
+
+        // Add first image to each post
+        $posts->getCollection()->transform(function ($post) {
+            $firstMedia = $post->getFirstMedia('images');
+            $post->first_image = $firstMedia ? [
+                'url' => $firstMedia->getUrl(),
+                'thumb' => $firstMedia->getUrl('thumb'),
+            ] : null;
+            return $post;
+        });
+
         $categories = PostCategory::active()->orderBy('sort_order')->get();
 
         return Inertia::render('Community/Posts', [

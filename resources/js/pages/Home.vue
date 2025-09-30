@@ -47,6 +47,10 @@ interface Post {
     like_count: number;
     is_premium: boolean;
     published_at: string;
+    first_image?: {
+        url: string;
+        thumb: string;
+    } | null;
 }
 
 interface Creator {
@@ -238,9 +242,10 @@ const features = [
                 <div class="space-y-4">
                     <div v-for="post in featuredPosts.slice(0, 6)" :key="post.id" class="bg-[#374151] rounded-lg p-4 hover:bg-[#1f2937] transition-colors">
                         <div class="flex items-start gap-4">
-                            <div class="w-20 h-16 bg-[#1f2937] rounded-lg flex-shrink-0 flex items-center justify-center">
-                                <div class="text-2xl">🍳</div>
-                            </div>
+                            <Link :href="`/posts/${post.slug}`" class="w-20 h-16 bg-[#1f2937] rounded-lg flex-shrink-0 overflow-hidden">
+                                <img v-if="post.first_image" :src="post.first_image.thumb" :alt="post.title" class="w-full h-full object-cover" />
+                                <div v-else class="w-full h-full flex items-center justify-center text-2xl">🍳</div>
+                            </Link>
                             <div class="flex-1 min-w-0">
                                 <Link :href="`/posts/${post.slug}`" class="text-white hover:text-[#ff6e02] font-medium text-base line-clamp-2 mb-2 block">
                                     {{ post.title }}

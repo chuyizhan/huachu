@@ -14,19 +14,35 @@ class HomeController extends Controller
     public function index()
     {
         // Get featured posts (recipes)
-        $featuredPosts = Post::with(['user.creatorProfile', 'category'])
+        $featuredPosts = Post::with(['user.creatorProfile', 'category', 'media'])
             ->published()
             ->featured()
             ->latest('published_at')
             ->limit(6)
-            ->get();
+            ->get()
+            ->map(function ($post) {
+                $firstMedia = $post->getFirstMedia('images');
+                $post->first_image = $firstMedia ? [
+                    'url' => $firstMedia->getUrl(),
+                    'thumb' => $firstMedia->getUrl('thumb'),
+                ] : null;
+                return $post;
+            });
 
         // Get recent posts (recipes)
-        $recentPosts = Post::with(['user.creatorProfile', 'category'])
+        $recentPosts = Post::with(['user.creatorProfile', 'category', 'media'])
             ->published()
             ->latest('published_at')
             ->limit(8)
-            ->get();
+            ->get()
+            ->map(function ($post) {
+                $firstMedia = $post->getFirstMedia('images');
+                $post->first_image = $firstMedia ? [
+                    'url' => $firstMedia->getUrl(),
+                    'thumb' => $firstMedia->getUrl('thumb'),
+                ] : null;
+                return $post;
+            });
 
         // Get featured creators (chefs)
         $featuredCreators = CreatorProfile::with('user')
