@@ -23,6 +23,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             PostCategorySeeder::class,
             VipTierSeeder::class,
+            PostSeeder::class,
         ]);
     }
 }

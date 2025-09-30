@@ -48,6 +48,13 @@ interface Category {
     nav_route?: string;
 }
 
+interface MediaImage {
+    id: number;
+    url: string;
+    thumb: string;
+    medium: string;
+}
+
 interface Post {
     id: number;
     title: string;
@@ -67,6 +74,7 @@ interface Post {
     created_at: string;
     user: User;
     category: Category;
+    image_urls?: MediaImage[];
 }
 
 interface Props {
@@ -433,6 +441,26 @@ const getPostTypeText = (type: string) => {
                     <!-- Post Content -->
                     <Card class="bg-[#374151] border-0 mb-6">
                         <CardContent class="p-6">
+                            <!-- Images Gallery -->
+                            <div v-if="post.image_urls && post.image_urls.length > 0" class="mb-6">
+                                <div :class="post.image_urls.length === 1 ? 'grid grid-cols-1' : 'grid grid-cols-2 gap-3'">
+                                    <a
+                                        v-for="image in post.image_urls"
+                                        :key="image.id"
+                                        :href="image.url"
+                                        target="_blank"
+                                        class="group relative rounded-lg overflow-hidden border border-[#4B5563] hover:border-[#ff6e02] transition-colors"
+                                    >
+                                        <img
+                                            :src="image.medium"
+                                            alt="Post image"
+                                            class="w-full h-auto object-cover group-hover:opacity-90 transition-opacity"
+                                        />
+                                    </a>
+                                </div>
+                            </div>
+
+                            <!-- Text Content -->
                             <div class="prose prose-invert max-w-none">
                                 <div class="text-white leading-relaxed whitespace-pre-line">
                                     {{ post.content }}

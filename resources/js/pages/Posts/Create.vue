@@ -10,6 +10,28 @@ import { Head, useForm } from '@inertiajs/vue3';
 import { PlusCircle, FileText, Image, Video, Tag, Save, Send, X } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 
+// FilePond imports
+import vueFilePond from 'vue-filepond';
+import 'filepond/dist/filepond.min.css';
+import 'filepond-plugin-image-preview/dist/filepond-plugin-image-preview.min.css';
+import '@/../../resources/css/filepond-custom.css';
+
+import FilePondPluginFileValidateType from 'filepond-plugin-file-validate-type';
+import FilePondPluginFileValidateSize from 'filepond-plugin-file-validate-size';
+import FilePondPluginImagePreview from 'filepond-plugin-image-preview';
+import FilePondPluginImageExifOrientation from 'filepond-plugin-image-exif-orientation';
+import FilePondPluginImageResize from 'filepond-plugin-image-resize';
+import FilePondPluginImageTransform from 'filepond-plugin-image-transform';
+
+const FilePond = vueFilePond(
+    FilePondPluginFileValidateType,
+    FilePondPluginFileValidateSize,
+    FilePondPluginImagePreview,
+    FilePondPluginImageExifOrientation,
+    FilePondPluginImageResize,
+    FilePondPluginImageTransform
+);
+
 interface Category {
     id: number;
     name: string;
@@ -30,7 +52,7 @@ const form = useForm({
     post_category_id: '',
     type: 'discussion',
     excerpt: '',
-    images: [] as string[],
+    images: [] as File[],
     videos: [] as string[],
     tags: [] as string[],
     is_premium: false,
@@ -38,8 +60,8 @@ const form = useForm({
 });
 
 const newTag = ref('');
-const imageUrl = ref('');
 const videoUrl = ref('');
+const pond = ref(null);
 
 const postTypes = [
     { value: 'discussion', label: '讨论', icon: '💬', description: '分享想法和观点' },
@@ -68,16 +90,12 @@ function removeTag(index: number) {
     form.tags.splice(index, 1);
 }
 
-function addImage() {
-    const url = imageUrl.value.trim();
-    if (url && !form.images.includes(url)) {
-        form.images.push(url);
-        imageUrl.value = '';
+function handleFilePondUpdate() {
+    if (pond.value) {
+        // @ts-ignore - FilePond types
+        const files = pond.value.getFiles();
+        form.images = files.map((fileItem: any) => fileItem.file);
     }
-}
-
-function removeImage(index: number) {
-    form.images.splice(index, 1);
 }
 
 function addVideo() {
@@ -235,41 +253,37 @@ function publishPost() {
                             <CardContent class="space-y-4">
                                 <!-- Images -->
                                 <div>
-                                    <Label class="text-white">图片</Label>
-                                    <div class="mt-2 flex gap-2">
-                                        <Input
-                                            v-model="imageUrl"
-                                            placeholder="输入图片URL..."
-                                            class="bg-[#1c1c1c] border-[#4B5563] text-white placeholder:text-[#999999]"
-                                            @keyup.enter="addImage"
+                                    <Label class="text-white">图片 (最多4张)</Label>
+                                    <div class="mt-2">
+                                        <FilePond
+                                            ref="pond"
+                                            name="images"
+                                            :allow-multiple="true"
+                                            :max-files="4"
+                                            accepted-file-types="image/jpeg, image/jpg, image/png, image/gif, image/webp"
+                                            :max-file-size="'5MB'"
+                                            label-idle="拖放图片或 <span class='filepond--label-action'>浏览</span>"
+                                            label-file-loading="加载中"
+                                            label-file-processing="上传中"
+                                            label-tap-to-cancel="点击取消"
+                                            label-tap-to-retry="点击重试"
+                                            label-tap-to-undo="点击撤销"
+                                            :image-resize-target-width="1200"
+                                            :image-resize-target-height="900"
+                                            image-resize-mode="contain"
+                                            image-resize-upscale="false"
+                                            :image-transform-output-quality="85"
+                                            :image-transform-output-quality-mode="'always'"
+                                            @updatefiles="handleFilePondUpdate"
+                                            :style-panel-layout="'compact'"
+                                            :style-load-indicator-position="'center bottom'"
+                                            :style-progress-indicator-position="'right bottom'"
+                                            :style-button-remove-item-position="'left bottom'"
+                                            :style-button-process-item-position="'right bottom'"
                                         />
-                                        <Button
-                                            type="button"
-                                            @click="addImage"
-                                            class="bg-[#ff6e02] hover:bg-[#e55a00] text-white"
-                                        >
-                                            <PlusCircle class="h-4 w-4" />
-                                        </Button>
                                     </div>
-                                    <div v-if="form.images.length > 0" class="mt-2 space-y-1">
-                                        <div
-                                            v-for="(image, index) in form.images"
-                                            :key="index"
-                                            class="flex items-center gap-2 p-2 bg-[#1c1c1c] rounded"
-                                        >
-                                            <img :src="image" alt="Preview" class="w-12 h-12 object-cover rounded" />
-                                            <span class="flex-1 text-white text-sm truncate">{{ image }}</span>
-                                            <Button
-                                                type="button"
-                                                size="sm"
-                                                variant="ghost"
-                                                @click="removeImage(index)"
-                                                class="text-red-400 hover:text-red-300 hover:bg-red-900/20"
-                                            >
-                                                <X class="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    </div>
+                                    <p class="text-xs text-[#999999] mt-2">支持 JPG, PNG, GIF, WebP，单张最大5MB。图片将自动优化。</p>
+                                    <InputError :message="form.errors.images" class="mt-1" />
                                 </div>
 
                                 <!-- Videos -->

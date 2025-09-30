@@ -24,6 +24,10 @@ interface Post {
         name: string;
         color?: string;
     };
+    first_image?: {
+        url: string;
+        thumb: string;
+    } | null;
 }
 
 interface Stats {
@@ -176,11 +180,23 @@ function formatDate(dateString: string) {
                                 :key="post.id"
                                 class="border border-[#4B5563] rounded-lg p-6 hover:border-[#6B7280] transition-colors"
                             >
-                                <div class="flex items-start justify-between">
-                                    <div class="flex-1">
+                                <div class="flex items-start justify-between gap-4">
+                                    <!-- Post Image / Icon -->
+                                    <div class="flex-shrink-0">
+                                        <Link :href="`/posts/${post.slug}`">
+                                            <div v-if="post.first_image" class="w-24 h-24 rounded-lg overflow-hidden border border-[#4B5563] hover:border-[#ff6e02] transition-colors">
+                                                <img :src="post.first_image.thumb" :alt="post.title" class="w-full h-full object-cover" />
+                                            </div>
+                                            <div v-else class="w-24 h-24 rounded-lg bg-[#1f2937] border border-[#4B5563] flex items-center justify-center hover:border-[#ff6e02] transition-colors">
+                                                <span class="text-4xl">{{ postTypeIcons[post.type] }}</span>
+                                            </div>
+                                        </Link>
+                                    </div>
+
+                                    <!-- Post Content -->
+                                    <div class="flex-1 min-w-0">
                                         <!-- Post Header -->
-                                        <div class="flex items-center gap-3 mb-3">
-                                            <span class="text-lg">{{ postTypeIcons[post.type] }}</span>
+                                        <div class="flex items-center gap-3 mb-3 flex-wrap">
                                             <Badge class="bg-[#ff6e02]/20 text-[#ff6e02] border-[#ff6e02]/30">
                                                 {{ postTypeLabels[post.type] }}
                                             </Badge>
@@ -199,8 +215,10 @@ function formatDate(dateString: string) {
                                             >
                                                 VIP
                                             </Badge>
-                                            <div class="w-3 h-3 rounded-full bg-[#ff6e02]"></div>
-                                            <span class="text-sm text-[#999999]">{{ post.category.name }}</span>
+                                            <div class="flex items-center gap-2">
+                                                <div class="w-3 h-3 rounded-full bg-[#ff6e02]"></div>
+                                                <span class="text-sm text-[#999999]">{{ post.category.name }}</span>
+                                            </div>
                                         </div>
 
                                         <!-- Post Title and Content -->
@@ -236,7 +254,7 @@ function formatDate(dateString: string) {
                                     </div>
 
                                     <!-- Actions -->
-                                    <div class="flex items-center gap-2 ml-4">
+                                    <div class="flex items-center gap-2 flex-shrink-0">
                                         <Link :href="`/posts/${post.id}/edit`">
                                             <Button variant="ghost" size="sm" class="text-[#999999] hover:text-white hover:bg-[#4B5563]">
                                                 <Edit class="h-4 w-4" />

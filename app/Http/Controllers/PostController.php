@@ -22,9 +22,19 @@ class PostController extends Controller
         $user = Auth::user();
 
         $posts = $user->posts()
-            ->with(['category'])
+            ->with(['category', 'media'])
             ->latest()
             ->paginate(10);
+
+        // Add first image to each post
+        $posts->getCollection()->transform(function ($post) {
+            $firstMedia = $post->getFirstMedia('images');
+            $post->first_image = $firstMedia ? [
+                'url' => $firstMedia->getUrl(),
+                'thumb' => $firstMedia->getUrl('thumb'),
+            ] : null;
+            return $post;
+        });
 
         $stats = [
             'total' => $user->posts()->count(),
@@ -41,10 +51,20 @@ class PostController extends Controller
 
     public function show($slug)
     {
-        $post = Post::with(['user.creatorProfile', 'category', 'likedByUsers'])
+        $post = Post::with(['user.creatorProfile', 'category', 'likedByUsers', 'media'])
             ->where('slug', $slug)
             ->published()
             ->firstOrFail();
+
+        // Get media URLs
+        $post->image_urls = $post->getMedia('images')->map(function ($media) {
+            return [
+                'id' => $media->id,
+                'url' => $media->getUrl(),
+                'thumb' => $media->getUrl('thumb'),
+                'medium' => $media->getUrl('medium'),
+            ];
+        });
 
         // Increment view count
         $post->increment('view_count');
@@ -102,7 +122,7 @@ class PostController extends Controller
             'post_category_id' => 'required|exists:post_categories,id',
             'type' => 'required|in:discussion,tutorial,showcase,question',
             'excerpt' => 'nullable|string|max:500',
-            'images' => 'nullable|array',
+            'images.*' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:5120',
             'videos' => 'nullable|array',
             'tags' => 'nullable|array',
             'is_premium' => 'boolean',
@@ -117,7 +137,6 @@ class PostController extends Controller
         $post->excerpt = $request->excerpt;
         $post->post_category_id = $request->post_category_id;
         $post->type = $request->type;
-        $post->images = $request->images ?? [];
         $post->videos = $request->videos ?? [];
         $post->tags = $request->tags ?? [];
         $post->is_premium = $request->boolean('is_premium');
@@ -128,6 +147,18 @@ class PostController extends Controller
         }
 
         $post->save();
+
+        // Handle image uploads with Media Library
+        if ($request->hasFile('images')) {
+            $files = $request->file('images');
+            // Limit to 4 images
+            $files = array_slice($files, 0, 4);
+
+            foreach ($files as $file) {
+                $post->addMedia($file)
+                    ->toMediaCollection('images');
+            }
+        }
 
         return redirect()->route('posts.show', $post->slug)
             ->with('success', 'Post created successfully!');
@@ -154,7 +185,8 @@ class PostController extends Controller
             'post_category_id' => 'required|exists:post_categories,id',
             'type' => 'required|in:discussion,tutorial,showcase,question',
             'excerpt' => 'nullable|string|max:500',
-            'images' => 'nullable|array',
+            'images.*' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:5120',
+            'remove_images' => 'nullable|array',
             'videos' => 'nullable|array',
             'tags' => 'nullable|array',
             'is_premium' => 'boolean',
@@ -167,7 +199,6 @@ class PostController extends Controller
         $post->excerpt = $request->excerpt;
         $post->post_category_id = $request->post_category_id;
         $post->type = $request->type;
-        $post->images = $request->images ?? [];
         $post->videos = $request->videos ?? [];
         $post->tags = $request->tags ?? [];
         $post->is_premium = $request->boolean('is_premium');
@@ -178,6 +209,25 @@ class PostController extends Controller
         }
 
         $post->save();
+
+        // Handle image removals
+        if ($request->has('remove_images')) {
+            foreach ($request->remove_images as $mediaId) {
+                $post->deleteMedia($mediaId);
+            }
+        }
+
+        // Handle new image uploads
+        if ($request->hasFile('images')) {
+            $currentCount = $post->getMedia('images')->count();
+            $remainingSlots = 4 - $currentCount;
+            $files = array_slice($request->file('images'), 0, $remainingSlots);
+
+            foreach ($files as $file) {
+                $post->addMedia($file)
+                    ->toMediaCollection('images');
+            }
+        }
 
         return redirect()->route('posts.show', $post->slug)
             ->with('success', 'Post updated successfully!');

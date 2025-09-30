@@ -8,6 +8,7 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Http;
 
 class PostSeeder extends Seeder
 {
@@ -316,9 +317,25 @@ class PostSeeder extends Seeder
                     'tags' => $postData['tags'],
                     'published_at' => Carbon::now()->subDays(rand(1, 30)),
                 ]);
+
+                // Add random food images (1-4 per post)
+                $imageCount = rand(1, 4);
+                for ($i = 0; $i < $imageCount; $i++) {
+                    try {
+                        // Use Lorem Picsum for random food/cooking images
+                        $width = rand(600, 800);
+                        $height = rand(400, 600);
+                        $imageUrl = "https://picsum.photos/{$width}/{$height}?random=" . uniqid();
+
+                        $post->addMediaFromUrl($imageUrl)
+                            ->toMediaCollection('images');
+                    } catch (\Exception $e) {
+                        $this->command->warn("Failed to download image for post: {$post->title}");
+                    }
+                }
             }
         }
 
-        $this->command->info('Posts seeded successfully!');
+        $this->command->info('Posts seeded successfully with images!');
     }
 }
