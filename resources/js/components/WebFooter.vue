@@ -41,7 +41,7 @@ import { Link } from '@inertiajs/vue3';
                 </div>
             </div>
             <div class="border-t border-[#374151] mt-6 pt-4 text-center text-sm text-[#999999]">
-                <p>&copy; 2024 华厨社区. 版权所有</p>
+                <p>&copy; 2024 {{ $page.props.name }}. 版权所有</p>
             </div>
         </div>
     </footer>

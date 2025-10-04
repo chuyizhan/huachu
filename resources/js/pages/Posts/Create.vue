@@ -138,7 +138,7 @@ function publishPost() {
                 <!-- Header -->
                 <div class="mb-8">
                     <h1 class="text-3xl font-bold text-white mb-2">创建新帖子</h1>
-                    <p class="text-[#999999]">分享你的想法、经验或问题给华厨社区</p>
+                    <p class="text-[#999999]">分享你的想法、经验或问题给{{ $page.props.name }}</p>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">

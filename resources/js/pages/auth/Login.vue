@@ -21,7 +21,7 @@ defineProps<{
 <template>
     <WebAuthLayout
         title="登录账户"
-        description="输入邮箱和密码登录华厨社区"
+        :description="`输入邮箱和密码登录${$page.props.name}`"
     >
         <Head title="登录" />
 
