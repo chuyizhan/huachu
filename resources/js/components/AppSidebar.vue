@@ -14,14 +14,52 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid } from 'lucide-vue-next';
+import { BookOpen, Folder, LayoutGrid, Users, MessageSquare, Crown, Trophy, PlusCircle } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
-        href: dashboard(),
+        title: '首页',
+        href: '/',
         icon: LayoutGrid,
+    },
+    {
+        title: '社区',
+        href: '/community',
+        icon: Users,
+    },
+    {
+        title: '菜谱',
+        href: '/community/posts',
+        icon: MessageSquare,
+    },
+    {
+        title: '大厨',
+        href: '/community/creators',
+        icon: Users,
+    },
+    {
+        title: '排行榜',
+        href: '/community/leaderboard',
+        icon: Trophy,
+    },
+];
+
+const creatorNavItems: NavItem[] = [
+    {
+        title: '发布菜谱',
+        href: '/posts/create',
+        icon: PlusCircle,
+    },
+    {
+        title: '我的菜谱',
+        href: '/posts',
+        icon: MessageSquare,
+    },
+    {
+        title: 'VIP会员',
+        href: '/vip',
+        icon: Crown,
     },
 ];
 
@@ -55,6 +93,7 @@ const footerNavItems: NavItem[] = [
 
         <SidebarContent>
             <NavMain :items="mainNavItems" />
+            <NavMain :items="creatorNavItems" />
         </SidebarContent>
 
         <SidebarFooter>

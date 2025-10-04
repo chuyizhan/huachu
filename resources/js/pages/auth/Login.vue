@@ -6,11 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import AuthBase from '@/layouts/AuthLayout.vue';
+import WebAuthLayout from '@/layouts/WebAuthLayout.vue';
 import { register } from '@/routes';
 import { request } from '@/routes/password';
-import { Form, Head } from '@inertiajs/vue3';
-import { LoaderCircle } from 'lucide-vue-next';
+import { Form, Head, Link } from '@inertiajs/vue3';
+import { LoaderCircle, User, Lock } from 'lucide-vue-next';
 
 defineProps<{
     status?: string;
@@ -19,15 +19,15 @@ defineProps<{
 </script>
 
 <template>
-    <AuthBase
-        title="Log in to your account"
-        description="Enter your email and password below to log in"
+    <WebAuthLayout
+        title="登录账户"
+        description="输入邮箱和密码登录华厨社区"
     >
-        <Head title="Log in" />
+        <Head title="登录" />
 
         <div
             v-if="status"
-            class="mb-4 text-center text-sm font-medium text-green-600"
+            class="mb-4 text-center text-sm font-medium text-green-500"
         >
             {{ status }}
         </div>
@@ -36,74 +36,89 @@ defineProps<{
             v-bind="AuthenticatedSessionController.store.form()"
             :reset-on-success="['password']"
             v-slot="{ errors, processing }"
-            class="flex flex-col gap-6"
+            class="space-y-4"
         >
-            <div class="grid gap-6">
-                <div class="grid gap-2">
-                    <Label for="email">Email address</Label>
-                    <Input
-                        id="email"
-                        type="email"
-                        name="email"
-                        required
-                        autofocus
-                        :tabindex="1"
-                        autocomplete="email"
-                        placeholder="email@example.com"
-                    />
+            <div class="space-y-4">
+                <div class="space-y-2">
+                    <Label for="email" class="text-white text-sm font-medium">邮箱地址</Label>
+                    <div class="relative">
+                        <User class="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#999999] w-4 h-4" />
+                        <Input
+                            id="email"
+                            type="email"
+                            name="email"
+                            required
+                            autofocus
+                            :tabindex="1"
+                            autocomplete="email"
+                            placeholder="请输入邮箱地址"
+                            class="pl-10 bg-[#1f2937] border-[#1f2937] text-white placeholder:text-[#999999] focus:border-[#ff6e02] focus:ring-[#ff6e02]"
+                        />
+                    </div>
                     <InputError :message="errors.email" />
                 </div>
 
-                <div class="grid gap-2">
+                <div class="space-y-2">
                     <div class="flex items-center justify-between">
-                        <Label for="password">Password</Label>
-                        <TextLink
+                        <Label for="password" class="text-white text-sm font-medium">密码</Label>
+                        <Link
                             v-if="canResetPassword"
                             :href="request()"
-                            class="text-sm"
+                            class="text-sm text-[#ff6e02] hover:text-[#e55a00] transition-colors"
                             :tabindex="5"
                         >
-                            Forgot password?
-                        </TextLink>
+                            忘记密码？
+                        </Link>
                     </div>
-                    <Input
-                        id="password"
-                        type="password"
-                        name="password"
-                        required
-                        :tabindex="2"
-                        autocomplete="current-password"
-                        placeholder="Password"
-                    />
+                    <div class="relative">
+                        <Lock class="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#999999] w-4 h-4" />
+                        <Input
+                            id="password"
+                            type="password"
+                            name="password"
+                            required
+                            :tabindex="2"
+                            autocomplete="current-password"
+                            placeholder="请输入密码"
+                            class="pl-10 bg-[#1f2937] border-[#1f2937] text-white placeholder:text-[#999999] focus:border-[#ff6e02] focus:ring-[#ff6e02]"
+                        />
+                    </div>
                     <InputError :message="errors.password" />
                 </div>
 
                 <div class="flex items-center justify-between">
-                    <Label for="remember" class="flex items-center space-x-3">
-                        <Checkbox id="remember" name="remember" :tabindex="3" />
-                        <span>Remember me</span>
+                    <Label for="remember" class="flex items-center space-x-2 text-sm text-white cursor-pointer">
+                        <Checkbox
+                            id="remember"
+                            name="remember"
+                            :tabindex="3"
+                            class="border-[#999999] data-[state=checked]:bg-[#ff6e02] data-[state=checked]:border-[#ff6e02]"
+                        />
+                        <span>记住我</span>
                     </Label>
                 </div>
 
                 <Button
                     type="submit"
-                    class="mt-4 w-full"
+                    class="w-full bg-[#ff6e02] text-white hover:bg-[#e55a00] transition-colors font-medium py-2.5"
                     :tabindex="4"
                     :disabled="processing"
                     data-test="login-button"
                 >
                     <LoaderCircle
                         v-if="processing"
-                        class="h-4 w-4 animate-spin"
+                        class="h-4 w-4 animate-spin mr-2"
                     />
-                    Log in
+                    登录
                 </Button>
             </div>
 
-            <div class="text-center text-sm text-muted-foreground">
-                Don't have an account?
-                <TextLink :href="register()" :tabindex="5">Sign up</TextLink>
+            <div class="text-center text-sm text-[#999999] pt-4 border-t border-[#1f2937]">
+                还没有账户？
+                <Link :href="register()" class="text-[#ff6e02] hover:text-[#e55a00] transition-colors font-medium" :tabindex="5">
+                    立即注册
+                </Link>
             </div>
         </Form>
-    </AuthBase>
+    </WebAuthLayout>
 </template>

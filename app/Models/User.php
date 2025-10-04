@@ -46,4 +46,83 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Get the creator profile associated with the user.
+     */
+    public function creatorProfile()
+    {
+        return $this->hasOne(CreatorProfile::class);
+    }
+
+    /**
+     * Get the user's points record.
+     */
+    public function points()
+    {
+        return $this->hasOne(UserPoints::class);
+    }
+
+    /**
+     * Get all posts created by this user.
+     */
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
+
+    /**
+     * Get all favorites by this user.
+     */
+    public function favorites()
+    {
+        return $this->hasMany(Favorite::class);
+    }
+
+    /**
+     * Get all achievements earned by this user.
+     */
+    public function achievements()
+    {
+        return $this->belongsToMany(Achievement::class, 'user_achievements')->withTimestamps()->withPivot('earned_at');
+    }
+
+    /**
+     * Get all posts liked by this user.
+     */
+    public function likedPosts()
+    {
+        return $this->belongsToMany(Post::class, 'post_likes')->withTimestamps();
+    }
+
+    /**
+     * Get all subscriptions by this user.
+     */
+    public function subscriptions()
+    {
+        return $this->hasMany(UserSubscription::class, 'subscriber_id');
+    }
+
+    /**
+     * Get all creators this user is following.
+     */
+    public function following()
+    {
+        return $this->hasMany(Follow::class, 'follower_id');
+    }
+
+    /**
+     * Get all users following this user's creator profile.
+     */
+    public function followers()
+    {
+        return $this->hasManyThrough(
+            Follow::class,
+            CreatorProfile::class,
+            'user_id', // Foreign key on creator_profiles table
+            'creator_id', // Foreign key on follows table
+            'id', // Local key on users table
+            'id' // Local key on creator_profiles table
+        );
+    }
 }

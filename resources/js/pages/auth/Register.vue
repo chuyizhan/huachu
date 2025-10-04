@@ -5,107 +5,125 @@ import TextLink from '@/components/TextLink.vue';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import AuthBase from '@/layouts/AuthLayout.vue';
+import WebAuthLayout from '@/layouts/WebAuthLayout.vue';
 import { login } from '@/routes';
-import { Form, Head } from '@inertiajs/vue3';
-import { LoaderCircle } from 'lucide-vue-next';
+import { Form, Head, Link } from '@inertiajs/vue3';
+import { LoaderCircle, User, Mail, Lock, UserPlus } from 'lucide-vue-next';
 </script>
 
 <template>
-    <AuthBase
-        title="Create an account"
-        description="Enter your details below to create your account"
+    <WebAuthLayout
+        title="注册账户"
+        description="填写信息加入华厨社区"
     >
-        <Head title="Register" />
+        <Head title="注册" />
 
         <Form
             v-bind="RegisteredUserController.store.form()"
             :reset-on-success="['password', 'password_confirmation']"
             v-slot="{ errors, processing }"
-            class="flex flex-col gap-6"
+            class="space-y-4"
         >
-            <div class="grid gap-6">
-                <div class="grid gap-2">
-                    <Label for="name">Name</Label>
-                    <Input
-                        id="name"
-                        type="text"
-                        required
-                        autofocus
-                        :tabindex="1"
-                        autocomplete="name"
-                        name="name"
-                        placeholder="Full name"
-                    />
+            <div class="space-y-4">
+                <div class="space-y-2">
+                    <Label for="name" class="text-white text-sm font-medium">姓名</Label>
+                    <div class="relative">
+                        <User class="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#999999] w-4 h-4" />
+                        <Input
+                            id="name"
+                            type="text"
+                            required
+                            autofocus
+                            :tabindex="1"
+                            autocomplete="name"
+                            name="name"
+                            placeholder="请输入您的姓名"
+                            class="pl-10 bg-[#1f2937] border-[#1f2937] text-white placeholder:text-[#999999] focus:border-[#ff6e02] focus:ring-[#ff6e02]"
+                        />
+                    </div>
                     <InputError :message="errors.name" />
                 </div>
 
-                <div class="grid gap-2">
-                    <Label for="email">Email address</Label>
-                    <Input
-                        id="email"
-                        type="email"
-                        required
-                        :tabindex="2"
-                        autocomplete="email"
-                        name="email"
-                        placeholder="email@example.com"
-                    />
+                <div class="space-y-2">
+                    <Label for="email" class="text-white text-sm font-medium">邮箱地址</Label>
+                    <div class="relative">
+                        <Mail class="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#999999] w-4 h-4" />
+                        <Input
+                            id="email"
+                            type="email"
+                            required
+                            :tabindex="2"
+                            autocomplete="email"
+                            name="email"
+                            placeholder="请输入邮箱地址"
+                            class="pl-10 bg-[#1f2937] border-[#1f2937] text-white placeholder:text-[#999999] focus:border-[#ff6e02] focus:ring-[#ff6e02]"
+                        />
+                    </div>
                     <InputError :message="errors.email" />
                 </div>
 
-                <div class="grid gap-2">
-                    <Label for="password">Password</Label>
-                    <Input
-                        id="password"
-                        type="password"
-                        required
-                        :tabindex="3"
-                        autocomplete="new-password"
-                        name="password"
-                        placeholder="Password"
-                    />
+                <div class="space-y-2">
+                    <Label for="password" class="text-white text-sm font-medium">密码</Label>
+                    <div class="relative">
+                        <Lock class="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#999999] w-4 h-4" />
+                        <Input
+                            id="password"
+                            type="password"
+                            required
+                            :tabindex="3"
+                            autocomplete="new-password"
+                            name="password"
+                            placeholder="请设置密码"
+                            class="pl-10 bg-[#1f2937] border-[#1f2937] text-white placeholder:text-[#999999] focus:border-[#ff6e02] focus:ring-[#ff6e02]"
+                        />
+                    </div>
                     <InputError :message="errors.password" />
                 </div>
 
-                <div class="grid gap-2">
-                    <Label for="password_confirmation">Confirm password</Label>
-                    <Input
-                        id="password_confirmation"
-                        type="password"
-                        required
-                        :tabindex="4"
-                        autocomplete="new-password"
-                        name="password_confirmation"
-                        placeholder="Confirm password"
-                    />
+                <div class="space-y-2">
+                    <Label for="password_confirmation" class="text-white text-sm font-medium">确认密码</Label>
+                    <div class="relative">
+                        <Lock class="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#999999] w-4 h-4" />
+                        <Input
+                            id="password_confirmation"
+                            type="password"
+                            required
+                            :tabindex="4"
+                            autocomplete="new-password"
+                            name="password_confirmation"
+                            placeholder="请再次输入密码"
+                            class="pl-10 bg-[#1f2937] border-[#1f2937] text-white placeholder:text-[#999999] focus:border-[#ff6e02] focus:ring-[#ff6e02]"
+                        />
+                    </div>
                     <InputError :message="errors.password_confirmation" />
                 </div>
 
                 <Button
                     type="submit"
-                    class="mt-2 w-full"
+                    class="w-full bg-[#ff6e02] text-white hover:bg-[#e55a00] transition-colors font-medium py-2.5"
                     tabindex="5"
                     :disabled="processing"
                     data-test="register-user-button"
                 >
                     <LoaderCircle
                         v-if="processing"
-                        class="h-4 w-4 animate-spin"
+                        class="h-4 w-4 animate-spin mr-2"
                     />
-                    Create account
+                    <UserPlus v-else class="w-4 h-4 mr-2" />
+                    创建账户
                 </Button>
             </div>
 
-            <div class="text-center text-sm text-muted-foreground">
-                Already have an account?
-                <TextLink
+            <div class="text-center text-sm text-[#999999] pt-4 border-t border-[#1f2937]">
+                已有账户？
+                <Link
                     :href="login()"
-                    class="underline underline-offset-4"
+                    class="text-[#ff6e02] hover:text-[#e55a00] transition-colors font-medium"
                     :tabindex="6"
-                    >Log in</TextLink
                 >
+                    立即登录
+                </Link>
             </div>
         </Form>
-    </AuthBase>
+    </WebAuthLayout>
 </template>

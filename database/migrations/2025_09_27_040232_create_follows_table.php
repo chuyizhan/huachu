@@ -1,0 +1,36 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::create('follows', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('follower_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('creator_id')->constrained('creator_profiles')->onDelete('cascade');
+            $table->timestamps();
+
+            // Ensure a user can only follow a creator once
+            $table->unique(['follower_id', 'creator_id']);
+
+            // Add indexes for performance
+            $table->index(['follower_id']);
+            $table->index(['creator_id']);
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::dropIfExists('follows');
+    }
+};
