@@ -19,7 +19,6 @@ return new class extends Migration
             $table->decimal('monthly_price', 10, 2);
             $table->decimal('yearly_price', 10, 2)->nullable();
             $table->json('features'); // Array of features
-            $table->integer('max_premium_posts')->nullable(); // null = unlimited
             $table->boolean('can_create_premium_content')->default(false);
             $table->boolean('priority_support')->default(false);
             $table->string('badge_color', 7)->default('#fbbf24');
