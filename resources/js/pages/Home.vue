@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Link } from '@inertiajs/vue3';
+import { Link, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
 import {
     ChefHat,
     Users,
@@ -103,6 +104,9 @@ interface Props {
 
 defineProps<Props>();
 
+const page = usePage();
+const appName = computed(() => page.props.name as string);
+
 const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
 };
@@ -143,7 +147,7 @@ const features = [
 
                     <h1 class="text-3xl sm:text-4xl font-bold mb-6 leading-tight text-white">
                         欢迎来到<br>
-                        <span class="text-[#ff6e02]">华厨社区</span>
+                        <span class="text-[#ff6e02]">{{ appName }}</span>
                     </h1>
 
                     <p class="text-lg mb-8 text-[#999999] max-w-2xl mx-auto leading-relaxed">

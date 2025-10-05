@@ -15,7 +15,7 @@ defineProps<{
                 <Link href="/" class="inline-block">
                     <div class="flex items-center justify-center gap-3 mb-4">
                         <div class="text-4xl">👨‍🍳</div>
-                        <span class="text-2xl font-bold text-[#ff6e02]">华厨社区</span>
+                        <span class="text-2xl font-bold text-[#ff6e02]">{{ $page.props.name }}</span>
                     </div>
                 </Link>
                 <div v-if="title || description" class="space-y-2">
@@ -31,7 +31,7 @@ defineProps<{
 
             <!-- Footer -->
             <div class="mt-6 text-center text-xs text-[#999999]">
-                <p>&copy; 2024 华厨社区. 版权所有</p>
+                <p>&copy; 2024 {{ $page.props.name }}. 版权所有</p>
             </div>
         </div>
     </div>

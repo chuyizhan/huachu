@@ -43,7 +43,7 @@ const user = computed(() => auth.value?.user);
             <div class="flex lg:flex-1">
                 <Link href="/" class="flex items-center gap-3 -m-1.5 p-1.5">
                     <div class="text-2xl">👨‍🍳</div>
-                    <span class="text-xl font-bold text-[#ff6e02]">华厨社区</span>
+                    <span class="text-xl font-bold text-[#ff6e02]">{{ $page.props.name }}</span>
                 </Link>
             </div>
 
@@ -130,7 +130,7 @@ const user = computed(() => auth.value?.user);
                 <div class="flex items-center justify-between">
                     <Link href="/" class="flex items-center gap-3 -m-1.5 p-1.5">
                         <div class="text-2xl">👨‍🍳</div>
-                        <span class="text-xl font-bold text-[#ff6e02]">华厨社区</span>
+                        <span class="text-xl font-bold text-[#ff6e02]">{{ $page.props.name }}</span>
                     </Link>
                     <button
                         type="button"

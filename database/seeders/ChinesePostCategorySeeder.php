@@ -13,7 +13,9 @@ class ChinesePostCategorySeeder extends Seeder
     public function run(): void
     {
         // Clear existing categories
+        \DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         PostCategory::truncate();
+        \DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         $categories = [
             [

@@ -14,7 +14,7 @@ import { LoaderCircle, User, Mail, Lock, UserPlus } from 'lucide-vue-next';
 <template>
     <WebAuthLayout
         title="注册账户"
-        description="填写信息加入华厨社区"
+        :description="`填写信息加入${$page.props.name}`"
     >
         <Head title="注册" />
 
