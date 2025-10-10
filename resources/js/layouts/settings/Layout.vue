@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import Heading from '@/components/Heading.vue';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { toUrl, urlIsActive } from '@/lib/utils';
@@ -12,19 +11,19 @@ import { Link } from '@inertiajs/vue3';
 
 const sidebarNavItems: NavItem[] = [
     {
-        title: 'Profile',
+        title: '个人资料',
         href: editProfile(),
     },
     {
-        title: 'Password',
+        title: '密码',
         href: editPassword(),
     },
     {
-        title: 'Two-Factor Auth',
+        title: '双因素认证',
         href: show(),
     },
     {
-        title: 'Appearance',
+        title: '外观',
         href: editAppearance(),
     },
 ];
@@ -33,39 +32,43 @@ const currentPath = typeof window !== undefined ? window.location.pathname : '';
 </script>
 
 <template>
-    <div class="px-4 py-6">
-        <Heading
-            title="Settings"
-            description="Manage your profile and account settings"
-        />
+    <div class="min-h-screen py-8">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold text-white mb-2">设置</h1>
+                <p class="text-[#999999]">管理你的个人资料和账户设置</p>
+            </div>
 
-        <div class="flex flex-col lg:flex-row lg:space-x-12">
-            <aside class="w-full max-w-xl lg:w-48">
-                <nav class="flex flex-col space-y-1 space-x-0">
-                    <Button
-                        v-for="item in sidebarNavItems"
-                        :key="toUrl(item.href)"
-                        variant="ghost"
-                        :class="[
-                            'w-full justify-start',
-                            { 'bg-muted': urlIsActive(item.href, currentPath) },
-                        ]"
-                        as-child
-                    >
-                        <Link :href="item.href">
-                            <component :is="item.icon" class="h-4 w-4" />
-                            {{ item.title }}
-                        </Link>
-                    </Button>
-                </nav>
-            </aside>
+            <div class="flex flex-col lg:flex-row lg:space-x-8">
+                <aside class="w-full lg:w-64 mb-6 lg:mb-0">
+                    <nav class="flex flex-col space-y-2">
+                        <Button
+                            v-for="item in sidebarNavItems"
+                            :key="toUrl(item.href)"
+                            variant="ghost"
+                            :class="[
+                                'w-full justify-start text-left',
+                                urlIsActive(item.href, currentPath)
+                                    ? 'bg-[#ff6e02] text-white hover:bg-[#e55a00]'
+                                    : 'text-[#999999] hover:bg-[#374151] hover:text-white',
+                            ]"
+                            as-child
+                        >
+                            <Link :href="item.href">
+                                <component :is="item.icon" class="h-4 w-4 mr-2" />
+                                {{ item.title }}
+                            </Link>
+                        </Button>
+                    </nav>
+                </aside>
 
-            <Separator class="my-6 lg:hidden" />
+                <Separator class="my-6 lg:hidden bg-[#4B5563]" />
 
-            <div class="flex-1 md:max-w-2xl">
-                <section class="max-w-xl space-y-12">
-                    <slot />
-                </section>
+                <div class="flex-1 max-w-3xl">
+                    <section class="space-y-6">
+                        <slot />
+                    </section>
+                </div>
             </div>
         </div>
     </div>

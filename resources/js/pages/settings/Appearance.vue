@@ -2,33 +2,26 @@
 import { Head } from '@inertiajs/vue3';
 
 import AppearanceTabs from '@/components/AppearanceTabs.vue';
-import HeadingSmall from '@/components/HeadingSmall.vue';
-import { type BreadcrumbItem } from '@/types';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-import AppLayout from '@/layouts/AppLayout.vue';
+import WebLayout from '@/layouts/WebLayout.vue';
 import SettingsLayout from '@/layouts/settings/Layout.vue';
-import { edit } from '@/routes/appearance';
-
-const breadcrumbItems: BreadcrumbItem[] = [
-    {
-        title: 'Appearance settings',
-        href: edit().url,
-    },
-];
 </script>
 
 <template>
-    <AppLayout :breadcrumbs="breadcrumbItems">
-        <Head title="Appearance settings" />
+    <WebLayout>
+        <Head title="外观设置" />
 
         <SettingsLayout>
-            <div class="space-y-6">
-                <HeadingSmall
-                    title="Appearance settings"
-                    description="Update your account's appearance settings"
-                />
-                <AppearanceTabs />
-            </div>
+            <Card class="bg-[#374151] border-[#4B5563]">
+                <CardHeader>
+                    <CardTitle class="text-white">外观设置</CardTitle>
+                    <CardDescription class="text-[#999999]">更新你的账户外观设置</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <AppearanceTabs />
+                </CardContent>
+            </Card>
         </SettingsLayout>
-    </AppLayout>
+    </WebLayout>
 </template>

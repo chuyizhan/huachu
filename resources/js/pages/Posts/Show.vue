@@ -4,8 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Link, usePage } from '@inertiajs/vue3';
+import { Link, usePage, router } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
+import axios from 'axios';
 import {
     Heart,
     Eye,
@@ -118,100 +119,67 @@ const userCreditsRef = ref(props.userCredits);
 // Check if user is authenticated
 const isAuthenticated = computed(() => page.props.auth?.user);
 
-// Toggle like function
+// Toggle like function using Axios (handles CSRF automatically)
 const toggleLike = async () => {
     if (!isAuthenticated.value) {
-        // Redirect to login or show login modal
-        window.location.href = '/login';
+        router.visit('/login');
         return;
     }
 
-    if (isLiking.value) return; // Prevent multiple clicks
+    if (isLiking.value) return;
 
     isLiking.value = true;
 
     try {
-        // Get CSRF token from meta tag
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        const response = await axios.post(`/posts/${props.post.id}/like`);
 
-        const response = await fetch(`/posts/${props.post.id}/like`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': csrfToken || '',
-            },
-            credentials: 'same-origin',
-        });
-
-        const data = await response.json();
-
-        if (response.ok && data.success) {
-            isLiked.value = data.liked;
-            likeCount.value = data.like_count;
+        if (response.data.success) {
+            isLiked.value = response.data.liked;
+            likeCount.value = response.data.like_count;
         } else {
-            console.error('Failed to toggle like:', data.message);
-            // Show user-friendly error message
-            alert(data.message || 'Failed to process like. Please try again.');
+            console.error('Failed to toggle like:', response.data.message);
+            alert(response.data.message || '操作失败，请重试');
         }
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error toggling like:', error);
-        alert('Network error. Please check your connection and try again.');
+        alert(error.response?.data?.message || '网络错误，请重试');
     } finally {
         isLiking.value = false;
     }
 };
 
-// Toggle favorite function
+// Toggle favorite function using Axios
 const toggleFavorite = async () => {
     if (!isAuthenticated.value) {
-        // Redirect to login or show login modal
-        window.location.href = '/login';
+        router.visit('/login');
         return;
     }
 
-    if (isFavoriting.value) return; // Prevent multiple clicks
+    if (isFavoriting.value) return;
 
     isFavoriting.value = true;
 
     try {
-        // Get CSRF token from meta tag
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        const response = await axios.post(`/posts/${props.post.id}/favorite`);
 
-        const response = await fetch(`/posts/${props.post.id}/favorite`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': csrfToken || '',
-            },
-            credentials: 'same-origin',
-        });
-
-        const data = await response.json();
-
-        if (response.ok && data.success) {
-            isFavorited.value = data.favorited;
+        if (response.data.success) {
+            isFavorited.value = response.data.favorited;
         } else {
-            console.error('Failed to toggle favorite:', data.message);
-            // Show user-friendly error message
-            alert(data.message || '收藏操作失败，请重试');
+            console.error('Failed to toggle favorite:', response.data.message);
+            alert(response.data.message || '收藏操作失败，请重试');
         }
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error toggling favorite:', error);
-        alert('网络错误，请检查网络连接后重试');
+        alert(error.response?.data?.message || '网络错误，请重试');
     } finally {
         isFavoriting.value = false;
     }
 };
 
-// Toggle follow function
+// Toggle follow function using Axios
 const toggleFollow = async () => {
     if (!isAuthenticated.value) {
-        // Redirect to login or show login modal
-        window.location.href = '/login';
+        router.visit('/login');
         return;
     }
 
@@ -220,38 +188,23 @@ const toggleFollow = async () => {
         return;
     }
 
-    if (isFollowing.value) return; // Prevent multiple clicks
+    if (isFollowing.value) return;
 
     isFollowing.value = true;
 
     try {
-        // Get CSRF token from meta tag
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        const response = await axios.post(`/creators/${props.post.user.creator_profile.id}/follow`);
 
-        const response = await fetch(`/creators/${props.post.user.creator_profile.id}/follow`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': csrfToken || '',
-            },
-            credentials: 'same-origin',
-        });
-
-        const data = await response.json();
-
-        if (response.ok && data.success) {
-            isFollowingCreator.value = data.following;
-            followerCount.value = data.followers_count;
+        if (response.data.success) {
+            isFollowingCreator.value = response.data.following;
+            followerCount.value = response.data.followers_count;
         } else {
-            console.error('Failed to toggle follow:', data.message);
-            // Show user-friendly error message
-            alert(data.message || '关注操作失败，请重试');
+            console.error('Failed to toggle follow:', response.data.message);
+            alert(response.data.message || '关注操作失败，请重试');
         }
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error toggling follow:', error);
-        alert('网络错误，请检查网络连接后重试');
+        alert(error.response?.data?.message || '网络错误，请重试');
     } finally {
         isFollowing.value = false;
     }
@@ -261,10 +214,10 @@ const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
 };
 
-// Purchase post function
+// Purchase post function using Axios
 const purchasePost = async () => {
     if (!isAuthenticated.value) {
-        window.location.href = '/login';
+        router.visit('/login');
         return;
     }
 
@@ -274,32 +227,20 @@ const purchasePost = async () => {
         isPurchasing.value = true;
 
         try {
-            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            const response = await axios.post(`/posts/${props.post.id}/purchase`);
 
-            const response = await fetch(`/posts/${props.post.id}/purchase`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken || '',
-                },
-                credentials: 'same-origin',
-            });
-
-            const data = await response.json();
-
-            if (response.ok && data.success) {
+            if (response.data.success) {
                 canView.value = true;
-                userCreditsRef.value = data.remaining_credits;
-                alert(data.message);
+                userCreditsRef.value = response.data.remaining_credits;
+                alert(response.data.message);
                 // Reload page to show full content
-                window.location.reload();
+                router.reload();
             } else {
-                alert(data.message || '购买失败');
+                alert(response.data.message || '购买失败');
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Purchase error:', error);
-            alert('网络错误，请重试');
+            alert(error.response?.data?.message || '网络错误，请重试');
         } finally {
             isPurchasing.value = false;
         }
