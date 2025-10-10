@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import InputError from '@/components/InputError.vue';
-import { Head, useForm } from '@inertiajs/vue3';
+import { Head, useForm, usePage } from '@inertiajs/vue3';
 import { PlusCircle, FileText, Image, Video, Tag, Save, Send, X } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
 
@@ -45,6 +45,11 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+const page = usePage();
+
+const isCreator = computed(() => {
+    return page.props.auth?.user?.is_creator || false;
+});
 
 const form = useForm({
     title: '',
@@ -56,6 +61,8 @@ const form = useForm({
     videos: [] as string[],
     tags: [] as string[],
     is_premium: false,
+    price: null as number | null,
+    free_after: null as string | null,
     status: 'draft'
 });
 
@@ -393,6 +400,40 @@ function publishPost() {
                                         />
                                         <div class="w-11 h-6 bg-[#4B5563] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#ff6e02] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#ff6e02]"></div>
                                     </label>
+                                </div>
+
+                                <!-- Paid Content (Creators Only) -->
+                                <div v-if="isCreator" class="space-y-4 pt-4 border-t border-[#4B5563]">
+                                    <div>
+                                        <Label for="price" class="text-white flex items-center gap-2">
+                                            💰 内容定价
+                                        </Label>
+                                        <p class="text-xs text-[#999999] mb-2">设置用户需要支付的积分数量才能查看此帖子</p>
+                                        <Input
+                                            id="price"
+                                            v-model.number="form.price"
+                                            type="number"
+                                            min="0"
+                                            step="0.01"
+                                            placeholder="0 = 免费"
+                                            class="bg-[#1c1c1c] border-[#4B5563] text-white placeholder:text-[#999999]"
+                                        />
+                                        <p class="text-xs text-[#999999] mt-1">留空或输入0表示免费</p>
+                                    </div>
+
+                                    <div v-if="form.price && form.price > 0">
+                                        <Label for="free_after" class="text-white flex items-center gap-2">
+                                            ⏰ 免费开放时间
+                                        </Label>
+                                        <p class="text-xs text-[#999999] mb-2">设置该日期后此内容将自动变为免费</p>
+                                        <Input
+                                            id="free_after"
+                                            v-model="form.free_after"
+                                            type="datetime-local"
+                                            class="bg-[#1c1c1c] border-[#4B5563] text-white"
+                                        />
+                                        <p class="text-xs text-[#999999] mt-1">可选：留空表示永久收费</p>
+                                    </div>
                                 </div>
 
                                 <!-- Action Buttons -->

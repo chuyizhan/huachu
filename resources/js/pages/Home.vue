@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import WebLayout from '@/layouts/WebLayout.vue';
+import HeroCarousel from '@/components/HeroCarousel.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -137,64 +138,10 @@ const features = [
 
 <template>
     <WebLayout>
-        <!-- Hero Section -->
+        <!-- Hero Section with Carousel -->
         <section class="relative overflow-hidden bg-[#1c1c1c]">
             <div class="max-w-[1000px] mx-auto px-4 py-12">
-                <div class="text-center">
-                    <div class="flex justify-center mb-6">
-                        <div class="text-6xl">👨‍🍳</div>
-                    </div>
-
-                    <h1 class="text-3xl sm:text-4xl font-bold mb-6 leading-tight text-white">
-                        欢迎来到<br>
-                        <span class="text-[#ff6e02]">{{ appName }}</span>
-                    </h1>
-
-                    <p class="text-lg mb-8 text-[#999999] max-w-2xl mx-auto leading-relaxed">
-                        发现精彩菜谱，向大厨学习，与热爱美食的朋友们分享你的烹饪创意
-                    </p>
-
-                    <!-- Hero Stats -->
-                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8 max-w-3xl mx-auto">
-                        <div class="bg-[#374151] rounded-lg p-4">
-                            <div class="text-xl font-bold text-white">{{ stats.total_recipes.toLocaleString() }}+</div>
-                            <div class="text-sm text-[#999999]">菜谱</div>
-                        </div>
-                        <div class="bg-[#374151] rounded-lg p-4">
-                            <div class="text-xl font-bold text-white">{{ stats.total_chefs.toLocaleString() }}+</div>
-                            <div class="text-sm text-[#999999]">大厨</div>
-                        </div>
-                        <div class="bg-[#374151] rounded-lg p-4">
-                            <div class="text-xl font-bold text-white">{{ stats.total_cuisines }}+</div>
-                            <div class="text-sm text-[#999999]">菜系</div>
-                        </div>
-                        <div class="bg-[#374151] rounded-lg p-4">
-                            <div class="text-xl font-bold text-white">{{ stats.total_members.toLocaleString() }}+</div>
-                            <div class="text-sm text-[#999999]">会员</div>
-                        </div>
-                    </div>
-
-                    <!-- CTA Buttons -->
-                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                        <Button size="lg" class="bg-[#ff6e02] text-white hover:bg-[#e55a00] text-base px-6 py-3" as-child>
-                            <Link href="/community">
-                                <Utensils class="w-4 h-4 mr-2" />
-                                浏览菜谱
-                            </Link>
-                        </Button>
-                        <Button
-                            size="lg"
-                            variant="outline"
-                            class="text-[#ff6e02] border-[#ff6e02] hover:bg-[#ff6e02] hover:text-white text-base px-6 py-3"
-                            as-child
-                        >
-                            <Link href="/creators/apply">
-                                <ChefHat class="w-4 h-4 mr-2" />
-                                申请认证
-                            </Link>
-                        </Button>
-                    </div>
-                </div>
+                <HeroCarousel />
             </div>
         </section>
 

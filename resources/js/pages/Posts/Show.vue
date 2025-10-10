@@ -65,6 +65,8 @@ interface Post {
     status: string;
     is_featured: boolean;
     is_premium: boolean;
+    price?: number;
+    free_after?: string;
     view_count: number;
     like_count: number;
     comment_count: number;
@@ -85,6 +87,10 @@ interface Props {
         favorited: boolean;
         following_creator: boolean;
     };
+    canViewContent: boolean;
+    isLocked: boolean;
+    isPurchased: boolean;
+    userCredits: number;
 }
 
 const props = defineProps<Props>();
@@ -103,6 +109,11 @@ const isFavoriting = ref(false);
 const isFollowingCreator = ref(props.userInteractions.following_creator);
 const followerCount = ref(props.post.user.creator_profile?.follower_count || 0);
 const isFollowing = ref(false);
+
+// Reactive state for purchase
+const isPurchasing = ref(false);
+const canView = ref(props.canViewContent);
+const userCreditsRef = ref(props.userCredits);
 
 // Check if user is authenticated
 const isAuthenticated = computed(() => page.props.auth?.user);
@@ -250,6 +261,51 @@ const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
 };
 
+// Purchase post function
+const purchasePost = async () => {
+    if (!isAuthenticated.value) {
+        window.location.href = '/login';
+        return;
+    }
+
+    if (isPurchasing.value) return;
+
+    if (confirm(`确定要花费 ${props.post.price} 积分购买此内容吗？`)) {
+        isPurchasing.value = true;
+
+        try {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+            const response = await fetch(`/posts/${props.post.id}/purchase`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken || '',
+                },
+                credentials: 'same-origin',
+            });
+
+            const data = await response.json();
+
+            if (response.ok && data.success) {
+                canView.value = true;
+                userCreditsRef.value = data.remaining_credits;
+                alert(data.message);
+                // Reload page to show full content
+                window.location.reload();
+            } else {
+                alert(data.message || '购买失败');
+            }
+        } catch (error) {
+            console.error('Purchase error:', error);
+            alert('网络错误，请重试');
+        } finally {
+            isPurchasing.value = false;
+        }
+    }
+};
+
 const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('zh-CN', {
         year: 'numeric',
@@ -301,6 +357,12 @@ const getPostTypeText = (type: string) => {
                             </Badge>
                             <Badge v-if="post.is_premium" class="bg-yellow-500 text-white text-xs">
                                 ⭐ VIP
+                            </Badge>
+                            <Badge v-if="post.price && post.price > 0" class="bg-green-600 text-white text-xs">
+                                💰 {{ post.price }} 积分
+                            </Badge>
+                            <Badge v-if="isPurchased" class="bg-blue-600 text-white text-xs">
+                                ✓ 已购买
                             </Badge>
                         </div>
 
@@ -464,6 +526,47 @@ const getPostTypeText = (type: string) => {
                             <div class="prose prose-invert max-w-none">
                                 <div class="text-white leading-relaxed whitespace-pre-line">
                                     {{ post.content }}
+                                </div>
+
+                                <!-- Locked Content Overlay -->
+                                <div v-if="isLocked && !canView" class="mt-8 bg-[#1c1c1c] border border-[#ff6e02] rounded-lg p-8 text-center">
+                                    <div class="text-6xl mb-4">🔒</div>
+                                    <h3 class="text-2xl font-bold text-white mb-2">此内容需要付费解锁</h3>
+                                    <p class="text-[#999999] mb-6">
+                                        作者设置此内容需要 <span class="text-[#ff6e02] font-bold text-xl">{{ post.price }}</span> 积分才能查看
+                                    </p>
+
+                                    <div v-if="post.free_after" class="mb-4 text-sm text-[#999999]">
+                                        ⏰ 将在 {{ formatDate(post.free_after) }} 后免费开放
+                                    </div>
+
+                                    <div v-if="isAuthenticated" class="space-y-4">
+                                        <div class="text-sm text-[#999999]">
+                                            你的积分余额: <span class="text-white font-semibold">{{ userCreditsRef }}</span>
+                                        </div>
+
+                                        <Button
+                                            v-if="userCreditsRef >= post.price"
+                                            @click="purchasePost"
+                                            :disabled="isPurchasing"
+                                            class="bg-[#ff6e02] hover:bg-[#e55a00] text-white px-8 py-3 text-lg"
+                                        >
+                                            {{ isPurchasing ? '购买中...' : `花费 ${post.price} 积分解锁内容` }}
+                                        </Button>
+                                        <div v-else class="text-red-400">
+                                            积分不足，需要 {{ post.price - userCreditsRef }} 更多积分
+                                        </div>
+                                    </div>
+
+                                    <div v-else>
+                                        <Button
+                                            as="a"
+                                            href="/login"
+                                            class="bg-[#ff6e02] hover:bg-[#e55a00] text-white px-8 py-3 text-lg"
+                                        >
+                                            登录后购买
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
                         </CardContent>

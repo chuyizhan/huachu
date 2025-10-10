@@ -204,6 +204,11 @@ class CreatorController extends Controller
             if ($existingFollow) {
                 // Unfollow the creator
                 $existingFollow->delete();
+
+                // Decrement counters
+                $user->decrementFollowing();
+                $creator->user->decrementFollowers();
+
                 $following = false;
                 $message = '已取消关注';
             } else {
@@ -212,6 +217,11 @@ class CreatorController extends Controller
                     'follower_id' => $user->id,
                     'creator_id' => $id,
                 ]);
+
+                // Increment counters
+                $user->incrementFollowing();
+                $creator->user->incrementFollowers();
+
                 $following = true;
                 $message = '关注成功';
             }
