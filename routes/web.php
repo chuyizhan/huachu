@@ -20,6 +20,7 @@ Route::get('dashboard', function () {
 // Admin routes
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::resource('users', App\Http\Controllers\Admin\UserController::class);
+    Route::resource('categories', App\Http\Controllers\Admin\CategoryController::class);
 });
 
 // User favorites

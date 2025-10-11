@@ -4,7 +4,7 @@ import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, ShieldAlert } from 'lucide-vue-next';
+import { Users, FolderTree, ShieldAlert } from 'lucide-vue-next';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -37,6 +37,28 @@ const breadcrumbs: BreadcrumbItem[] = [
                             </div>
                             <CardDescription class="text-[#999999]">
                                 管理所有用户账户，查看用户信息，编辑用户权限
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div class="text-[#ff6e02] text-sm font-medium">
+                                点击进入 →
+                            </div>
+                        </CardContent>
+                    </Card>
+                </Link>
+
+                <!-- Category Management Card -->
+                <Link href="/admin/categories" class="block">
+                    <Card class="bg-[#374151] border-[#4B5563] hover:border-[#ff6e02] transition-colors cursor-pointer h-full">
+                        <CardHeader>
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="p-3 bg-[#ff6e02] rounded-lg">
+                                    <FolderTree class="w-6 h-6 text-white" />
+                                </div>
+                                <CardTitle class="text-white text-xl">分类管理</CardTitle>
+                            </div>
+                            <CardDescription class="text-[#999999]">
+                                管理所有分类，查看分类信息，编辑分类设置
                             </CardDescription>
                         </CardHeader>
                         <CardContent>

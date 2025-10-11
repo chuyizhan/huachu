@@ -398,12 +398,20 @@ const formatDate = (dateString: string) => {
                                             {{ formatDate(user.created_at) }}
                                         </td>
                                         <td class="whitespace-nowrap px-6 py-4 text-right text-sm">
-                                            <Link
-                                                :href="`/admin/users/${user.id}`"
-                                                class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
-                                            >
-                                                查看详情
-                                            </Link>
+                                            <div class="flex justify-end gap-4">
+                                                <Link
+                                                    :href="`/admin/users/${user.id}`"
+                                                    class="text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300"
+                                                >
+                                                    查看
+                                                </Link>
+                                                <Link
+                                                    :href="`/admin/users/${user.id}/edit`"
+                                                    class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                                                >
+                                                    编辑
+                                                </Link>
+                                            </div>
                                         </td>
                                     </tr>
                                 </tbody>

@@ -77,11 +77,22 @@ class UserController extends Controller
     }
 
     /**
+     * Show the form for editing the specified user.
+     */
+    public function edit(User $user): Response
+    {
+        return Inertia::render('Admin/Users/Edit', [
+            'user' => $user,
+        ]);
+    }
+
+    /**
      * Display the specified user.
      */
     public function show(User $user): Response
     {
-        $user->load(['creatorProfile', 'posts', 'favorites']);
+        $user->loadCount(['posts', 'favorites'])
+            ->load('creatorProfile');
 
         return Inertia::render('Admin/Users/Show', [
             'user' => $user,
@@ -94,22 +105,28 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|email|unique:users,email,' . $user->id,
-            'login_name' => 'sometimes|string|lowercase|max:32|unique:users,login_name,' . $user->id,
-            'is_admin' => 'sometimes|boolean',
-            'is_creator' => 'sometimes|boolean',
-            'is_verified' => 'sometimes|boolean',
-            'is_top_creator' => 'sometimes|boolean',
-            'type' => 'sometimes|integer',
-            'status' => 'sometimes|integer',
-            'credits' => 'sometimes|numeric|min:0',
-            'balance' => 'sometimes|numeric|min:0',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
+            'login_name' => 'required|string|lowercase|max:32|unique:users,login_name,' . $user->id,
+            'is_admin' => 'boolean',
+            'is_creator' => 'boolean',
+            'is_verified' => 'boolean',
+            'is_top_creator' => 'boolean',
+            'type' => 'required|integer|in:1,2',
+            'status' => 'required|integer|in:1,2,3',
+            'credits' => 'required|numeric|min:0',
+            'balance' => 'required|numeric|min:0',
         ]);
+
+        // Convert checkbox values properly
+        $validated['is_admin'] = $request->boolean('is_admin');
+        $validated['is_creator'] = $request->boolean('is_creator');
+        $validated['is_verified'] = $request->boolean('is_verified');
+        $validated['is_top_creator'] = $request->boolean('is_top_creator');
 
         $user->update($validated);
 
-        return redirect()->back()->with('success', '用户已更新');
+        return redirect()->route('admin.users.index')->with('success', '用户已更新');
     }
 
     /**
