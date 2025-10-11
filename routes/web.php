@@ -21,6 +21,7 @@ Route::get('dashboard', function () {
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::resource('users', App\Http\Controllers\Admin\UserController::class);
     Route::resource('categories', App\Http\Controllers\Admin\CategoryController::class);
+    Route::resource('posts', App\Http\Controllers\Admin\PostController::class);
 });
 
 // User favorites

@@ -14,7 +14,7 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, Users, MessageSquare, Crown, Trophy, PlusCircle, Shield, FolderTree } from 'lucide-vue-next';
+import { BookOpen, Folder, LayoutGrid, Users, MessageSquare, Crown, Trophy, PlusCircle, Shield, FolderTree, FileText } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 import { computed } from 'vue';
 
@@ -78,6 +78,11 @@ const adminNavItems: NavItem[] = [
         title: '分类管理',
         href: '/admin/categories',
         icon: FolderTree,
+    },
+    {
+        title: '帖子管理',
+        href: '/admin/posts',
+        icon: FileText,
     },
 ];
 
