@@ -80,6 +80,7 @@ const props = defineProps<Props>();
 
 const isFollowingState = ref(props.isFollowing);
 const followersCount = ref(props.creator.followers_count || 0);
+const isLoading = ref(false);
 
 const postTypeLabels = {
     discussion: '讨论',
@@ -121,7 +122,9 @@ function getInitials(name: string) {
 }
 
 const toggleFollow = async () => {
-    if (!props.canFollow) return;
+    if (!props.canFollow || isLoading.value) return;
+
+    isLoading.value = true;
 
     try {
         const response = await fetch(`/creators/${props.creator.id}/follow`, {
@@ -134,13 +137,20 @@ const toggleFollow = async () => {
             credentials: 'same-origin',
         });
 
-        if (response.ok) {
-            const data = await response.json();
+        const data = await response.json();
+
+        if (response.ok && data.success) {
             isFollowingState.value = data.following;
             followersCount.value = data.followers_count;
+        } else {
+            console.error('Follow toggle failed:', data.message || 'Unknown error');
+            alert(data.message || '操作失败，请重试');
         }
     } catch (error) {
         console.error('Error toggling follow:', error);
+        alert('网络错误，请重试');
+    } finally {
+        isLoading.value = false;
     }
 };
 </script>
@@ -206,13 +216,14 @@ const toggleFollow = async () => {
                                     <div v-if="canFollow" class="mt-4 md:mt-0">
                                         <Button
                                             @click="toggleFollow"
+                                            :disabled="isLoading"
                                             :class="isFollowingState
                                                 ? 'bg-transparent border-[#ff6e02] text-[#ff6e02] hover:bg-[#ff6e02] hover:text-white'
                                                 : 'bg-[#ff6e02] hover:bg-[#e55a00] text-white'"
                                         >
                                             <UserPlus v-if="!isFollowingState" class="h-4 w-4 mr-2" />
                                             <UserMinus v-else class="h-4 w-4 mr-2" />
-                                            {{ isFollowingState ? '取消关注' : '关注' }}
+                                            {{ isLoading ? '处理中...' : (isFollowingState ? '取消关注' : '关注') }}
                                         </Button>
                                     </div>
                                 </div>

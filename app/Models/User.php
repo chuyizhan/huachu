@@ -3,6 +3,9 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\UserSex;
+use App\Enums\UserStatus;
+use App\Enums\UserType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -22,6 +25,30 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'parent_id',
+        // 'is_admin',
+        'is_creator',
+        'is_verified',
+        'is_top_creator',
+        'type',
+        'status',
+        'login_name',
+        'sex',
+        'date_birth',
+        'phone',
+        'phone_verified_at',
+        'xp',
+        'points',
+        'credits',
+        'balance',
+        'followers_count',
+        'following_count',
+        'avatar',
+        'description',
+        'last_login_ip',
+        'last_login_at',
+        'last_login_user_agent',
+        'referral_code',
     ];
 
     /**
@@ -43,7 +70,23 @@ class User extends Authenticatable
     {
         return [
             'email_verified_at' => 'datetime',
+            'phone_verified_at' => 'datetime',
+            'last_login_at' => 'datetime',
+            'date_birth' => 'date',
             'password' => 'hashed',
+            'is_admin' => 'boolean',
+            'is_creator' => 'boolean',
+            'is_verified' => 'boolean',
+            'is_top_creator' => 'boolean',
+            'type' => UserType::class,
+            'status' => UserStatus::class,
+            'sex' => UserSex::class,
+            'xp' => 'integer',
+            'points' => 'integer',
+            'followers_count' => 'integer',
+            'following_count' => 'integer',
+            'credits' => 'decimal:2',
+            'balance' => 'decimal:2',
         ];
     }
 
@@ -96,6 +139,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Get all post purchases by this user.
+     */
+    public function postPurchases()
+    {
+        return $this->hasMany(PostPurchase::class);
+    }
+
+    /**
+     * Get all posts purchased by this user.
+     */
+    public function purchasedPosts()
+    {
+        return $this->belongsToMany(Post::class, 'post_purchases')->withTimestamps()->withPivot('price_paid');
+    }
+
+    /**
      * Get all subscriptions by this user.
      */
     public function subscriptions()
@@ -124,5 +183,85 @@ class User extends Authenticatable
             'id', // Local key on users table
             'id' // Local key on creator_profiles table
         );
+    }
+
+    /**
+     * Get the user who referred this user (parent in referral tree).
+     */
+    public function parent()
+    {
+        return $this->belongsTo(User::class, 'parent_id');
+    }
+
+    /**
+     * Get all users referred by this user (children in referral tree).
+     */
+    public function children()
+    {
+        return $this->hasMany(User::class, 'parent_id');
+    }
+
+    /**
+     * Check if user is an admin.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->is_admin;
+    }
+
+    /**
+     * Check if user is a creator.
+     */
+    public function isCreator(): bool
+    {
+        return $this->is_creator;
+    }
+
+    /**
+     * Check if user is verified.
+     */
+    public function isVerified(): bool
+    {
+        return $this->is_verified;
+    }
+
+    /**
+     * Check if user account is active.
+     */
+    public function isActive(): bool
+    {
+        return $this->status === UserStatus::ACTIVE;
+    }
+
+    /**
+     * Increment followers count.
+     */
+    public function incrementFollowers(): void
+    {
+        $this->increment('followers_count');
+    }
+
+    /**
+     * Decrement followers count.
+     */
+    public function decrementFollowers(): void
+    {
+        $this->decrement('followers_count');
+    }
+
+    /**
+     * Increment following count.
+     */
+    public function incrementFollowing(): void
+    {
+        $this->increment('following_count');
+    }
+
+    /**
+     * Decrement following count.
+     */
+    public function decrementFollowing(): void
+    {
+        $this->decrement('following_count');
     }
 }

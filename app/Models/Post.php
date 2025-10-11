@@ -26,6 +26,8 @@ class Post extends Model implements HasMedia
         'status',
         'is_featured',
         'is_premium',
+        'price',
+        'free_after',
         'view_count',
         'like_count',
         'comment_count',
@@ -43,6 +45,8 @@ class Post extends Model implements HasMedia
             'tags' => 'array',
             'is_featured' => 'boolean',
             'is_premium' => 'boolean',
+            'price' => 'decimal:2',
+            'free_after' => 'datetime',
             'published_at' => 'datetime',
         ];
     }
@@ -88,6 +92,57 @@ class Post extends Model implements HasMedia
     }
 
     /**
+     * Get all purchases for this post.
+     */
+    public function purchases()
+    {
+        return $this->hasMany(PostPurchase::class);
+    }
+
+    /**
+     * Get users who purchased this post.
+     */
+    public function purchasedByUsers()
+    {
+        return $this->belongsToMany(User::class, 'post_purchases')->withTimestamps()->withPivot('price_paid');
+    }
+
+    /**
+     * Check if a user has purchased this post.
+     */
+    public function isPurchasedBy(?User $user): bool
+    {
+        if (!$user) {
+            return false;
+        }
+
+        return $this->purchases()->where('user_id', $user->id)->exists();
+    }
+
+    /**
+     * Check if a user can view this post (free or purchased).
+     */
+    public function canBeViewedBy(?User $user): bool
+    {
+        // Post is free
+        if ($this->isFree()) {
+            return true;
+        }
+
+        // User is the author
+        if ($user && $user->id === $this->user_id) {
+            return true;
+        }
+
+        // User has purchased
+        if ($user && $this->isPurchasedBy($user)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Scope for published posts.
      */
     public function scopePublished($query)
@@ -117,6 +172,67 @@ class Post extends Model implements HasMedia
     public function scopeOfType($query, $type)
     {
         return $query->where('type', $type);
+    }
+
+    /**
+     * Check if this post requires payment to view.
+     */
+    public function isPaid(): bool
+    {
+        return $this->price !== null && $this->price > 0;
+    }
+
+    /**
+     * Check if this post is currently free (even if it has a price).
+     */
+    public function isFree(): bool
+    {
+        // Free if no price set
+        if (!$this->isPaid()) {
+            return true;
+        }
+
+        // Free if free_after date has passed
+        if ($this->free_after && now()->greaterThanOrEqualTo($this->free_after)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if this post is currently locked (requires payment).
+     */
+    public function isLocked(): bool
+    {
+        return $this->isPaid() && !$this->isFree();
+    }
+
+    /**
+     * Scope for free posts (no price or free_after has passed).
+     */
+    public function scopeFree($query)
+    {
+        return $query->where(function ($q) {
+            $q->whereNull('price')
+              ->orWhere('price', '<=', 0)
+              ->orWhere(function ($q2) {
+                  $q2->whereNotNull('free_after')
+                     ->where('free_after', '<=', now());
+              });
+        });
+    }
+
+    /**
+     * Scope for paid posts (has price and not yet free).
+     */
+    public function scopePaid($query)
+    {
+        return $query->where('price', '>', 0)
+            ->where(function ($q) {
+                $q->whereNull('free_after')
+                  ->orWhere('free_after', '>', now());
+            });
     }
 
     /**

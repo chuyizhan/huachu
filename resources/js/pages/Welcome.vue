@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import HeroCarousel from '@/components/HeroCarousel.vue';
 import { dashboard, login, register } from '@/routes';
 import { Head, Link } from '@inertiajs/vue3';
 </script>

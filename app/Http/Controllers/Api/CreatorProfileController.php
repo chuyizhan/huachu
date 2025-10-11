@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\CreatorProfile;
+use App\Models\Follow;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -159,22 +160,31 @@ class CreatorProfileController extends Controller
             return response()->json(['message' => 'Cannot follow yourself'], 400);
         }
 
-        // Check if already following (simplified - would need a followers table)
-        $existingFollow = $user->favorites()
-            ->where('favoritable_type', CreatorProfile::class)
-            ->where('favoritable_id', $id)
+        // Check if already following using the Follow model
+        $existingFollow = Follow::where('follower_id', $user->id)
+            ->where('creator_id', $id)
             ->first();
 
         if ($existingFollow) {
             $existingFollow->delete();
             $profile->decrement('follower_count');
+
+            // Decrement user counters
+            $user->decrementFollowing();
+            $profile->user->decrementFollowers();
+
             $following = false;
         } else {
-            $user->favorites()->create([
-                'favoritable_type' => CreatorProfile::class,
-                'favoritable_id' => $id,
+            Follow::create([
+                'follower_id' => $user->id,
+                'creator_id' => $id,
             ]);
             $profile->increment('follower_count');
+
+            // Increment user counters
+            $user->incrementFollowing();
+            $profile->user->incrementFollowers();
+
             $following = true;
         }
 

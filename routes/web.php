@@ -7,6 +7,7 @@ use App\Http\Controllers\CommunityController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\PostLikeController;
 use App\Http\Controllers\PostFavoriteController;
+use App\Http\Controllers\PostPurchaseController;
 use App\Http\Controllers\CreatorController;
 use App\Http\Controllers\VipController;
 
@@ -44,6 +45,9 @@ Route::prefix('posts')->name('posts.')->group(function () {
     // Favorite functionality
     Route::post('/{post}/favorite', [PostFavoriteController::class, 'toggle'])->name('favorite');
     Route::get('/{post}/favorite-status', [PostFavoriteController::class, 'status'])->name('favorite.status');
+
+    // Purchase functionality
+    Route::post('/{post}/purchase', [PostPurchaseController::class, 'purchase'])->middleware('auth')->name('purchase');
 });
 
 // Creator routes

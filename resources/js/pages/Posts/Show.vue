@@ -4,8 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Link, usePage } from '@inertiajs/vue3';
+import { Link, usePage, router } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
+import axios from 'axios';
 import {
     Heart,
     Eye,
@@ -65,6 +66,8 @@ interface Post {
     status: string;
     is_featured: boolean;
     is_premium: boolean;
+    price?: number;
+    free_after?: string;
     view_count: number;
     like_count: number;
     comment_count: number;
@@ -85,6 +88,10 @@ interface Props {
         favorited: boolean;
         following_creator: boolean;
     };
+    canViewContent: boolean;
+    isLocked: boolean;
+    isPurchased: boolean;
+    userCredits: number;
 }
 
 const props = defineProps<Props>();
@@ -104,103 +111,75 @@ const isFollowingCreator = ref(props.userInteractions.following_creator);
 const followerCount = ref(props.post.user.creator_profile?.follower_count || 0);
 const isFollowing = ref(false);
 
+// Reactive state for purchase
+const isPurchasing = ref(false);
+const canView = ref(props.canViewContent);
+const userCreditsRef = ref(props.userCredits);
+
 // Check if user is authenticated
 const isAuthenticated = computed(() => page.props.auth?.user);
 
-// Toggle like function
+// Toggle like function using Axios (handles CSRF automatically)
 const toggleLike = async () => {
     if (!isAuthenticated.value) {
-        // Redirect to login or show login modal
-        window.location.href = '/login';
+        router.visit('/login');
         return;
     }
 
-    if (isLiking.value) return; // Prevent multiple clicks
+    if (isLiking.value) return;
 
     isLiking.value = true;
 
     try {
-        // Get CSRF token from meta tag
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        const response = await axios.post(`/posts/${props.post.id}/like`);
 
-        const response = await fetch(`/posts/${props.post.id}/like`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': csrfToken || '',
-            },
-            credentials: 'same-origin',
-        });
-
-        const data = await response.json();
-
-        if (response.ok && data.success) {
-            isLiked.value = data.liked;
-            likeCount.value = data.like_count;
+        if (response.data.success) {
+            isLiked.value = response.data.liked;
+            likeCount.value = response.data.like_count;
         } else {
-            console.error('Failed to toggle like:', data.message);
-            // Show user-friendly error message
-            alert(data.message || 'Failed to process like. Please try again.');
+            console.error('Failed to toggle like:', response.data.message);
+            alert(response.data.message || '操作失败，请重试');
         }
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error toggling like:', error);
-        alert('Network error. Please check your connection and try again.');
+        alert(error.response?.data?.message || '网络错误，请重试');
     } finally {
         isLiking.value = false;
     }
 };
 
-// Toggle favorite function
+// Toggle favorite function using Axios
 const toggleFavorite = async () => {
     if (!isAuthenticated.value) {
-        // Redirect to login or show login modal
-        window.location.href = '/login';
+        router.visit('/login');
         return;
     }
 
-    if (isFavoriting.value) return; // Prevent multiple clicks
+    if (isFavoriting.value) return;
 
     isFavoriting.value = true;
 
     try {
-        // Get CSRF token from meta tag
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        const response = await axios.post(`/posts/${props.post.id}/favorite`);
 
-        const response = await fetch(`/posts/${props.post.id}/favorite`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': csrfToken || '',
-            },
-            credentials: 'same-origin',
-        });
-
-        const data = await response.json();
-
-        if (response.ok && data.success) {
-            isFavorited.value = data.favorited;
+        if (response.data.success) {
+            isFavorited.value = response.data.favorited;
         } else {
-            console.error('Failed to toggle favorite:', data.message);
-            // Show user-friendly error message
-            alert(data.message || '收藏操作失败，请重试');
+            console.error('Failed to toggle favorite:', response.data.message);
+            alert(response.data.message || '收藏操作失败，请重试');
         }
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error toggling favorite:', error);
-        alert('网络错误，请检查网络连接后重试');
+        alert(error.response?.data?.message || '网络错误，请重试');
     } finally {
         isFavoriting.value = false;
     }
 };
 
-// Toggle follow function
+// Toggle follow function using Axios
 const toggleFollow = async () => {
     if (!isAuthenticated.value) {
-        // Redirect to login or show login modal
-        window.location.href = '/login';
+        router.visit('/login');
         return;
     }
 
@@ -209,38 +188,23 @@ const toggleFollow = async () => {
         return;
     }
 
-    if (isFollowing.value) return; // Prevent multiple clicks
+    if (isFollowing.value) return;
 
     isFollowing.value = true;
 
     try {
-        // Get CSRF token from meta tag
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        const response = await axios.post(`/creators/${props.post.user.creator_profile.id}/follow`);
 
-        const response = await fetch(`/creators/${props.post.user.creator_profile.id}/follow`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest',
-                'X-CSRF-TOKEN': csrfToken || '',
-            },
-            credentials: 'same-origin',
-        });
-
-        const data = await response.json();
-
-        if (response.ok && data.success) {
-            isFollowingCreator.value = data.following;
-            followerCount.value = data.followers_count;
+        if (response.data.success) {
+            isFollowingCreator.value = response.data.following;
+            followerCount.value = response.data.followers_count;
         } else {
-            console.error('Failed to toggle follow:', data.message);
-            // Show user-friendly error message
-            alert(data.message || '关注操作失败，请重试');
+            console.error('Failed to toggle follow:', response.data.message);
+            alert(response.data.message || '关注操作失败，请重试');
         }
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error toggling follow:', error);
-        alert('网络错误，请检查网络连接后重试');
+        alert(error.response?.data?.message || '网络错误，请重试');
     } finally {
         isFollowing.value = false;
     }
@@ -248,6 +212,39 @@ const toggleFollow = async () => {
 
 const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
+};
+
+// Purchase post function using Axios
+const purchasePost = async () => {
+    if (!isAuthenticated.value) {
+        router.visit('/login');
+        return;
+    }
+
+    if (isPurchasing.value) return;
+
+    if (confirm(`确定要花费 ${props.post.price} 积分购买此内容吗？`)) {
+        isPurchasing.value = true;
+
+        try {
+            const response = await axios.post(`/posts/${props.post.id}/purchase`);
+
+            if (response.data.success) {
+                canView.value = true;
+                userCreditsRef.value = response.data.remaining_credits;
+                alert(response.data.message);
+                // Reload page to show full content
+                router.reload();
+            } else {
+                alert(response.data.message || '购买失败');
+            }
+        } catch (error: any) {
+            console.error('Purchase error:', error);
+            alert(error.response?.data?.message || '网络错误，请重试');
+        } finally {
+            isPurchasing.value = false;
+        }
+    }
 };
 
 const formatDate = (dateString: string) => {
@@ -301,6 +298,12 @@ const getPostTypeText = (type: string) => {
                             </Badge>
                             <Badge v-if="post.is_premium" class="bg-yellow-500 text-white text-xs">
                                 ⭐ VIP
+                            </Badge>
+                            <Badge v-if="post.price && post.price > 0" class="bg-green-600 text-white text-xs">
+                                💰 {{ post.price }} 积分
+                            </Badge>
+                            <Badge v-if="isPurchased" class="bg-blue-600 text-white text-xs">
+                                ✓ 已购买
                             </Badge>
                         </div>
 
@@ -460,10 +463,53 @@ const getPostTypeText = (type: string) => {
                                 </div>
                             </div>
 
-                            <!-- Text Content -->
-                            <div class="prose prose-invert max-w-none">
+                            <!-- Text Content - Only show if user can view -->
+                            <div v-if="canViewContent" class="prose prose-invert max-w-none">
                                 <div class="text-white leading-relaxed whitespace-pre-line">
                                     {{ post.content }}
+                                </div>
+                            </div>
+
+                            <!-- Locked Content Overlay - Show instead of content when locked -->
+                            <div v-else-if="isLocked" class="prose prose-invert max-w-none">
+                                <div class="bg-[#1c1c1c] border border-[#ff6e02] rounded-lg p-8 text-center">
+                                    <div class="text-6xl mb-4">🔒</div>
+                                    <h3 class="text-2xl font-bold text-white mb-2">此内容需要付费解锁</h3>
+                                    <p class="text-[#999999] mb-6">
+                                        作者设置此内容需要 <span class="text-[#ff6e02] font-bold text-xl">{{ post.price }}</span> 积分才能查看
+                                    </p>
+
+                                    <div v-if="post.free_after" class="mb-4 text-sm text-[#999999]">
+                                        ⏰ 将在 {{ formatDate(post.free_after) }} 后免费开放
+                                    </div>
+
+                                    <div v-if="isAuthenticated" class="space-y-4">
+                                        <div class="text-sm text-[#999999]">
+                                            你的积分余额: <span class="text-white font-semibold">{{ userCreditsRef }}</span>
+                                        </div>
+
+                                        <Button
+                                            v-if="userCreditsRef >= post.price"
+                                            @click="purchasePost"
+                                            :disabled="isPurchasing"
+                                            class="bg-[#ff6e02] hover:bg-[#e55a00] text-white px-8 py-3 text-lg"
+                                        >
+                                            {{ isPurchasing ? '购买中...' : `花费 ${post.price} 积分解锁内容` }}
+                                        </Button>
+                                        <div v-else class="text-red-400">
+                                            积分不足，需要 {{ post.price - userCreditsRef }} 更多积分
+                                        </div>
+                                    </div>
+
+                                    <div v-else>
+                                        <Button
+                                            as="a"
+                                            href="/login"
+                                            class="bg-[#ff6e02] hover:bg-[#e55a00] text-white px-8 py-3 text-lg"
+                                        >
+                                            登录后购买
+                                        </Button>
+                                    </div>
                                 </div>
                             </div>
                         </CardContent>

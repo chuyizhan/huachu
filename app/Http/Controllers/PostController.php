@@ -56,6 +56,13 @@ class PostController extends Controller
             ->published()
             ->firstOrFail();
 
+        $user = Auth::user();
+
+        // Check if user can view the content
+        $canView = $post->canBeViewedBy($user);
+        $isLocked = $post->isLocked();
+        $isPurchased = $user ? $post->isPurchasedBy($user) : false;
+
         // Get media URLs
         $post->image_urls = $post->getMedia('images')->map(function ($media) {
             return [
@@ -65,6 +72,12 @@ class PostController extends Controller
                 'medium' => $media->getUrl('medium'),
             ];
         });
+
+        // Only show full content if user can view
+        if (!$canView) {
+            // Show only excerpt or truncated content
+            $post->content = $post->excerpt ?: Str::limit(strip_tags($post->content), 200);
+        }
 
         // Increment view count
         $post->increment('view_count');
@@ -79,8 +92,7 @@ class PostController extends Controller
 
         // Check if current user has liked/favorited/following
         $userInteractions = [];
-        if (Auth::check()) {
-            $user = Auth::user();
+        if ($user) {
             $isFollowingCreator = false;
 
             // Check if following the post author (if they have a creator profile)
@@ -102,6 +114,10 @@ class PostController extends Controller
             'post' => $post,
             'relatedPosts' => $relatedPosts,
             'userInteractions' => $userInteractions,
+            'canViewContent' => $canView,
+            'isLocked' => $isLocked,
+            'isPurchased' => $isPurchased,
+            'userCredits' => $user ? $user->credits : 0,
         ]);
     }
 
@@ -116,6 +132,8 @@ class PostController extends Controller
 
     public function store(Request $request)
     {
+        $user = Auth::user();
+
         $request->validate([
             'title' => 'required|string|max:255',
             'content' => 'required|string',
@@ -126,11 +144,13 @@ class PostController extends Controller
             'videos' => 'nullable|array',
             'tags' => 'nullable|array',
             'is_premium' => 'boolean',
+            'price' => 'nullable|numeric|min:0',
+            'free_after' => 'nullable|date|after:now',
             'status' => 'required|in:draft,published',
         ]);
 
         $post = new Post();
-        $post->user_id = Auth::id();
+        $post->user_id = $user->id;
         $post->title = $request->title;
         $post->slug = Str::slug($request->title) . '-' . Str::random(6);
         $post->content = $request->content;
@@ -141,6 +161,12 @@ class PostController extends Controller
         $post->tags = $request->tags ?? [];
         $post->is_premium = $request->boolean('is_premium');
         $post->status = $request->status;
+
+        // Only allow creators to set price
+        if ($user->is_creator) {
+            $post->price = $request->price > 0 ? $request->price : null;
+            $post->free_after = $request->free_after;
+        }
 
         if ($post->status === 'published') {
             $post->published_at = now();
