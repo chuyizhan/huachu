@@ -463,14 +463,16 @@ const getPostTypeText = (type: string) => {
                                 </div>
                             </div>
 
-                            <!-- Text Content -->
-                            <div class="prose prose-invert max-w-none">
+                            <!-- Text Content - Only show if user can view -->
+                            <div v-if="canViewContent" class="prose prose-invert max-w-none">
                                 <div class="text-white leading-relaxed whitespace-pre-line">
                                     {{ post.content }}
                                 </div>
+                            </div>
 
-                                <!-- Locked Content Overlay -->
-                                <div v-if="isLocked && !canView" class="mt-8 bg-[#1c1c1c] border border-[#ff6e02] rounded-lg p-8 text-center">
+                            <!-- Locked Content Overlay - Show instead of content when locked -->
+                            <div v-else-if="isLocked" class="prose prose-invert max-w-none">
+                                <div class="bg-[#1c1c1c] border border-[#ff6e02] rounded-lg p-8 text-center">
                                     <div class="text-6xl mb-4">🔒</div>
                                     <h3 class="text-2xl font-bold text-white mb-2">此内容需要付费解锁</h3>
                                     <p class="text-[#999999] mb-6">
