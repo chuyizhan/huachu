@@ -15,7 +15,12 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('dashboard', function () {
     return Inertia::render('Dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+})->middleware(['auth', 'verified', 'admin'])->name('dashboard');
+
+// Admin routes
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'admin'])->group(function () {
+    Route::resource('users', App\Http\Controllers\Admin\UserController::class);
+});
 
 // User favorites
 Route::get('/favorites', [PostFavoriteController::class, 'index'])->middleware('auth')->name('favorites');

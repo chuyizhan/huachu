@@ -21,7 +21,7 @@ defineProps<{
 <template>
     <WebAuthLayout
         title="登录账户"
-        :description="`输入邮箱和密码登录${$page.props.name}`"
+        :description="`输入用户名和密码登录${$page.props.name}`"
     >
         <Head title="登录" />
 
@@ -40,22 +40,22 @@ defineProps<{
         >
             <div class="space-y-4">
                 <div class="space-y-2">
-                    <Label for="email" class="text-white text-sm font-medium">邮箱地址</Label>
+                    <Label for="login_name" class="text-white text-sm font-medium">用户名</Label>
                     <div class="relative">
                         <User class="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#999999] w-4 h-4" />
                         <Input
-                            id="email"
-                            type="email"
-                            name="email"
+                            id="login_name"
+                            type="text"
+                            name="login_name"
                             required
                             autofocus
                             :tabindex="1"
-                            autocomplete="email"
-                            placeholder="请输入邮箱地址"
+                            autocomplete="username"
+                            placeholder="请输入用户名"
                             class="pl-10 bg-[#1f2937] border-[#1f2937] text-white placeholder:text-[#999999] focus:border-[#ff6e02] focus:ring-[#ff6e02]"
                         />
                     </div>
-                    <InputError :message="errors.email" />
+                    <InputError :message="errors.login_name" />
                 </div>
 
                 <div class="space-y-2">
