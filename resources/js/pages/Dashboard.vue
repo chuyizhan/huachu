@@ -4,7 +4,7 @@ import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, FolderTree, FileText, Coins, DollarSign, ShieldAlert } from 'lucide-vue-next';
+import { Users, FolderTree, FileText, Coins, DollarSign, ShieldAlert, Package } from 'lucide-vue-next';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -125,6 +125,28 @@ const breadcrumbs: BreadcrumbItem[] = [
                             </div>
                             <CardDescription class="text-[#999999]">
                                 管理金币交易，查看用户金币获得和消费记录
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div class="text-[#ff6e02] text-sm font-medium">
+                                点击进入 →
+                            </div>
+                        </CardContent>
+                    </Card>
+                </Link>
+
+                <!-- Plans Management Card -->
+                <Link href="/admin/plans" class="block">
+                    <Card class="bg-[#374151] border-[#4B5563] hover:border-[#ff6e02] transition-colors cursor-pointer h-full">
+                        <CardHeader>
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="p-3 bg-[#ff6e02] rounded-lg">
+                                    <Package class="w-6 h-6 text-white" />
+                                </div>
+                                <CardTitle class="text-white text-xl">套餐管理</CardTitle>
+                            </div>
+                            <CardDescription class="text-[#999999]">
+                                管理会员套餐，设置价格、权限和功能
                             </CardDescription>
                         </CardHeader>
                         <CardContent>

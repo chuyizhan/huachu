@@ -14,20 +14,19 @@ return new class extends Migration
         Schema::create('user_subscriptions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('subscriber_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('creator_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('vip_tier_id')->nullable()->constrained()->onDelete('set null');
-            $table->enum('type', ['creator', 'tier']); // Subscribe to creator or VIP tier
+            $table->foreignId('creator_id')->nullable()->constrained('users')->onDelete('cascade');
+            $table->foreignId('plan_id')->nullable()->constrained('plans')->onDelete('set null');
+            $table->enum('type', ['creator', 'plan']); // Subscribe to creator or plan
             $table->decimal('amount', 10, 2);
-            $table->enum('billing_cycle', ['monthly', 'yearly']);
             $table->enum('status', ['active', 'cancelled', 'expired', 'suspended'])->default('active');
             $table->timestamp('started_at');
             $table->timestamp('expires_at')->nullable();
             $table->timestamp('cancelled_at')->nullable();
             $table->timestamps();
 
-            $table->unique(['subscriber_id', 'creator_id', 'type']);
             $table->index(['creator_id', 'status']);
             $table->index(['subscriber_id', 'status']);
+            $table->index(['plan_id', 'status']);
             $table->index(['status', 'expires_at']);
         });
     }

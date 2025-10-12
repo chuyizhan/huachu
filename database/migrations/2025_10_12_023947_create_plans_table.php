@@ -11,14 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('vip_tiers', function (Blueprint $table) {
+        Schema::create('plans', function (Blueprint $table) {
             $table->id();
+            $table->integer('level')->default(0);
             $table->string('name');
             $table->string('slug')->unique();
             $table->text('description')->nullable();
-            $table->decimal('monthly_price', 10, 2);
-            $table->decimal('yearly_price', 10, 2)->nullable();
-            $table->json('features'); // Array of features
+            $table->decimal('price', 10, 2);
+            $table->integer('period_days')->comment('Plan duration in days');
+            $table->json('features')->nullable(); // Array of features
             $table->integer('max_premium_posts')->nullable(); // null = unlimited
             $table->boolean('can_create_premium_content')->default(false);
             $table->boolean('priority_support')->default(false);
@@ -37,6 +38,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('vip_tiers');
+        Schema::dropIfExists('plans');
     }
 };

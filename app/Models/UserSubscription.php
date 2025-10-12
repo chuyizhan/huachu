@@ -12,7 +12,7 @@ class UserSubscription extends Model
     protected $fillable = [
         'subscriber_id',
         'creator_id',
-        'vip_tier_id',
+        'plan_id',
         'type',
         'amount',
         'billing_cycle',
@@ -42,9 +42,9 @@ class UserSubscription extends Model
         return $this->belongsTo(User::class, 'creator_id');
     }
 
-    public function vipTier()
+    public function plan()
     {
-        return $this->belongsTo(VipTier::class);
+        return $this->belongsTo(Plan::class);
     }
 
     public function scopeActive($query)

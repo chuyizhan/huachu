@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use App\Models\VipTier;
+use App\Models\Plan;
 use App\Models\UserSubscription;
 use Illuminate\Support\Facades\Auth;
 
@@ -17,83 +17,77 @@ class VipController extends Controller
 
     public function index()
     {
-        $tiers = VipTier::active()
+        $plans = Plan::active()
             ->orderBy('sort_order')
             ->get();
 
         $user = Auth::user();
         $currentSubscription = $user->subscriptions()
-            ->with('vipTier')
+            ->with('plan')
             ->where('status', 'active')
-            ->where('type', 'tier')
+            ->where('type', 'plan')
             ->first();
 
         return Inertia::render('Vip/Index', [
-            'tiers' => $tiers,
+            'plans' => $plans,
             'currentSubscription' => $currentSubscription,
         ]);
     }
 
     public function show($slug)
     {
-        $tier = VipTier::where('slug', $slug)
+        $plan = Plan::where('slug', $slug)
             ->active()
             ->firstOrFail();
 
         $user = Auth::user();
         $hasSubscription = $user->subscriptions()
-            ->where('vip_tier_id', $tier->id)
+            ->where('plan_id', $plan->id)
             ->where('status', 'active')
             ->exists();
 
         return Inertia::render('Vip/Show', [
-            'tier' => $tier,
+            'plan' => $plan,
             'hasSubscription' => $hasSubscription,
         ]);
     }
 
     public function subscribe(Request $request, $slug)
     {
-        $tier = VipTier::where('slug', $slug)
+        $plan = Plan::where('slug', $slug)
             ->active()
             ->firstOrFail();
 
         $user = Auth::user();
 
-        // Check if user already has an active subscription to this tier
+        // Check if user already has an active subscription to this plan
         $existingSubscription = $user->subscriptions()
-            ->where('vip_tier_id', $tier->id)
+            ->where('plan_id', $plan->id)
             ->where('status', 'active')
             ->first();
 
         if ($existingSubscription) {
             return redirect()->route('vip.show', $slug)
-                ->with('error', 'You already have an active subscription to this tier.');
+                ->with('error', 'You already have an active subscription to this plan.');
         }
 
-        $request->validate([
-            'billing_cycle' => 'required|in:monthly,yearly',
-        ]);
-
-        $amount = $request->billing_cycle === 'yearly' ? $tier->yearly_price : $tier->monthly_price;
+        // Calculate expiry based on plan period_days
+        $expiresAt = now()->addDays($plan->period_days);
 
         // Create subscription (in real app, integrate with payment processor)
         UserSubscription::create([
             'subscriber_id' => $user->id,
             'creator_id' => null,
-            'vip_tier_id' => $tier->id,
-            'type' => 'tier',
-            'amount' => $amount,
-            'billing_cycle' => $request->billing_cycle,
+            'plan_id' => $plan->id,
+            'type' => 'plan',
+            'amount' => $plan->price,
             'status' => 'active',
             'started_at' => now(),
-            'expires_at' => $request->billing_cycle === 'yearly'
-                ? now()->addYear()
-                : now()->addMonth(),
+            'expires_at' => $expiresAt,
         ]);
 
         return redirect()->route('vip.index')
-            ->with('success', 'Successfully subscribed to ' . $tier->name . '!');
+            ->with('success', 'Successfully subscribed to ' . $plan->name . '!');
     }
 
     public function cancel($subscriptionId)
@@ -115,11 +109,11 @@ class VipController extends Controller
         $user = Auth::user();
 
         $subscriptions = $user->subscriptions()
-            ->with(['vipTier', 'creator.creatorProfile'])
+            ->with(['plan', 'creator.creatorProfile'])
             ->orderBy('created_at', 'desc')
             ->paginate(10);
 
-        return Inertia::render('Vip/MySubscriptions', [
+        return Inertia::render('Vip/Subscriptions', [
             'subscriptions' => $subscriptions,
         ]);
     }

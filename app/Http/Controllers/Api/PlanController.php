@@ -3,26 +3,26 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\VipTier;
+use App\Models\Plan;
 use Illuminate\Http\Request;
 
-class VipTierController extends Controller
+class PlanController extends Controller
 {
     public function index(Request $request)
     {
-        $tiers = VipTier::active()
+        $plans = Plan::active()
             ->orderBy('sort_order')
             ->get();
 
-        return response()->json($tiers);
+        return response()->json($plans);
     }
 
     public function show($slug)
     {
-        $tier = VipTier::where('slug', $slug)
+        $plan = Plan::where('slug', $slug)
             ->active()
             ->firstOrFail();
 
-        return response()->json($tier);
+        return response()->json($plan);
     }
 }

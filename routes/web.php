@@ -23,6 +23,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'admin']
     Route::post('users/{user}/consolidate-balances', [App\Http\Controllers\Admin\UserController::class, 'consolidateBalances'])->name('users.consolidate-balances');
     Route::resource('categories', App\Http\Controllers\Admin\CategoryController::class);
     Route::resource('posts', App\Http\Controllers\Admin\PostController::class);
+    Route::resource('plans', App\Http\Controllers\Admin\PlanController::class);
     Route::resource('point-transactions', App\Http\Controllers\Admin\PointTransactionController::class)->only(['index', 'create', 'store', 'destroy']);
     Route::resource('credit-transactions', App\Http\Controllers\Admin\CreditTransactionController::class)->only(['index', 'create', 'store', 'destroy']);
 });

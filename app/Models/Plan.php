@@ -5,16 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class VipTier extends Model
+class Plan extends Model
 {
     use HasFactory;
 
     protected $fillable = [
+        'level',
         'name',
         'slug',
         'description',
-        'monthly_price',
-        'yearly_price',
+        'price',
+        'period_days',
         'features',
         'max_premium_posts',
         'can_create_premium_content',
@@ -28,9 +29,10 @@ class VipTier extends Model
     protected function casts(): array
     {
         return [
+            'level' => 'integer',
+            'period_days' => 'integer',
             'features' => 'array',
-            'monthly_price' => 'decimal:2',
-            'yearly_price' => 'decimal:2',
+            'price' => 'decimal:2',
             'can_create_premium_content' => 'boolean',
             'priority_support' => 'boolean',
             'is_active' => 'boolean',
@@ -38,7 +40,7 @@ class VipTier extends Model
     }
 
     /**
-     * Get all subscriptions for this tier.
+     * Get all subscriptions for this plan.
      */
     public function subscriptions()
     {
@@ -46,7 +48,7 @@ class VipTier extends Model
     }
 
     /**
-     * Scope for active tiers.
+     * Scope for active plans.
      */
     public function scopeActive($query)
     {
