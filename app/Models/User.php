@@ -202,6 +202,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Get all point transactions for this user.
+     */
+    public function pointTransactions()
+    {
+        return $this->hasMany(PointTransaction::class);
+    }
+
+    /**
+     * Get all credit transactions for this user.
+     */
+    public function creditTransactions()
+    {
+        return $this->hasMany(CreditTransaction::class);
+    }
+
+    /**
      * Check if user is an admin.
      */
     public function isAdmin(): bool

@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import Textarea from '@/components/ui/Textarea.vue'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowLeft } from 'lucide-vue-next'
+import { ArrowLeft, RefreshCw } from 'lucide-vue-next'
+import { ref } from 'vue'
 
 interface User {
     id: number
@@ -33,6 +34,8 @@ const form = useForm({
     name: props.user.name,
     email: props.user.email,
     login_name: props.user.login_name,
+    password: '',
+    password_confirmation: '',
     is_admin: props.user.is_admin,
     is_creator: props.user.is_creator,
     is_verified: props.user.is_verified,
@@ -54,6 +57,23 @@ const submit = () => {
 
 const goBack = () => {
     router.visit('/admin/users')
+}
+
+const consolidating = ref(false)
+
+const consolidateBalances = () => {
+    if (confirm('确定要根据交易记录重新计算用户的积分和金币余额吗？这将覆盖当前余额。')) {
+        consolidating.value = true
+        router.post(`/admin/users/${props.user.id}/consolidate-balances`, {}, {
+            preserveScroll: true,
+            onSuccess: () => {
+                consolidating.value = false
+            },
+            onError: () => {
+                consolidating.value = false
+            },
+        })
+    }
 }
 </script>
 
@@ -138,6 +158,42 @@ const goBack = () => {
                                                 {{ form.errors.login_name }}
                                             </p>
                                         </div>
+
+                                        <!-- Password -->
+                                        <div class="space-y-2">
+                                            <Label for="password">新密码</Label>
+                                            <Input
+                                                id="password"
+                                                v-model="form.password"
+                                                type="password"
+                                                autocomplete="new-password"
+                                                :class="{ 'border-red-500': form.errors.password }"
+                                            />
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">
+                                                留空表示不修改密码
+                                            </p>
+                                            <p v-if="form.errors.password" class="text-sm text-red-500">
+                                                {{ form.errors.password }}
+                                            </p>
+                                        </div>
+
+                                        <!-- Password Confirmation -->
+                                        <div class="space-y-2">
+                                            <Label for="password_confirmation">确认新密码</Label>
+                                            <Input
+                                                id="password_confirmation"
+                                                v-model="form.password_confirmation"
+                                                type="password"
+                                                autocomplete="new-password"
+                                                :class="{ 'border-red-500': form.errors.password_confirmation }"
+                                            />
+                                            <p class="text-sm text-gray-500 dark:text-gray-400">
+                                                请再次输入新密码
+                                            </p>
+                                            <p v-if="form.errors.password_confirmation" class="text-sm text-red-500">
+                                                {{ form.errors.password_confirmation }}
+                                            </p>
+                                        </div>
                                     </div>
 
                                     <!-- Account Settings Section -->
@@ -181,7 +237,7 @@ const goBack = () => {
 
                                         <!-- Credits -->
                                         <div class="space-y-2">
-                                            <Label for="credits">积分余额</Label>
+                                            <Label for="credits">金币余额</Label>
                                             <Input
                                                 id="credits"
                                                 v-model.number="form.credits"
@@ -197,7 +253,7 @@ const goBack = () => {
 
                                         <!-- Balance -->
                                         <div class="space-y-2">
-                                            <Label for="balance">账户余额</Label>
+                                            <Label for="balance">积分余额</Label>
                                             <Input
                                                 id="balance"
                                                 v-model.number="form.balance"
@@ -303,6 +359,15 @@ const goBack = () => {
                                             @click="goBack"
                                         >
                                             取消
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            variant="destructive"
+                                            @click="consolidateBalances"
+                                            :disabled="consolidating"
+                                        >
+                                            <RefreshCw :class="{ 'animate-spin': consolidating }" class="mr-2 h-4 w-4" />
+                                            {{ consolidating ? '计算中...' : '重新计算余额' }}
                                         </Button>
                                     </div>
                                 </form>

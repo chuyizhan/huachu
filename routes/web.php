@@ -20,8 +20,11 @@ Route::get('dashboard', function () {
 // Admin routes
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'admin'])->group(function () {
     Route::resource('users', App\Http\Controllers\Admin\UserController::class);
+    Route::post('users/{user}/consolidate-balances', [App\Http\Controllers\Admin\UserController::class, 'consolidateBalances'])->name('users.consolidate-balances');
     Route::resource('categories', App\Http\Controllers\Admin\CategoryController::class);
     Route::resource('posts', App\Http\Controllers\Admin\PostController::class);
+    Route::resource('point-transactions', App\Http\Controllers\Admin\PointTransactionController::class)->only(['index', 'create', 'store', 'destroy']);
+    Route::resource('credit-transactions', App\Http\Controllers\Admin\CreditTransactionController::class)->only(['index', 'create', 'store', 'destroy']);
 });
 
 // User favorites

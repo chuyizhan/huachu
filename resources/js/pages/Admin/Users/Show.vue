@@ -314,15 +314,11 @@ const getSex = (sex: number | null) => {
                                     </div>
                                     <div>
                                         <div class="text-sm font-medium text-gray-500 dark:text-gray-400">积分</div>
-                                        <div class="mt-1 text-xl font-bold">{{ user.points }}</div>
+                                        <div class="mt-1 text-xl font-bold">{{ user.balance }}</div>
                                     </div>
                                     <div>
-                                        <div class="text-sm font-medium text-gray-500 dark:text-gray-400">积分余额</div>
+                                        <div class="text-sm font-medium text-gray-500 dark:text-gray-400">金币</div>
                                         <div class="mt-1 text-xl font-bold">{{ user.credits }}</div>
-                                    </div>
-                                    <div>
-                                        <div class="text-sm font-medium text-gray-500 dark:text-gray-400">账户余额</div>
-                                        <div class="mt-1 text-xl font-bold">¥{{ user.balance }}</div>
                                     </div>
                                 </CardContent>
                             </Card>

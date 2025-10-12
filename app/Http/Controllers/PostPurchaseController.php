@@ -51,7 +51,7 @@ class PostPurchaseController extends Controller
         if ($user->credits < $post->price) {
             return response()->json([
                 'success' => false,
-                'message' => '积分不足',
+                'message' => '金币不足',
                 'required' => $post->price,
                 'current' => $user->credits,
             ], 400);

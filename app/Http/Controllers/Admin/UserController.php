@@ -108,6 +108,7 @@ class UserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
             'login_name' => 'required|string|lowercase|max:32|unique:users,login_name,' . $user->id,
+            'password' => 'nullable|string|min:8|confirmed',
             'is_admin' => 'boolean',
             'is_creator' => 'boolean',
             'is_verified' => 'boolean',
@@ -123,6 +124,14 @@ class UserController extends Controller
         $validated['is_creator'] = $request->boolean('is_creator');
         $validated['is_verified'] = $request->boolean('is_verified');
         $validated['is_top_creator'] = $request->boolean('is_top_creator');
+
+        // Only update password if provided
+        if (empty($validated['password'])) {
+            unset($validated['password']);
+        }
+
+        // Remove password_confirmation from validated data
+        unset($validated['password_confirmation']);
 
         $user->update($validated);
 
@@ -141,5 +150,25 @@ class UserController extends Controller
         $user->delete();
 
         return redirect()->route('admin.users.index')->with('success', '用户已删除');
+    }
+
+    /**
+     * Consolidate user balances based on transaction records.
+     */
+    public function consolidateBalances(User $user)
+    {
+        // Calculate total points from point transactions
+        $totalPoints = $user->pointTransactions()->sum('points');
+
+        // Calculate total credits from credit transactions
+        $totalCredits = $user->creditTransactions()->sum('credits');
+
+        // Update user balances
+        $user->update([
+            'balance' => $totalPoints,
+            'credits' => $totalCredits,
+        ]);
+
+        return redirect()->back()->with('success', "余额已重新计算：积分 {$totalPoints}，金币 {$totalCredits}");
     }
 }

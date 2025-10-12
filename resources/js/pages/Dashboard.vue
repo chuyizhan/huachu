@@ -4,7 +4,7 @@ import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, FolderTree, FileText, ShieldAlert } from 'lucide-vue-next';
+import { Users, FolderTree, FileText, Coins, DollarSign, ShieldAlert } from 'lucide-vue-next';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -81,6 +81,50 @@ const breadcrumbs: BreadcrumbItem[] = [
                             </div>
                             <CardDescription class="text-[#999999]">
                                 管理所有帖子，查看帖子信息，编辑帖子内容
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div class="text-[#ff6e02] text-sm font-medium">
+                                点击进入 →
+                            </div>
+                        </CardContent>
+                    </Card>
+                </Link>
+
+                <!-- Point Transactions Management Card -->
+                <Link href="/admin/point-transactions" class="block">
+                    <Card class="bg-[#374151] border-[#4B5563] hover:border-[#ff6e02] transition-colors cursor-pointer h-full">
+                        <CardHeader>
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="p-3 bg-[#ff6e02] rounded-lg">
+                                    <Coins class="w-6 h-6 text-white" />
+                                </div>
+                                <CardTitle class="text-white text-xl">积分交易</CardTitle>
+                            </div>
+                            <CardDescription class="text-[#999999]">
+                                管理积分交易，查看用户积分获得和消费记录
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div class="text-[#ff6e02] text-sm font-medium">
+                                点击进入 →
+                            </div>
+                        </CardContent>
+                    </Card>
+                </Link>
+
+                <!-- Credit Transactions Management Card -->
+                <Link href="/admin/credit-transactions" class="block">
+                    <Card class="bg-[#374151] border-[#4B5563] hover:border-[#ff6e02] transition-colors cursor-pointer h-full">
+                        <CardHeader>
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="p-3 bg-[#ff6e02] rounded-lg">
+                                    <DollarSign class="w-6 h-6 text-white" />
+                                </div>
+                                <CardTitle class="text-white text-xl">金币交易</CardTitle>
+                            </div>
+                            <CardDescription class="text-[#999999]">
+                                管理金币交易，查看用户金币获得和消费记录
                             </CardDescription>
                         </CardHeader>
                         <CardContent>

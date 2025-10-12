@@ -14,7 +14,7 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, Users, MessageSquare, Crown, Trophy, PlusCircle, Shield, FolderTree, FileText } from 'lucide-vue-next';
+import { BookOpen, Folder, LayoutGrid, Users, MessageSquare, Crown, Trophy, PlusCircle, Shield, FolderTree, FileText, Coins, DollarSign } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 import { computed } from 'vue';
 
@@ -83,6 +83,16 @@ const adminNavItems: NavItem[] = [
         title: '帖子管理',
         href: '/admin/posts',
         icon: FileText,
+    },
+    {
+        title: '积分交易',
+        href: '/admin/point-transactions',
+        icon: Coins,
+    },
+    {
+        title: '金币交易',
+        href: '/admin/credit-transactions',
+        icon: DollarSign,
     },
 ];
 
