@@ -13,15 +13,16 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         // Create or update admin user
+        $adminData = User::factory()->admin()->make([
+            'name' => 'Admin User',
+            'login_name' => 'admin',
+            'email' => 'admin@meiwei.com',
+        ])->toArray();
+        $adminData['password'] = bcrypt('password');
+
         $admin = User::updateOrCreate(
             ['email' => 'admin@meiwei.com'],
-            array_merge(
-                User::factory()->admin()->make([
-                    'name' => 'Admin User',
-                    'login_name' => 'admin',
-                ])->toArray(),
-                ['email' => 'admin@meiwei.com']
-            )
+            $adminData
         );
 
         // Create some top creators (verified, high engagement)
@@ -80,15 +81,16 @@ class UserSeeder extends Seeder
             ->create();
 
         // Create or update test user for development
+        $testData = User::factory()->make([
+            'name' => 'Test User',
+            'login_name' => 'testuser',
+            'email' => 'test@meiwei.com',
+        ])->toArray();
+        $testData['password'] = bcrypt('password');
+
         User::updateOrCreate(
             ['email' => 'test@meiwei.com'],
-            array_merge(
-                User::factory()->make([
-                    'name' => 'Test User',
-                    'login_name' => 'testuser',
-                ])->toArray(),
-                ['email' => 'test@meiwei.com']
-            )
+            $testData
         );
     }
 }
