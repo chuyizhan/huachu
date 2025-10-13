@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Link, usePage, router } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import axios from 'axios';
+import Comments from '@/components/Comments.vue';
 import {
     Heart,
     Eye,
@@ -92,6 +93,7 @@ interface Props {
     isLocked: boolean;
     isPurchased: boolean;
     userCredits: number;
+    commentsCount: number;
 }
 
 const props = defineProps<Props>();
@@ -448,11 +450,10 @@ const getPostTypeText = (type: string) => {
                             <!-- Images Gallery -->
                             <div v-if="post.image_urls && post.image_urls.length > 0" class="mb-6">
                                 <div :class="post.image_urls.length === 1 ? 'grid grid-cols-1' : 'grid grid-cols-2 gap-3'">
-                                    <a
+                                    <div
                                         v-for="image in post.image_urls"
                                         :key="image.id"
-                                        :href="image.url"
-                                        target="_blank"
+                                       
                                         class="group relative rounded-lg overflow-hidden border border-[#4B5563] hover:border-[#ff6e02] transition-colors"
                                     >
                                         <img
@@ -460,7 +461,7 @@ const getPostTypeText = (type: string) => {
                                             alt="Post image"
                                             class="w-full h-auto object-cover group-hover:opacity-90 transition-opacity"
                                         />
-                                    </a>
+                                    </div>
                                 </div>
                             </div>
 
@@ -515,6 +516,15 @@ const getPostTypeText = (type: string) => {
                             </div>
                         </CardContent>
                     </Card>
+
+                    <!-- Comments Section -->
+                    <div class="bg-[#374151] rounded-lg p-6 mb-6">
+                        <Comments
+                            :comments="post.comments || []"
+                            :commentable-type="'App\\Models\\Post'"
+                            :commentable-id="post.id"
+                        />
+                    </div>
 
                     <!-- Tags -->
                     <div v-if="post.tags && post.tags.length > 0" class="mb-6">

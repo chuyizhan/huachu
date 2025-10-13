@@ -11,6 +11,7 @@ use App\Http\Controllers\PostPurchaseController;
 use App\Http\Controllers\CreatorController;
 use App\Http\Controllers\VipController;
 use App\Http\Controllers\RechargeController;
+use App\Http\Controllers\CommentController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -40,6 +41,13 @@ Route::prefix('recharge')->name('recharge.')->middleware('auth')->group(function
     Route::get('/', [RechargeController::class, 'index'])->name('index');
     Route::post('/process', [RechargeController::class, 'process'])->name('process');
     Route::get('/success/{order}', [RechargeController::class, 'success'])->name('success');
+});
+
+// Comment routes
+Route::prefix('comments')->name('comments.')->middleware('auth')->group(function () {
+    Route::post('/', [CommentController::class, 'store'])->name('store');
+    Route::put('/{comment}', [CommentController::class, 'update'])->name('update');
+    Route::delete('/{comment}', [CommentController::class, 'destroy'])->name('destroy');
 });
 
 // Community routes

@@ -51,7 +51,7 @@ class PostController extends Controller
 
     public function show($slug)
     {
-        $post = Post::with(['user.creatorProfile', 'category', 'likedByUsers', 'media'])
+        $post = Post::with(['user.creatorProfile', 'category', 'likedByUsers', 'media', 'comments'])
             ->where('slug', $slug)
             ->published()
             ->firstOrFail();
@@ -113,6 +113,9 @@ class PostController extends Controller
             ];
         }
 
+        // Get comments count
+        $commentsCount = $post->comments()->count();
+
         return Inertia::render('Posts/Show', [
             'post' => $post,
             'relatedPosts' => $relatedPosts,
@@ -121,6 +124,7 @@ class PostController extends Controller
             'isLocked' => $isLocked,
             'isPurchased' => $isPurchased,
             'userCredits' => $user ? (float) $user->credits : 0,
+            'commentsCount' => $commentsCount,
         ]);
     }
 

@@ -108,6 +108,22 @@ class Post extends Model implements HasMedia
     }
 
     /**
+     * Get all comments for the post
+     */
+    public function comments()
+    {
+        return $this->morphMany(Comment::class, 'commentable')->topLevel()->with(['user', 'replies'])->latest();
+    }
+
+    /**
+     * Get comments count
+     */
+    public function commentsCount()
+    {
+        return $this->morphMany(Comment::class, 'commentable')->count();
+    }
+
+    /**
      * Check if a user has purchased this post.
      */
     public function isPurchasedBy(?User $user): bool

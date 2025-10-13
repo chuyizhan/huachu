@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Link, usePage } from '@inertiajs/vue3';
-import { PlusCircle, Menu, X } from 'lucide-vue-next';
+import { PlusCircle, Menu, X, Coins, Wallet } from 'lucide-vue-next';
 import { computed, ref } from 'vue';
 import { Dialog, DialogPanel } from '@headlessui/vue';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -161,14 +161,44 @@ const user = computed(() => auth.value?.user);
                         <!-- Auth actions -->
                         <div class="py-6">
                             <div v-if="user" class="space-y-2">
+                                <!-- Credits Balance -->
+                                <div class="-mx-3 px-3 py-3 bg-[#374151] rounded-lg">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-2">
+                                            <Coins class="h-5 w-5 text-[#ff6e02]" />
+                                            <span class="text-sm text-[#999999]">金币余额:</span>
+                                        </div>
+                                        <span class="text-base font-bold text-[#ff6e02]">{{ parseFloat(user.credits || 0).toFixed(2) }}</span>
+                                    </div>
+                                </div>
+
+                                <!-- Recharge Button -->
+                                <Link
+                                    href="/recharge"
+                                    class="bg-[#ff6e02] text-white px-4 py-3 rounded text-base font-semibold hover:bg-[#e55a00] transition-colors flex items-center gap-2 justify-center w-full"
+                                    @click="mobileMenuOpen = false"
+                                >
+                                    <Wallet class="w-4 h-4" />
+                                    充值金币
+                                </Link>
+
                                 <!-- Create Post Button -->
                                 <Link
                                     href="/posts/create"
-                                    class="bg-[#ff6e02] text-white px-4 py-3 rounded text-base font-semibold hover:bg-[#e55a00] transition-colors flex items-center gap-2 justify-center w-full"
+                                    class="bg-[#374151] text-white px-4 py-3 rounded text-base font-semibold hover:bg-[#4B5563] transition-colors flex items-center gap-2 justify-center w-full border border-[#4B5563]"
                                     @click="mobileMenuOpen = false"
                                 >
                                     <PlusCircle class="w-4 h-4" />
                                     发菜谱
+                                </Link>
+
+                                <!-- Favorites -->
+                                <Link
+                                    href="/favorites"
+                                    class="-mx-3 block rounded-lg px-3 py-2.5 text-base font-semibold text-white hover:bg-[#374151]"
+                                    @click="mobileMenuOpen = false"
+                                >
+                                    我的收藏
                                 </Link>
 
                                 <!-- User profile link -->
@@ -177,7 +207,7 @@ const user = computed(() => auth.value?.user);
                                     class="-mx-3 block rounded-lg px-3 py-2.5 text-base font-semibold text-white hover:bg-[#374151]"
                                     @click="mobileMenuOpen = false"
                                 >
-                                    个人资料
+                                    设置
                                 </Link>
 
                                 <!-- Logout -->
