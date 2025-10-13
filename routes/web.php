@@ -10,6 +10,7 @@ use App\Http\Controllers\PostFavoriteController;
 use App\Http\Controllers\PostPurchaseController;
 use App\Http\Controllers\CreatorController;
 use App\Http\Controllers\VipController;
+use App\Http\Controllers\RechargeController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -24,12 +25,22 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'admin']
     Route::resource('categories', App\Http\Controllers\Admin\CategoryController::class);
     Route::resource('posts', App\Http\Controllers\Admin\PostController::class);
     Route::resource('plans', App\Http\Controllers\Admin\PlanController::class);
+    Route::resource('recharge-packages', App\Http\Controllers\Admin\RechargePackageController::class);
     Route::resource('point-transactions', App\Http\Controllers\Admin\PointTransactionController::class)->only(['index', 'create', 'store', 'destroy']);
     Route::resource('credit-transactions', App\Http\Controllers\Admin\CreditTransactionController::class)->only(['index', 'create', 'store', 'destroy']);
+    Route::get('platform-transactions', [App\Http\Controllers\Admin\PlatformTransactionController::class, 'index'])->name('platform-transactions.index');
+    Route::get('orders', [App\Http\Controllers\Admin\OrderController::class, 'index'])->name('orders.index');
 });
 
 // User favorites
 Route::get('/favorites', [PostFavoriteController::class, 'index'])->middleware('auth')->name('favorites');
+
+// Recharge routes
+Route::prefix('recharge')->name('recharge.')->middleware('auth')->group(function () {
+    Route::get('/', [RechargeController::class, 'index'])->name('index');
+    Route::post('/process', [RechargeController::class, 'process'])->name('process');
+    Route::get('/success/{order}', [RechargeController::class, 'success'])->name('success');
+});
 
 // Community routes
 Route::prefix('community')->name('community.')->group(function () {

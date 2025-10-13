@@ -95,6 +95,7 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+console.log(props.post);
 const page = usePage();
 
 // Reactive state for like functionality
@@ -476,7 +477,7 @@ const getPostTypeText = (type: string) => {
                                     <div class="text-6xl mb-4">🔒</div>
                                     <h3 class="text-2xl font-bold text-white mb-2">此内容需要付费解锁</h3>
                                     <p class="text-[#999999] mb-6">
-                                        作者设置此内容需要 <span class="text-[#ff6e02] font-bold text-xl">{{ post.price }}</span> 积分才能查看
+                                        作者设置此内容需要 <span class="text-[#ff6e02] font-bold text-xl">{{ post.price }}</span> 金币才能查看
                                     </p>
 
                                     <div v-if="post.free_after" class="mb-4 text-sm text-[#999999]">
@@ -485,7 +486,7 @@ const getPostTypeText = (type: string) => {
 
                                     <div v-if="isAuthenticated" class="space-y-4">
                                         <div class="text-sm text-[#999999]">
-                                            你的积分余额: <span class="text-white font-semibold">{{ userCreditsRef }}</span>
+                                            你的金币余额: <span class="text-white font-semibold">{{ userCreditsRef }}</span>
                                         </div>
 
                                         <Button
@@ -494,10 +495,10 @@ const getPostTypeText = (type: string) => {
                                             :disabled="isPurchasing"
                                             class="bg-[#ff6e02] hover:bg-[#e55a00] text-white px-8 py-3 text-lg"
                                         >
-                                            {{ isPurchasing ? '购买中...' : `花费 ${post.price} 积分解锁内容` }}
+                                            {{ isPurchasing ? '购买中...' : `花费 ${post.price} 金币解锁内容` }}
                                         </Button>
                                         <div v-else class="text-red-400">
-                                            积分不足，需要 {{ post.price - userCreditsRef }} 更多积分
+                                            金币不足，需要 {{ post.price - userCreditsRef }} 更多金币
                                         </div>
                                     </div>
 

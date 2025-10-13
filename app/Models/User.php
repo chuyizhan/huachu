@@ -218,6 +218,22 @@ class User extends Authenticatable
     }
 
     /**
+     * Get all platform transactions where this user is the creator.
+     */
+    public function platformTransactions()
+    {
+        return $this->hasMany(PlatformTransaction::class, 'creator_id');
+    }
+
+    /**
+     * Get all orders for the user
+     */
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    /**
      * Check if user is an admin.
      */
     public function isAdmin(): bool

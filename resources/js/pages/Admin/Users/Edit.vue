@@ -36,7 +36,6 @@ const form = useForm({
     login_name: props.user.login_name,
     password: '',
     password_confirmation: '',
-    is_admin: props.user.is_admin,
     is_creator: props.user.is_creator,
     is_verified: props.user.is_verified,
     is_top_creator: props.user.is_top_creator,
@@ -271,22 +270,6 @@ const consolidateBalances = () => {
                                     <!-- Permissions Section -->
                                     <div class="space-y-4 pt-6 border-t">
                                         <h3 class="text-lg font-medium">权限设置</h3>
-
-                                        <!-- Is Admin -->
-                                        <div class="flex items-center space-x-2">
-                                            <input
-                                                id="is_admin"
-                                                v-model="form.is_admin"
-                                                type="checkbox"
-                                                class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                                            />
-                                            <Label for="is_admin" class="cursor-pointer">
-                                                管理员权限
-                                            </Label>
-                                        </div>
-                                        <p class="text-sm text-gray-500 dark:text-gray-400 pl-6">
-                                            拥有系统所有权限，可以管理用户和内容
-                                        </p>
 
                                         <!-- Is Creator -->
                                         <div class="flex items-center space-x-2">

@@ -4,7 +4,7 @@ import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, FolderTree, FileText, Coins, DollarSign, ShieldAlert, Package } from 'lucide-vue-next';
+import { Users, FolderTree, FileText, Coins, DollarSign, ShieldAlert, Package, TrendingUp, ShoppingCart, Wallet } from 'lucide-vue-next';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -147,6 +147,72 @@ const breadcrumbs: BreadcrumbItem[] = [
                             </div>
                             <CardDescription class="text-[#999999]">
                                 管理会员套餐，设置价格、权限和功能
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div class="text-[#ff6e02] text-sm font-medium">
+                                点击进入 →
+                            </div>
+                        </CardContent>
+                    </Card>
+                </Link>
+
+                <!-- Platform Earnings Card -->
+                <Link href="/admin/platform-transactions" class="block">
+                    <Card class="bg-[#374151] border-[#4B5563] hover:border-[#ff6e02] transition-colors cursor-pointer h-full">
+                        <CardHeader>
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="p-3 bg-[#ff6e02] rounded-lg">
+                                    <TrendingUp class="w-6 h-6 text-white" />
+                                </div>
+                                <CardTitle class="text-white text-xl">平台收益</CardTitle>
+                            </div>
+                            <CardDescription class="text-[#999999]">
+                                查看平台佣金收益和交易统计
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div class="text-[#ff6e02] text-sm font-medium">
+                                点击进入 →
+                            </div>
+                        </CardContent>
+                    </Card>
+                </Link>
+
+                <!-- Orders Management Card -->
+                <Link href="/admin/orders" class="block">
+                    <Card class="bg-[#374151] border-[#4B5563] hover:border-[#ff6e02] transition-colors cursor-pointer h-full">
+                        <CardHeader>
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="p-3 bg-[#ff6e02] rounded-lg">
+                                    <ShoppingCart class="w-6 h-6 text-white" />
+                                </div>
+                                <CardTitle class="text-white text-xl">订单管理</CardTitle>
+                            </div>
+                            <CardDescription class="text-[#999999]">
+                                查看和管理用户充值订单和交易记录
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div class="text-[#ff6e02] text-sm font-medium">
+                                点击进入 →
+                            </div>
+                        </CardContent>
+                    </Card>
+                </Link>
+
+                <!-- Recharge Packages Card -->
+                <Link href="/admin/recharge-packages" class="block">
+                    <Card class="bg-[#374151] border-[#4B5563] hover:border-[#ff6e02] transition-colors cursor-pointer h-full">
+                        <CardHeader>
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="p-3 bg-[#ff6e02] rounded-lg">
+                                    <Wallet class="w-6 h-6 text-white" />
+                                </div>
+                                <CardTitle class="text-white text-xl">充值预设</CardTitle>
+                            </div>
+                            <CardDescription class="text-[#999999]">
+                                管理充值套餐金额和赠送额度设置
                             </CardDescription>
                         </CardHeader>
                         <CardContent>

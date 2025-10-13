@@ -7,7 +7,8 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
-
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 class UserController extends Controller
 {
     /**
@@ -104,12 +105,14 @@ class UserController extends Controller
      */
     public function update(Request $request, User $user)
     {
+        // Debug: Log all incoming request data
+        \Log::info('Update user request data:', $request->all());
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
             'login_name' => 'required|string|lowercase|max:32|unique:users,login_name,' . $user->id,
             'password' => 'nullable|string|min:8|confirmed',
-            'is_admin' => 'boolean',
             'is_creator' => 'boolean',
             'is_verified' => 'boolean',
             'is_top_creator' => 'boolean',
@@ -119,21 +122,53 @@ class UserController extends Controller
             'balance' => 'required|numeric|min:0',
         ]);
 
+        // Debug: Log validated data
+        \Log::info('Validated data:', $validated);
+
         // Convert checkbox values properly
-        $validated['is_admin'] = $request->boolean('is_admin');
         $validated['is_creator'] = $request->boolean('is_creator');
         $validated['is_verified'] = $request->boolean('is_verified');
         $validated['is_top_creator'] = $request->boolean('is_top_creator');
 
-        // Only update password if provided
-        if (empty($validated['password'])) {
-            unset($validated['password']);
-        }
-
-        // Remove password_confirmation from validated data
+        // Always remove password_confirmation from validated data (not a model field)
         unset($validated['password_confirmation']);
 
+        // Handle password update separately
+        $updatePassword = false;
+        $newPassword = null;
+
+        // Check if password exists and is not empty or null
+        $passwordProvided = isset($validated['password']) &&
+                           $validated['password'] !== null &&
+                           $validated['password'] !== '';
+
+        if ($passwordProvided) {
+            $updatePassword = true;
+            $newPassword = $validated['password'];
+            \Log::info('Password will be updated. New password: ' . $newPassword . ', Length: ' . strlen($newPassword));
+        } else {
+            \Log::info('No password update. Password value: ' . var_export($validated['password'] ?? 'KEY_NOT_SET', true));
+        }
+
+        // Always remove password from validated data
+        unset($validated['password']);
+
+        // Update user data
         $user->update($validated);
+        \Log::info('User data updated');
+
+        // Update password if provided
+        if ($updatePassword) {
+            $hashedPassword = Hash::make($newPassword);
+            \Log::info('Updating password. Hashed password: ' . substr($hashedPassword, 0, 20) . '...');
+
+            $user->forceFill([
+                'password' => $hashedPassword,
+                'remember_token' => Str::random(60),
+            ])->save();
+
+            \Log::info('Password updated. New password hash from DB: ' . substr($user->fresh()->password, 0, 20) . '...');
+        }
 
         return redirect()->route('admin.users.index')->with('success', '用户已更新');
     }
