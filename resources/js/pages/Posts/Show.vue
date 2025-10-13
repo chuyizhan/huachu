@@ -539,8 +539,8 @@ const getPostTypeText = (type: string) => {
                         </div>
                     </div>
 
-                    <!-- Related Posts -->
-                    <div v-if="relatedPosts.length > 0" class="bg-[#374151] rounded-lg p-6">
+                    <!-- Related Posts - Mobile Only -->
+                    <div v-if="relatedPosts.length > 0" class="bg-[#374151] rounded-lg p-6 lg:hidden">
                         <h3 class="text-white text-lg font-bold mb-4 flex items-center gap-2">
                             <ThumbsUp class="w-5 h-5 text-[#ff6e02]" />
                             相关推荐
@@ -670,7 +670,7 @@ const getPostTypeText = (type: string) => {
                     </Card>
 
                     <!-- Category Info -->
-                    <Card class="bg-[#374151] border-0">
+                    <Card class="bg-[#374151] border-0 mb-6">
                         <CardHeader class="pb-3">
                             <CardTitle class="text-white text-base flex items-center gap-2">
                                 <Tag class="w-4 h-4" />
@@ -690,6 +690,40 @@ const getPostTypeText = (type: string) => {
                                     </div>
                                 </div>
                             </Link>
+                        </CardContent>
+                    </Card>
+
+                    <!-- Related Posts - Desktop Only -->
+                    <Card v-if="relatedPosts.length > 0" class="bg-[#374151] border-0 hidden lg:block">
+                        <CardHeader class="pb-3">
+                            <CardTitle class="text-white text-base flex items-center gap-2">
+                                <ThumbsUp class="w-4 h-4" />
+                                相关推荐
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div class="space-y-3">
+                                <Link v-for="relatedPost in relatedPosts"
+                                      :key="relatedPost.id"
+                                      :href="`/posts/${relatedPost.slug}`"
+                                      class="block group">
+                                    <div class="p-3 rounded-lg hover:bg-[#1f2937] transition-colors">
+                                        <h4 class="text-white font-medium text-sm group-hover:text-[#ff6e02] transition-colors line-clamp-2 mb-2">
+                                            {{ relatedPost.title }}
+                                        </h4>
+                                        <div class="flex items-center gap-2 text-xs text-[#999999]">
+                                            <span class="flex items-center gap-1">
+                                                <Eye class="w-3 h-3" />
+                                                {{ relatedPost.view_count }}
+                                            </span>
+                                            <span class="flex items-center gap-1">
+                                                <Heart class="w-3 h-3" />
+                                                {{ relatedPost.like_count }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </Link>
+                            </div>
                         </CardContent>
                     </Card>
                 </div>

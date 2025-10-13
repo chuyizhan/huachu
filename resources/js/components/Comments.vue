@@ -49,6 +49,7 @@ const submitComment = () => {
         preserveScroll: true,
         onSuccess: () => {
             newCommentForm.reset('content')
+            newCommentForm.parent_id = null
             replyingTo.value = null
         },
     })
@@ -123,6 +124,7 @@ const canEditOrDelete = (comment: Comment) => {
             <form @submit.prevent="submitComment" class="space-y-3">
                 <Textarea
                     v-model="newCommentForm.content"
+                    @focus="newCommentForm.parent_id = null; replyingTo = null"
                     placeholder="写下你的评论..."
                     rows="3"
                     class="bg-[#374151] border-[#4B5563] text-white"
