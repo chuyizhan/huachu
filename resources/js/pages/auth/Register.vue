@@ -45,6 +45,24 @@ import { LoaderCircle, User, Mail, Lock, UserPlus } from 'lucide-vue-next';
                 </div>
 
                 <div class="space-y-2">
+                    <Label for="login_name" class="text-white text-sm font-medium">用户名</Label>
+                    <div class="relative">
+                        <UserPlus class="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#999999] w-4 h-4" />
+                        <Input
+                            id="login_name"
+                            type="text"
+                            required
+                            :tabindex="2"
+                            autocomplete="username"
+                            name="login_name"
+                            placeholder="请设置用户名"
+                            class="pl-10 bg-[#1f2937] border-[#1f2937] text-white placeholder:text-[#999999] focus:border-[#ff6e02] focus:ring-[#ff6e02]"
+                        />
+                    </div>
+                    <InputError :message="errors.login_name" />
+                </div>
+
+                <div class="space-y-2">
                     <Label for="email" class="text-white text-sm font-medium">邮箱地址</Label>
                     <div class="relative">
                         <Mail class="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#999999] w-4 h-4" />
@@ -52,7 +70,7 @@ import { LoaderCircle, User, Mail, Lock, UserPlus } from 'lucide-vue-next';
                             id="email"
                             type="email"
                             required
-                            :tabindex="2"
+                            :tabindex="3"
                             autocomplete="email"
                             name="email"
                             placeholder="请输入邮箱地址"
@@ -70,7 +88,7 @@ import { LoaderCircle, User, Mail, Lock, UserPlus } from 'lucide-vue-next';
                             id="password"
                             type="password"
                             required
-                            :tabindex="3"
+                            :tabindex="4"
                             autocomplete="new-password"
                             name="password"
                             placeholder="请设置密码"
@@ -88,7 +106,7 @@ import { LoaderCircle, User, Mail, Lock, UserPlus } from 'lucide-vue-next';
                             id="password_confirmation"
                             type="password"
                             required
-                            :tabindex="4"
+                            :tabindex="5"
                             autocomplete="new-password"
                             name="password_confirmation"
                             placeholder="请再次输入密码"
@@ -101,7 +119,7 @@ import { LoaderCircle, User, Mail, Lock, UserPlus } from 'lucide-vue-next';
                 <Button
                     type="submit"
                     class="w-full bg-[#ff6e02] text-white hover:bg-[#e55a00] transition-colors font-medium py-2.5"
-                    tabindex="5"
+                    tabindex="6"
                     :disabled="processing"
                     data-test="register-user-button"
                 >
@@ -119,7 +137,7 @@ import { LoaderCircle, User, Mail, Lock, UserPlus } from 'lucide-vue-next';
                 <Link
                     :href="login()"
                     class="text-[#ff6e02] hover:text-[#e55a00] transition-colors font-medium"
-                    :tabindex="6"
+                    :tabindex="7"
                 >
                     立即登录
                 </Link>

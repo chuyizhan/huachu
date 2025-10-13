@@ -13,9 +13,14 @@ import {
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
-import { Link } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, Users, MessageSquare, Crown, Trophy, PlusCircle } from 'lucide-vue-next';
+import { Link, usePage } from '@inertiajs/vue3';
+import { BookOpen, Folder, LayoutGrid, Users, MessageSquare, Crown, Trophy, PlusCircle, Shield, FolderTree, FileText, Coins, DollarSign, Package, TrendingUp, ShoppingCart, Wallet } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
+import { computed } from 'vue';
+
+const page = usePage();
+const user = computed(() => page.props.auth?.user);
+const isAdmin = computed(() => user.value?.is_admin);
 
 const mainNavItems: NavItem[] = [
     {
@@ -24,43 +29,92 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: '社区',
-        href: '/community',
-        icon: Users,
+        title: '用户管理',
+        href: '/admin/users',
+        icon: Shield,
     },
     {
-        title: '菜谱',
-        href: '/community/posts',
-        icon: MessageSquare,
+        title: '分类管理',
+        href: '/admin/categories',
+        icon: FolderTree,
     },
     {
-        title: '大厨',
-        href: '/community/creators',
-        icon: Users,
+        title: '帖子管理',
+        href: '/admin/posts',
+        icon: FileText,
     },
     {
-        title: '排行榜',
-        href: '/community/leaderboard',
-        icon: Trophy,
+        title: '套餐管理',
+        href: '/admin/plans',
+        icon: Package,
     },
+    {
+        title: '积分交易',
+        href: '/admin/point-transactions',
+        icon: Coins,
+    },
+    {
+        title: '金币交易',
+        href: '/admin/credit-transactions',
+        icon: DollarSign,
+    },
+    {
+        title: '平台收益',
+        href: '/admin/platform-transactions',
+        icon: TrendingUp,
+    },
+    {
+        title: '订单管理',
+        href: '/admin/orders',
+        icon: ShoppingCart,
+    },
+    {
+        title: '充值预设',
+        href: '/admin/recharge-packages',
+        icon: Wallet,
+    },
+    // {
+    //     title: '社区',
+    //     href: '/community',
+    //     icon: Users,
+    // },
+    // {
+    //     title: '菜谱',
+    //     href: '/community/posts',
+    //     icon: MessageSquare,
+    // },
+    // {
+    //     title: '大厨',
+    //     href: '/community/creators',
+    //     icon: Users,
+    // },
+    // {
+    //     title: '排行榜',
+    //     href: '/community/leaderboard',
+    //     icon: Trophy,
+    // },
 ];
 
 const creatorNavItems: NavItem[] = [
-    {
-        title: '发布菜谱',
-        href: '/posts/create',
-        icon: PlusCircle,
-    },
-    {
-        title: '我的菜谱',
-        href: '/posts',
-        icon: MessageSquare,
-    },
-    {
-        title: 'VIP会员',
-        href: '/vip',
-        icon: Crown,
-    },
+    // {
+    //     title: '发布菜谱',
+    //     href: '/posts/create',
+    //     icon: PlusCircle,
+    // },
+    // {
+    //     title: '我的菜谱',
+    //     href: '/posts',
+    //     icon: MessageSquare,
+    // },
+    // {
+    //     title: 'VIP会员',
+    //     href: '/vip',
+    //     icon: Crown,
+    // },
+];
+
+const adminNavItems: NavItem[] = [
+   
 ];
 
 const footerNavItems: NavItem[] = [
@@ -93,7 +147,8 @@ const footerNavItems: NavItem[] = [
 
         <SidebarContent>
             <NavMain :items="mainNavItems" />
-            <NavMain :items="creatorNavItems" />
+            <!-- <NavMain :items="creatorNavItems" /> -->
+            <!-- <NavMain v-if="isAdmin" :items="adminNavItems" /> -->
         </SidebarContent>
 
         <SidebarFooter>

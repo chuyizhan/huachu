@@ -416,7 +416,7 @@ const getTypeColor = (type: string) => {
                                         {{ user.user.creator_profile?.display_name || user.user.name }}
                                     </span>
                                     <div class="text-xs text-muted-foreground">
-                                        Level {{ user.level }} • {{ user.points.toLocaleString() }} points
+                                        Level {{ user.level }} • {{ user.points.toLocaleString() }} 积分
                                     </div>
                                 </div>
                             </div>

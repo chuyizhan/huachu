@@ -18,14 +18,6 @@ const sidebarNavItems: NavItem[] = [
         title: '密码',
         href: editPassword(),
     },
-    {
-        title: '双因素认证',
-        href: show(),
-    },
-    {
-        title: '外观',
-        href: editAppearance(),
-    },
 ];
 
 const currentPath = typeof window !== undefined ? window.location.pathname : '';

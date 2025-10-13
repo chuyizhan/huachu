@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Link, usePage, router } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import axios from 'axios';
+import Comments from '@/components/Comments.vue';
 import {
     Heart,
     Eye,
@@ -92,9 +93,11 @@ interface Props {
     isLocked: boolean;
     isPurchased: boolean;
     userCredits: number;
+    commentsCount: number;
 }
 
 const props = defineProps<Props>();
+console.log(props.post);
 const page = usePage();
 
 // Reactive state for like functionality
@@ -447,11 +450,10 @@ const getPostTypeText = (type: string) => {
                             <!-- Images Gallery -->
                             <div v-if="post.image_urls && post.image_urls.length > 0" class="mb-6">
                                 <div :class="post.image_urls.length === 1 ? 'grid grid-cols-1' : 'grid grid-cols-2 gap-3'">
-                                    <a
+                                    <div
                                         v-for="image in post.image_urls"
                                         :key="image.id"
-                                        :href="image.url"
-                                        target="_blank"
+                                       
                                         class="group relative rounded-lg overflow-hidden border border-[#4B5563] hover:border-[#ff6e02] transition-colors"
                                     >
                                         <img
@@ -459,7 +461,7 @@ const getPostTypeText = (type: string) => {
                                             alt="Post image"
                                             class="w-full h-auto object-cover group-hover:opacity-90 transition-opacity"
                                         />
-                                    </a>
+                                    </div>
                                 </div>
                             </div>
 
@@ -476,7 +478,7 @@ const getPostTypeText = (type: string) => {
                                     <div class="text-6xl mb-4">🔒</div>
                                     <h3 class="text-2xl font-bold text-white mb-2">此内容需要付费解锁</h3>
                                     <p class="text-[#999999] mb-6">
-                                        作者设置此内容需要 <span class="text-[#ff6e02] font-bold text-xl">{{ post.price }}</span> 积分才能查看
+                                        作者设置此内容需要 <span class="text-[#ff6e02] font-bold text-xl">{{ post.price }}</span> 金币才能查看
                                     </p>
 
                                     <div v-if="post.free_after" class="mb-4 text-sm text-[#999999]">
@@ -485,7 +487,7 @@ const getPostTypeText = (type: string) => {
 
                                     <div v-if="isAuthenticated" class="space-y-4">
                                         <div class="text-sm text-[#999999]">
-                                            你的积分余额: <span class="text-white font-semibold">{{ userCreditsRef }}</span>
+                                            你的金币余额: <span class="text-white font-semibold">{{ userCreditsRef }}</span>
                                         </div>
 
                                         <Button
@@ -494,10 +496,10 @@ const getPostTypeText = (type: string) => {
                                             :disabled="isPurchasing"
                                             class="bg-[#ff6e02] hover:bg-[#e55a00] text-white px-8 py-3 text-lg"
                                         >
-                                            {{ isPurchasing ? '购买中...' : `花费 ${post.price} 积分解锁内容` }}
+                                            {{ isPurchasing ? '购买中...' : `花费 ${post.price} 金币解锁内容` }}
                                         </Button>
                                         <div v-else class="text-red-400">
-                                            积分不足，需要 {{ post.price - userCreditsRef }} 更多积分
+                                            金币不足，需要 {{ post.price - userCreditsRef }} 更多金币
                                         </div>
                                     </div>
 
@@ -515,6 +517,15 @@ const getPostTypeText = (type: string) => {
                         </CardContent>
                     </Card>
 
+                    <!-- Comments Section -->
+                    <div class="bg-[#374151] rounded-lg p-6 mb-6">
+                        <Comments
+                            :comments="post.comments || []"
+                            :commentable-type="'App\\Models\\Post'"
+                            :commentable-id="post.id"
+                        />
+                    </div>
+
                     <!-- Tags -->
                     <div v-if="post.tags && post.tags.length > 0" class="mb-6">
                         <div class="flex items-center gap-2 flex-wrap">
@@ -528,8 +539,8 @@ const getPostTypeText = (type: string) => {
                         </div>
                     </div>
 
-                    <!-- Related Posts -->
-                    <div v-if="relatedPosts.length > 0" class="bg-[#374151] rounded-lg p-6">
+                    <!-- Related Posts - Mobile Only -->
+                    <div v-if="relatedPosts.length > 0" class="bg-[#374151] rounded-lg p-6 lg:hidden">
                         <h3 class="text-white text-lg font-bold mb-4 flex items-center gap-2">
                             <ThumbsUp class="w-5 h-5 text-[#ff6e02]" />
                             相关推荐
@@ -659,7 +670,7 @@ const getPostTypeText = (type: string) => {
                     </Card>
 
                     <!-- Category Info -->
-                    <Card class="bg-[#374151] border-0">
+                    <Card class="bg-[#374151] border-0 mb-6">
                         <CardHeader class="pb-3">
                             <CardTitle class="text-white text-base flex items-center gap-2">
                                 <Tag class="w-4 h-4" />
@@ -679,6 +690,40 @@ const getPostTypeText = (type: string) => {
                                     </div>
                                 </div>
                             </Link>
+                        </CardContent>
+                    </Card>
+
+                    <!-- Related Posts - Desktop Only -->
+                    <Card v-if="relatedPosts.length > 0" class="bg-[#374151] border-0 hidden lg:block">
+                        <CardHeader class="pb-3">
+                            <CardTitle class="text-white text-base flex items-center gap-2">
+                                <ThumbsUp class="w-4 h-4" />
+                                相关推荐
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div class="space-y-3">
+                                <Link v-for="relatedPost in relatedPosts"
+                                      :key="relatedPost.id"
+                                      :href="`/posts/${relatedPost.slug}`"
+                                      class="block group">
+                                    <div class="p-3 rounded-lg hover:bg-[#1f2937] transition-colors">
+                                        <h4 class="text-white font-medium text-sm group-hover:text-[#ff6e02] transition-colors line-clamp-2 mb-2">
+                                            {{ relatedPost.title }}
+                                        </h4>
+                                        <div class="flex items-center gap-2 text-xs text-[#999999]">
+                                            <span class="flex items-center gap-1">
+                                                <Eye class="w-3 h-3" />
+                                                {{ relatedPost.view_count }}
+                                            </span>
+                                            <span class="flex items-center gap-1">
+                                                <Heart class="w-3 h-3" />
+                                                {{ relatedPost.like_count }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </Link>
+                            </div>
                         </CardContent>
                     </Card>
                 </div>

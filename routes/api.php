@@ -6,7 +6,7 @@ use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\PostLikeController;
 use App\Http\Controllers\Api\PostCategoryController;
 use App\Http\Controllers\Api\CreatorProfileController;
-use App\Http\Controllers\Api\VipTierController;
+use App\Http\Controllers\Api\PlanController;
 use App\Http\Controllers\Api\UserPointsController;
 use App\Http\Controllers\Api\AuthController;
 
@@ -35,9 +35,9 @@ Route::prefix('v1')->group(function () {
     Route::get('creators', [CreatorProfileController::class, 'index']);
     Route::get('creators/{id}', [CreatorProfileController::class, 'show']);
 
-    // VIP Tiers
-    Route::get('vip-tiers', [VipTierController::class, 'index']);
-    Route::get('vip-tiers/{slug}', [VipTierController::class, 'show']);
+    // Plans
+    Route::get('plans', [PlanController::class, 'index']);
+    Route::get('plans/{slug}', [PlanController::class, 'show']);
 
     // Points Leaderboard
     Route::get('leaderboard', [UserPointsController::class, 'leaderboard']);

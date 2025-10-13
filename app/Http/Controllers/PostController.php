@@ -51,7 +51,7 @@ class PostController extends Controller
 
     public function show($slug)
     {
-        $post = Post::with(['user.creatorProfile', 'category', 'likedByUsers', 'media'])
+        $post = Post::with(['user.creatorProfile', 'category', 'likedByUsers', 'media', 'comments'])
             ->where('slug', $slug)
             ->published()
             ->firstOrFail();
@@ -63,20 +63,23 @@ class PostController extends Controller
         $isLocked = $post->isLocked();
         $isPurchased = $user ? $post->isPurchasedBy($user) : false;
 
-        // Get media URLs
-        $post->image_urls = $post->getMedia('images')->map(function ($media) {
-            return [
-                'id' => $media->id,
-                'url' => $media->getUrl(),
-                'thumb' => $media->getUrl('thumb'),
-                'medium' => $media->getUrl('medium'),
-            ];
-        });
-
-        // Only show full content if user can view
-        if (!$canView) {
-            // Show only excerpt or truncated content
-            $post->content = $post->excerpt ?: Str::limit(strip_tags($post->content), 200);
+        // Only show full content and media if user can view
+        if ($canView) {
+            // User has access - show full content and all media
+            $post->image_urls = $post->getMedia('images')->map(function ($media) {
+                return [
+                    'id' => $media->id,
+                    'url' => $media->getUrl(),
+                    'thumb' => $media->getUrl('thumb'),
+                    'medium' => $media->getUrl('medium'),
+                ];
+            });
+        } else {
+            // User doesn't have access - completely hide content and media
+            $post->content = null;
+            $post->excerpt = null;
+            $post->image_urls = [];
+            $post->videos = [];
         }
 
         // Increment view count
@@ -110,6 +113,9 @@ class PostController extends Controller
             ];
         }
 
+        // Get comments count
+        $commentsCount = $post->comments()->count();
+
         return Inertia::render('Posts/Show', [
             'post' => $post,
             'relatedPosts' => $relatedPosts,
@@ -117,7 +123,8 @@ class PostController extends Controller
             'canViewContent' => $canView,
             'isLocked' => $isLocked,
             'isPurchased' => $isPurchased,
-            'userCredits' => $user ? $user->credits : 0,
+            'userCredits' => $user ? (float) $user->credits : 0,
+            'commentsCount' => $commentsCount,
         ]);
     }
 
