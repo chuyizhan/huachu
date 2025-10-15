@@ -74,11 +74,21 @@ class PostController extends Controller
                     'medium' => $media->getUrl('medium'),
                 ];
             });
+
+            $post->video_urls = $post->getMedia('videos')->map(function ($media) {
+                return [
+                    'id' => $media->id,
+                    'url' => $media->getUrl(),
+                    'name' => $media->file_name,
+                    'size' => $media->size,
+                ];
+            });
         } else {
             // User doesn't have access - completely hide content and media
             $post->content = null;
             $post->excerpt = null;
             $post->image_urls = [];
+            $post->video_urls = [];
             $post->videos = [];
         }
 
@@ -148,6 +158,7 @@ class PostController extends Controller
             'type' => 'required|in:discussion,tutorial,showcase,question',
             'excerpt' => 'nullable|string|max:500',
             'images.*' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:5120',
+            'video' => 'nullable|file|mimes:mp4,webm,mov,avi|max:102400', // 100MB max
             'videos' => 'nullable|array',
             'tags' => 'nullable|array',
             'is_premium' => 'boolean',
@@ -193,6 +204,12 @@ class PostController extends Controller
             }
         }
 
+        // Handle video upload
+        if ($request->hasFile('video')) {
+            $post->addMedia($request->file('video'))
+                ->toMediaCollection('videos');
+        }
+
         return redirect()->route('posts.show', $post->slug)
             ->with('success', 'Post created successfully!');
     }
@@ -201,6 +218,25 @@ class PostController extends Controller
     {
         $post = Post::where('user_id', Auth::id())->findOrFail($id);
         $categories = PostCategory::active()->orderBy('sort_order')->get();
+
+        // Load existing media
+        $post->existing_images = $post->getMedia('images')->map(function ($media) {
+            return [
+                'id' => $media->id,
+                'url' => $media->getUrl(),
+                'thumb' => $media->getUrl('thumb'),
+                'medium' => $media->getUrl('medium'),
+            ];
+        });
+
+        $post->existing_videos = $post->getMedia('videos')->map(function ($media) {
+            return [
+                'id' => $media->id,
+                'url' => $media->getUrl(),
+                'name' => $media->file_name,
+                'size' => $media->size,
+            ];
+        });
 
         return Inertia::render('Posts/Edit', [
             'post' => $post,
@@ -220,6 +256,8 @@ class PostController extends Controller
             'excerpt' => 'nullable|string|max:500',
             'images.*' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:5120',
             'remove_images' => 'nullable|array',
+            'video' => 'nullable|file|mimes:mp4,webm,mov,avi|max:102400', // 100MB max
+            'remove_video' => 'nullable|boolean',
             'videos' => 'nullable|array',
             'tags' => 'nullable|array',
             'is_premium' => 'boolean',
@@ -260,6 +298,20 @@ class PostController extends Controller
                 $post->addMedia($file)
                     ->toMediaCollection('images');
             }
+        }
+
+        // Handle video removal
+        if ($request->boolean('remove_video')) {
+            $post->clearMediaCollection('videos');
+        }
+
+        // Handle new video upload
+        if ($request->hasFile('video')) {
+            // Clear existing videos first (only one video allowed)
+            $post->clearMediaCollection('videos');
+
+            $post->addMedia($request->file('video'))
+                ->toMediaCollection('videos');
         }
 
         return redirect()->route('posts.show', $post->slug)
