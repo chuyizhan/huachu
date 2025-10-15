@@ -22,7 +22,9 @@ import {
     ArrowLeft,
     ThumbsUp,
     UserPlus,
-    UserMinus
+    UserMinus,
+    Edit,
+    Trash2
 } from 'lucide-vue-next';
 
 interface Creator {
@@ -121,6 +123,11 @@ const userCreditsRef = ref(props.userCredits);
 
 // Check if user is authenticated
 const isAuthenticated = computed(() => page.props.auth?.user);
+
+// Check if current user is the author
+const isAuthor = computed(() => {
+    return isAuthenticated.value && page.props.auth?.user?.id === props.post.user.id;
+});
 
 // Toggle like function using Axios (handles CSRF automatically)
 const toggleLike = async () => {
@@ -267,6 +274,20 @@ const getPostTypeText = (type: string) => {
     };
     return typeMap[type as keyof typeof typeMap] || type;
 };
+
+// Delete post function
+const deletePost = () => {
+    if (confirm('确定要删除这篇帖子吗？此操作不可恢复。')) {
+        router.delete(`/posts/${props.post.id}`, {
+            onSuccess: () => {
+                // Will be redirected by the backend
+            },
+            onError: (errors) => {
+                alert('删除失败，请重试');
+            }
+        });
+    }
+};
 </script>
 
 <template>
@@ -310,10 +331,34 @@ const getPostTypeText = (type: string) => {
                             </Badge>
                         </div>
 
-                        <!-- Title -->
-                        <h1 class="text-2xl sm:text-3xl font-bold text-white mb-4 leading-tight">
-                            {{ post.title }}
-                        </h1>
+                        <!-- Title and Actions -->
+                        <div class="flex items-start justify-between gap-4 mb-4">
+                            <h1 class="text-2xl sm:text-3xl font-bold text-white leading-tight flex-1">
+                                {{ post.title }}
+                            </h1>
+
+                            <!-- Author Actions -->
+                            <div v-if="isAuthor" class="flex items-center gap-2">
+                                <Link
+                                    :href="`/posts/${post.id}/edit`"
+                                    class="text-[#999999] hover:text-[#ff6e02] transition-colors"
+                                >
+                                    <Button size="sm" variant="outline" class="border-[#4B5563] bg-[#374151] text-white hover:bg-[#4B5563]">
+                                        <Edit class="h-4 w-4 mr-1" />
+                                        编辑
+                                    </Button>
+                                </Link>
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    @click="deletePost"
+                                    class="border-red-500 bg-red-950 text-red-400 hover:bg-red-900 hover:text-red-300"
+                                >
+                                    <Trash2 class="h-4 w-4 mr-1" />
+                                    删除
+                                </Button>
+                            </div>
+                        </div>
 
                         <!-- Excerpt -->
                         <p v-if="post.excerpt" class="text-[#999999] text-base mb-6 leading-relaxed">
@@ -453,7 +498,7 @@ const getPostTypeText = (type: string) => {
                                     <div
                                         v-for="image in post.image_urls"
                                         :key="image.id"
-                                       
+
                                         class="group relative rounded-lg overflow-hidden border border-[#4B5563] hover:border-[#ff6e02] transition-colors"
                                     >
                                         <img
@@ -462,6 +507,24 @@ const getPostTypeText = (type: string) => {
                                             class="w-full h-auto object-cover group-hover:opacity-90 transition-opacity"
                                         />
                                     </div>
+                                </div>
+                            </div>
+
+                            <!-- Video Player -->
+                            <div v-if="post.video_urls && post.video_urls.length > 0" class="mb-6">
+                                <div
+                                    v-for="video in post.video_urls"
+                                    :key="video.id"
+                                    class="rounded-lg overflow-hidden border border-[#4B5563]"
+                                >
+                                    <video
+                                        :src="video.url"
+                                        controls
+                                        class="w-full"
+                                        preload="metadata"
+                                    >
+                                        您的浏览器不支持视频播放
+                                    </video>
                                 </div>
                             </div>
 

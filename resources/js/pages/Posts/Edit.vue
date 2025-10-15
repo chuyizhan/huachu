@@ -40,8 +40,40 @@ interface Category {
     icon?: string;
 }
 
+interface MediaImage {
+    id: number;
+    url: string;
+    thumb: string;
+    medium: string;
+}
+
+interface MediaVideo {
+    id: number;
+    url: string;
+    name: string;
+    size: number;
+}
+
+interface Post {
+    id: number;
+    title: string;
+    content: string;
+    post_category_id: number;
+    type: string;
+    excerpt: string | null;
+    tags: string[];
+    is_premium: boolean;
+    price: number | null;
+    free_after: string | null;
+    status: string;
+    videos: string[];
+    existing_images: MediaImage[];
+    existing_videos: MediaVideo[];
+}
+
 interface Props {
     categories: Category[];
+    post: Post;
 }
 
 const props = defineProps<Props>();
@@ -52,19 +84,22 @@ const isCreator = computed(() => {
 });
 
 const form = useForm({
-    title: '',
-    content: '',
-    post_category_id: '',
-    type: 'discussion',
-    excerpt: '',
+    _method: 'PUT',
+    title: props.post.title,
+    content: props.post.content,
+    post_category_id: props.post.post_category_id,
+    type: props.post.type,
+    excerpt: props.post.excerpt || '',
     images: [] as File[],
+    remove_images: [] as number[],
     video: null as File | null,
-    videos: [] as string[],
-    tags: [] as string[],
-    is_premium: false,
-    price: null as number | null,
-    free_after: null as string | null,
-    status: 'draft'
+    remove_video: false,
+    videos: props.post.videos || [],
+    tags: props.post.tags || [],
+    is_premium: props.post.is_premium,
+    price: props.post.price,
+    free_after: props.post.free_after,
+    status: props.post.status
 });
 
 const newTag = ref('');
@@ -72,6 +107,8 @@ const videoUrl = ref('');
 const pond = ref(null);
 const videoInput = ref<HTMLInputElement | null>(null);
 const videoPreview = ref<string | null>(null);
+const existingImages = ref<MediaImage[]>(props.post.existing_images || []);
+const existingVideo = ref<MediaVideo | null>(props.post.existing_videos?.[0] || null);
 
 const postTypes = [
     { value: 'discussion', label: '讨论', icon: '💬', description: '分享想法和观点' },
@@ -158,20 +195,44 @@ function removeVideoFile() {
     }
 }
 
+function removeExistingImage(imageId: number) {
+    if (confirm('确定要删除这张图片吗？')) {
+        form.remove_images.push(imageId);
+        existingImages.value = existingImages.value.filter(img => img.id !== imageId);
+    }
+}
+
+function removeExistingVideo() {
+    if (confirm('确定要删除这个视频吗？')) {
+        form.remove_video = true;
+        existingVideo.value = null;
+    }
+}
+
 function saveDraft() {
     form.status = 'draft';
-    form.post('/posts', {
+    form.post(`/posts/${props.post.id}`, {
+        forceFormData: true,
+        preserveScroll: true,
         onSuccess: () => {
             // Handle success
+        },
+        onError: (errors) => {
+            console.error('Validation errors:', errors);
         }
     });
 }
 
 function publishPost() {
     form.status = 'published';
-    form.post('/posts', {
+    form.post(`/posts/${props.post.id}`, {
+        forceFormData: true,
+        preserveScroll: true,
         onSuccess: () => {
             // Handle success
+        },
+        onError: (errors) => {
+            console.error('Validation errors:', errors);
         }
     });
 }
@@ -179,14 +240,24 @@ function publishPost() {
 
 <template>
     <WebLayout>
-        <Head title="创建新帖子" />
+        <Head title="编辑帖子" />
 
         <div class="min-h-screen py-8">
             <div class="max-w-4xl mx-auto px-4">
                 <!-- Header -->
                 <div class="mb-8">
-                    <h1 class="text-3xl font-bold text-white mb-2">创建新帖子</h1>
-                    <p class="text-[#999999]">分享你的想法、经验或问题给{{ $page.props.name }}</p>
+                    <h1 class="text-3xl font-bold text-white mb-2">编辑帖子</h1>
+                    <p class="text-[#999999]">更新你的帖子内容</p>
+                </div>
+
+                <!-- Validation Errors -->
+                <div v-if="Object.keys(form.errors).length > 0" class="mb-6 bg-red-900/20 border border-red-500 rounded-lg p-4">
+                    <h3 class="text-red-400 font-semibold mb-2">请修正以下错误:</h3>
+                    <ul class="list-disc list-inside text-red-300 text-sm space-y-1">
+                        <li v-for="(error, field) in form.errors" :key="field">
+                            {{ error }}
+                        </li>
+                    </ul>
                 </div>
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -218,15 +289,15 @@ function publishPost() {
                                 <div>
                                     <Label class="text-white">分类 *</Label>
                                     <select
-                                        v-model="form.post_category_id"
+                                        v-model.number="form.post_category_id"
                                         class="mt-1 w-full bg-[#1c1c1c] border border-[#4B5563] text-white rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#ff6e02] focus:border-[#ff6e02]"
                                         :class="{ 'border-red-500': form.errors.post_category_id }"
                                     >
-                                        <option value="" class="text-[#999999]">选择分类</option>
+                                        <option :value="null" class="text-[#999999]">选择分类</option>
                                         <option
                                             v-for="category in categories"
                                             :key="category.id"
-                                            :value="category.id.toString()"
+                                            :value="category.id"
                                             class="bg-[#1c1c1c] text-white"
                                         >
                                             {{ category.name }}
@@ -302,6 +373,35 @@ function publishPost() {
                                 <!-- Images -->
                                 <div>
                                     <Label class="text-white">图片 (最多4张)</Label>
+
+                                    <!-- Existing Images -->
+                                    <div v-if="existingImages.length > 0" class="mt-2 mb-4">
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div
+                                                v-for="image in existingImages"
+                                                :key="image.id"
+                                                class="relative group rounded-lg overflow-hidden border border-[#4B5563]"
+                                            >
+                                                <img
+                                                    :src="image.medium"
+                                                    alt="Existing image"
+                                                    class="w-full h-32 object-cover"
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    @click="removeExistingImage(image.id)"
+                                                    class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                                >
+                                                    <X class="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                        <p class="text-xs text-[#999999] mt-2">现有图片 (点击图片上的 X 删除)</p>
+                                    </div>
+
+                                    <!-- Upload New Images -->
                                     <div class="mt-2">
                                         <FilePond
                                             ref="pond"
@@ -338,7 +438,31 @@ function publishPost() {
                                 <div>
                                     <Label class="text-white">视频 (可选)</Label>
 
-                                    <div v-if="!videoPreview" class="mt-2">
+                                    <!-- Existing Video -->
+                                    <div v-if="existingVideo && !videoPreview && !form.remove_video" class="mt-2 mb-4">
+                                        <div class="relative bg-[#1c1c1c] rounded-lg overflow-hidden">
+                                            <video
+                                                :src="existingVideo.url"
+                                                controls
+                                                class="w-full max-h-64 object-contain"
+                                            ></video>
+                                            <Button
+                                                type="button"
+                                                size="sm"
+                                                variant="ghost"
+                                                @click="removeExistingVideo"
+                                                class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white"
+                                            >
+                                                <X class="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                        <p class="text-xs text-[#999999] mt-1">
+                                            {{ existingVideo.name }} ({{ (existingVideo.size / 1024 / 1024).toFixed(2) }}MB)
+                                        </p>
+                                        <p class="text-xs text-[#999999]">现有视频 (点击 X 删除并上传新视频)</p>
+                                    </div>
+
+                                    <div v-if="!existingVideo || form.remove_video" v-show="!videoPreview" class="mt-2">
                                         <label
                                             class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-[#4B5563] rounded-lg cursor-pointer hover:border-[#ff6e02] transition-colors bg-[#1c1c1c]"
                                         >
