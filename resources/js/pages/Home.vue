@@ -221,9 +221,10 @@ const formatTime = (dateString: string) => {
                                 <!-- Avatar -->
                                 <div class="flex items-center gap-2">
                                     <img
-                                        :src="post.user.avatar || `https://ui-avatars.com/api/?name=${post.user.name}&size=32`"
-                                        class="w-8 h-8 rounded-full"
+                                        :src="post.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.user.creator_profile?.display_name || post.user.name)}&size=32&background=ff6e02&color=fff`"
+                                        class="w-8 h-8 rounded-full object-cover"
                                         :alt="post.user.name"
+                                        @error="(e) => e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(post.user.name)}&size=32&background=ff6e02&color=fff`"
                                     />
                                     <span class="text-foreground">
                                         {{ post.user.creator_profile?.display_name || post.user.name }}
