@@ -90,25 +90,25 @@
 }
 
 :root {
-    /* Light theme matching reference design */
-    --background: 245 246 248; /* #f5f6f8 - light gray background */
-    --foreground: 51 51 51; /* #333333 - dark text */
-    --card: 255 255 255; /* #ffffff - white cards */
-    --card-foreground: 51 51 51;
-    --popover: 255 255 255;
-    --popover-foreground: 51 51 51;
+    /* Dark theme matching UniApp design - #1c1c1c background */
+    --background: 28 28 28; /* #1c1c1c - dark charcoal background */
+    --foreground: 255 255 255; /* #ffffff - white text */
+    --card: 31 41 55; /* #1f2937 - dark gray cards */
+    --card-foreground: 255 255 255;
+    --popover: 31 41 55;
+    --popover-foreground: 255 255 255;
     --primary: 255 110 2; /* #ff6e02 - orange primary color */
     --primary-foreground: 255 255 255;
-    --secondary: 245 246 248;
-    --secondary-foreground: 51 51 51;
-    --muted: 245 246 248;
+    --secondary: 31 41 55;
+    --secondary-foreground: 255 255 255;
+    --muted: 51 51 51;
     --muted-foreground: 153 153 153; /* #999999 */
     --accent: 255 110 2; /* #ff6e02 - orange accent */
     --accent-foreground: 255 255 255;
     --destructive: 239 68 68;
     --destructive-foreground: 255 255 255;
-    --border: 229 231 235; /* #e5e7eb */
-    --input: 229 231 235;
+    --border: 51 51 51; /* #333333 */
+    --input: 31 41 55;
     --ring: 255 110 2; /* #ff6e02 */
     --chart-1: 255 110 2;
     --chart-2: 34 197 94;
@@ -116,15 +116,15 @@
     --chart-4: 251 191 36;
     --chart-5: 168 85 247;
     --radius: 0.5rem;
-    --sidebar-background: 255 255 255;
-    --sidebar-foreground: 51 51 51;
+    --sidebar-background: 28 28 28;
+    --sidebar-foreground: 255 255 255;
     --sidebar-primary: 255 110 2;
     --sidebar-primary-foreground: 255 255 255;
-    --sidebar-accent: 245 246 248;
-    --sidebar-accent-foreground: 51 51 51;
-    --sidebar-border: 229 231 235;
+    --sidebar-accent: 31 41 55;
+    --sidebar-accent-foreground: 255 255 255;
+    --sidebar-border: 51 51 51;
     --sidebar-ring: 255 110 2;
-    --sidebar: 255 255 255;
+    --sidebar: 28 28 28;
 }
 
 .dark {
@@ -169,5 +169,98 @@
     }
     body {
         @apply bg-background text-foreground;
+    }
+}
+
+/* UniApp-style utility classes */
+@layer utilities {
+    /* Color utilities */
+    .colorfff { @apply text-white; }
+    .color333 { @apply text-[#333333]; }
+    .color666 { @apply text-[#666666]; }
+    .color999 { @apply text-[#999999]; }
+    .colorz { @apply text-primary; }
+    .bgfff { @apply bg-white; }
+    .bg-dark { @apply bg-[#1c1c1c]; }
+    .bg-card-dark { @apply bg-[#1f2937]; }
+
+    /* Flexbox utilities */
+    .flex-y { @apply flex flex-col; }
+    .flex-x { @apply flex flex-row; }
+    .flex-y-center { @apply flex flex-col items-center; }
+    .flex-x-center { @apply flex flex-row items-center; }
+    .flex-xy-center { @apply flex flex-col items-center justify-center; }
+
+    /* Typography */
+    .font-smaller { @apply text-[15px]; }
+    .font-small { @apply text-[20px]; }
+    .font-sm { @apply text-[13px]; }
+    .font22 { @apply text-[11px]; }
+    .font24 { @apply text-[12px]; }
+    .font26 { @apply text-[13px]; }
+    .font28 { @apply text-[14px]; }
+    .font32 { @apply text-base; }
+    .font-md { @apply text-[17.5px]; }
+    .font-lg { @apply text-xl; }
+
+    /* Border radius */
+    .u-radius-10 { @apply rounded-[10px]; }
+    .u-radius-15 { @apply rounded-[15px]; }
+    .rounded-40 { @apply rounded-[40px]; }
+
+    /* Shadows matching UniApp style */
+    .u-shadow { @apply shadow-[0_5px_30px_9.5px_rgba(0,0,0,0.1)]; }
+
+    /* Spacing utilities - matching UniApp's rpx-based system */
+    /* Padding */
+    .u-p-10 { @apply p-2.5; }
+    .u-p-15 { @apply p-[15px]; }
+    .u-p-20 { @apply p-5; }
+    .u-p-25 { @apply p-[25px]; }
+    .u-p-30 { @apply p-[30px]; }
+    .u-p-t-10 { @apply pt-2.5; }
+    .u-p-t-15 { @apply pt-[15px]; }
+    .u-p-t-20 { @apply pt-5; }
+    .u-p-t-25 { @apply pt-[25px]; }
+    .u-p-t-30 { @apply pt-[30px]; }
+    .u-p-b-10 { @apply pb-2.5; }
+    .u-p-b-15 { @apply pb-[15px]; }
+    .u-p-b-20 { @apply pb-5; }
+    .u-p-b-25 { @apply pb-[25px]; }
+    .u-p-l-15 { @apply pl-[15px]; }
+    .u-p-l-20 { @apply pl-5; }
+    .u-p-l-25 { @apply pl-[25px]; }
+    .u-p-r-15 { @apply pr-[15px]; }
+    .u-p-r-20 { @apply pr-5; }
+    .u-p-r-25 { @apply pr-[25px]; }
+
+    /* Margin */
+    .u-m-10 { @apply m-2.5; }
+    .u-m-15 { @apply m-[15px]; }
+    .u-m-20 { @apply m-5; }
+    .u-m-25 { @apply m-[25px]; }
+    .u-m-30 { @apply m-[30px]; }
+    .u-m-t-10 { @apply mt-2.5; }
+    .u-m-t-15 { @apply mt-[15px]; }
+    .u-m-t-20 { @apply mt-5; }
+    .u-m-t-25 { @apply mt-[25px]; }
+    .u-m-t-30 { @apply mt-[30px]; }
+    .u-m-b-10 { @apply mb-2.5; }
+    .u-m-b-15 { @apply mb-[15px]; }
+    .u-m-b-20 { @apply mb-5; }
+    .u-m-b-25 { @apply mb-[25px]; }
+    .u-m-b-30 { @apply mb-[30px]; }
+    .u-m-l-10 { @apply ml-2.5; }
+    .u-m-l-15 { @apply ml-[15px]; }
+    .u-m-l-20 { @apply ml-5; }
+    .u-m-l-25 { @apply ml-[25px]; }
+    .u-m-r-10 { @apply mr-2.5; }
+    .u-m-r-15 { @apply mr-[15px]; }
+    .u-m-r-20 { @apply mr-5; }
+    .u-m-r-25 { @apply mr-[25px]; }
+
+    /* List class pattern */
+    .listclass {
+        @apply bg-[#1f2937] p-[25px] rounded-[15px] mb-[15px];
     }
 }

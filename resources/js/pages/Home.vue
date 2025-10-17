@@ -136,12 +136,12 @@ const formatTime = (dateString: string) => {
                         v-for="creator in featuredCreators"
                         :key="creator.id"
                         :href="`/creators/${creator.id}`"
-                        class="flex-shrink-0 w-[130px] group"
+                        class="flex-shrink-0 w-24 group"
                     >
                         <div class="bg-white rounded-lg shadow hover:shadow-md transition-shadow p-3">
                             <img
                                 :src="creator.user.avatar || `https://ui-avatars.com/api/?name=${creator.display_name}&size=130`"
-                                class="w-full h-[160px] object-cover rounded-lg mb-3"
+                                class="w-full h-18 object-cover rounded-lg mb-3"
                                 :alt="creator.display_name"
                             />
                             <p class="text-sm text-center text-foreground font-medium truncate">
@@ -174,7 +174,7 @@ const formatTime = (dateString: string) => {
                         v-for="post in recentPosts"
                         :key="post.id"
                         :href="`/posts/${post.slug}`"
-                        class="block bg-white rounded-lg shadow hover:shadow-md transition-shadow p-5"
+                        class="block  rounded-lg shadow hover:shadow-md transition-shadow p-5"
                     >
                         <!-- Post Title -->
                         <h3 class="text-lg font-semibold text-foreground mb-3 hover:text-[#ff6e02] transition-colors line-clamp-2">
@@ -229,7 +229,7 @@ const formatTime = (dateString: string) => {
         </section>
 
         <!-- Categories Section -->
-        <section class="py-12 bg-white border-t border-gray-200">
+        <section class="py-12  border-t border-gray-200">
             <div class="max-w-[1000px] mx-auto px-4">
                 <h2 class="text-2xl font-bold text-foreground mb-6">热门分类</h2>
 
@@ -238,7 +238,7 @@ const formatTime = (dateString: string) => {
                         v-for="category in popularCategories"
                         :key="category.id"
                         :href="`/community/posts?category=${category.slug}`"
-                        class="flex items-center gap-3 p-4 bg-background rounded-lg hover:bg-gray-100 transition-colors"
+                        class="flex items-center gap-3 p-4 bg-background rounded-lg hover:bg-gray-500 transition-colors"
                     >
                         <div class="text-3xl">{{ category.icon || '📝' }}</div>
                         <div>

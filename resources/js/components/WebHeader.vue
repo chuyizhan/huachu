@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import UserMenuContent from '@/components/UserMenuContent.vue';
 import { getInitials } from '@/composables/useInitials';
+import AppLogo from '@/components/AppLogo.vue';
 
 interface Category {
     id: number;
@@ -38,86 +39,106 @@ const user = computed(() => auth.value?.user);
 <template>
     <!-- Header -->
     <header class="bg-[#1c1c1c] border-b border-[#374151]">
-        <nav class="max-w-[1000px] mx-auto flex items-center justify-between p-4 lg:px-8" aria-label="Global">
-            <!-- Logo -->
-            <div class="flex lg:flex-1">
-                <Link href="/" class="flex items-center gap-3 -m-1.5 p-1.5">
-                    <div class="text-2xl">👨‍🍳</div>
-                    <span class="text-xl font-bold text-[#ff6e02]">{{ $page.props.name }}</span>
+        <nav class="max-w-[1000px] mx-auto" aria-label="Global">
+            <!-- Mobile Layout - UniApp Style -->
+            <div class="lg:hidden flex items-center justify-between u-p-20">
+                <!-- Logo -->
+                <Link href="/" class="flex items-center">
+                    <img src="/logo.png" alt="Logo" class="h-6 w-auto" />
                 </Link>
-            </div>
 
-            <!-- Mobile menu button -->
-            <div class="flex lg:hidden">
+                <!-- Center Menu Items -->
+                <div class="flex-x-center gap-2">
+                    <Link
+                        v-for="(category, index) in navCategories.slice(0, 4)"
+                        :key="category.id"
+                        :href="category.nav_route || '/'"
+                        class="text-white text-sm px-2 hover:text-[#ff6e02] transition-colors whitespace-nowrap"
+                    >
+                        {{ category.name }}
+                    </Link>
+                </div>
+
+                <!-- Hamburger Menu Icon -->
                 <button
                     type="button"
-                    class="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-white hover:text-[#ff6e02]"
+                    class="flex items-center justify-center text-white hover:text-[#ff6e02]"
                     @click="mobileMenuOpen = true"
                 >
-                    <span class="sr-only">Open main menu</span>
-                    <Menu class="h-6 w-6" aria-hidden="true" />
+                    <span class="sr-only">Open menu</span>
+                    <Menu class="h-5 w-5" aria-hidden="true" />
                 </button>
             </div>
 
-            <!-- Desktop Navigation -->
-            <div class="hidden lg:flex lg:gap-x-6">
-                <Link
-                    v-for="category in navCategories"
-                    :key="category.id"
-                    :href="category.nav_route || '/'"
-                    class="text-sm font-semibold text-white hover:text-[#ff6e02] transition-colors"
-                >
-                    {{ category.name }}
-                </Link>
-            </div>
-
-            <!-- Desktop Actions -->
-            <div class="hidden lg:flex lg:flex-1 lg:justify-end lg:items-center lg:gap-3">
-                <!-- Create Post Button -->
-                <Link
-                    v-if="user"
-                    href="/posts/create"
-                    class="bg-[#ff6e02] text-white px-4 py-2 rounded text-sm hover:bg-[#e55a00] transition-colors flex items-center gap-2"
-                >
-                    <PlusCircle class="w-4 h-4" />
-                    发菜谱
-                </Link>
-
-                <!-- User Menu for authenticated users -->
-                <div v-if="user" class="relative">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger class="flex items-center">
-                            <Avatar class="h-8 w-8">
-                                <AvatarImage
-                                    v-if="user.avatar"
-                                    :src="user.avatar"
-                                    :alt="user.name"
-                                />
-                                <AvatarFallback class="bg-[#ff6e02] text-white font-semibold">
-                                    {{ getInitials(user?.name) }}
-                                </AvatarFallback>
-                            </Avatar>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" class="w-56">
-                            <UserMenuContent :user="user" />
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+            <!-- Desktop Layout -->
+            <div class="hidden lg:flex items-center justify-between p-4 lg:px-8">
+                <!-- Logo -->
+                <div class="flex lg:flex-1">
+                    <Link href="/" class="flex items-center gap-3 -m-1.5 p-1.5">
+                        <AppLogo />
+                    </Link>
                 </div>
 
-                <!-- Login/Register for guests -->
-                <div v-else class="flex items-center gap-3">
+                <!-- Desktop Navigation Links -->
+                <div class="flex gap-x-6">
                     <Link
-                        href="/login"
-                        class="text-sm font-semibold text-[#ff6e02] hover:text-white transition-colors"
+                        v-for="category in navCategories"
+                        :key="category.id"
+                        :href="category.nav_route || '/'"
+                        class="text-sm font-semibold text-white hover:text-[#ff6e02] transition-colors"
                     >
-                        登录
+                        {{ category.name }}
                     </Link>
+                </div>
+
+                <!-- Desktop Actions -->
+                <div class="flex lg:flex-1 lg:justify-end lg:items-center lg:gap-3">
+                    <!-- Create Post Button -->
                     <Link
-                        href="/register"
-                        class="text-sm font-semibold text-[#999999] hover:text-white transition-colors"
+                        v-if="user"
+                        href="/posts/create"
+                        class="bg-[#ff6e02] text-white px-4 py-2 rounded text-sm hover:bg-[#e55a00] transition-colors flex items-center gap-2"
                     >
-                        注册
+                        <PlusCircle class="w-4 h-4" />
+                        发菜谱
                     </Link>
+
+                    <!-- User Menu for authenticated users -->
+                    <div v-if="user" class="relative">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger class="flex items-center">
+                                <Avatar class="h-8 w-8">
+                                    <AvatarImage
+                                        v-if="user.avatar"
+                                        :src="user.avatar"
+                                        :alt="user.name"
+                                    />
+                                    <AvatarFallback class="bg-[#ff6e02] text-white font-semibold">
+                                        {{ getInitials(user?.name) }}
+                                    </AvatarFallback>
+                                </Avatar>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" class="w-56">
+                                <UserMenuContent :user="user" />
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+
+                    <!-- Login/Register for guests -->
+                    <div v-else class="flex items-center gap-3">
+                        <Link
+                            href="/login"
+                            class="text-sm font-semibold text-[#ff6e02] hover:text-white transition-colors"
+                        >
+                            登录
+                        </Link>
+                        <Link
+                            href="/register"
+                            class="text-sm font-semibold text-[#999999] hover:text-white transition-colors"
+                        >
+                            注册
+                        </Link>
+                    </div>
                 </div>
             </div>
         </nav>
@@ -129,8 +150,7 @@ const user = computed(() => auth.value?.user);
                 <!-- Mobile menu header -->
                 <div class="flex items-center justify-between">
                     <Link href="/" class="flex items-center gap-3 -m-1.5 p-1.5">
-                        <div class="text-2xl">👨‍🍳</div>
-                        <span class="text-xl font-bold text-[#ff6e02]">{{ $page.props.name }}</span>
+                        <AppLogo />
                     </Link>
                     <button
                         type="button"

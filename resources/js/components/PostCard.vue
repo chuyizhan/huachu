@@ -72,198 +72,166 @@ const formatDate = (dateString: string) => {
 
 <template>
     <!-- Featured Variant -->
-    <Card v-if="variant === 'featured'" class="hover:shadow-lg transition-all duration-200">
-        <CardHeader class="pb-3">
-            <div class="flex items-center gap-2 mb-3">
-                <Badge :style="{ backgroundColor: post.category.color }" class="text-white text-xs">
+    <div v-if="variant === 'featured'" class="listclass hover:shadow-lg transition-all duration-200">
+        <div class="pb-3">
+            <div class="flex items-center gap-2 u-m-b-15">
+                <Badge :style="{ backgroundColor: post.category.color }" class="text-white text-xs rounded-40">
                     {{ post.category.name }}
                 </Badge>
-                <Badge :class="getTypeColor(post.type)" variant="secondary" class="text-xs">
-                    {{ post.type }}
-                </Badge>
-                <Badge v-if="post.is_premium" variant="default" class="bg-amber-500 text-xs">
+                <Badge v-if="post.is_premium" class="bg-[#ff6e02] text-white text-xs rounded-40">
                     <Crown class="w-3 h-3 mr-1" />
-                    Premium
+                    VIP
                 </Badge>
             </div>
 
-            <CardTitle class="line-clamp-2 text-lg">
+            <h3 class="font32 colorfff line-clamp-2 u-m-b-10">
                 <Link :href="`/posts/${post.slug}`" class="hover:text-primary">
                     {{ post.title }}
                 </Link>
-            </CardTitle>
+            </h3>
 
-            <CardDescription class="line-clamp-3">
+            <p class="font24 color999 line-clamp-3 u-m-b-15">
                 {{ post.excerpt }}
-            </CardDescription>
-        </CardHeader>
+            </p>
+        </div>
 
-        <CardContent>
-            <div class="flex items-center justify-between">
-                <!-- Author Info -->
-                <div v-if="showAuthor" class="flex items-center gap-2">
-                    <Avatar class="h-7 w-7">
-                        <AvatarFallback class="text-xs">
-                            {{ getInitials(post.user.creator_profile?.display_name || post.user.name) }}
-                        </AvatarFallback>
-                    </Avatar>
-                    <div class="min-w-0 flex-1">
-                        <div class="flex items-center gap-1">
-                            <span class="text-sm font-medium truncate">
-                                {{ post.user.creator_profile?.display_name || post.user.name }}
-                            </span>
-                            <Badge
-                                v-if="post.user.creator_profile?.verification_status === 'verified'"
-                                variant="secondary"
-                                class="text-xs px-1"
-                            >
-                                ✓
-                            </Badge>
-                        </div>
-                        <p class="text-xs text-muted-foreground">
-                            {{ formatDate(post.published_at) }}
-                        </p>
-                    </div>
-                </div>
+        <div>
+            <!-- Author Info -->
+            <div v-if="showAuthor" class="flex-x-center gap-2 u-m-b-15">
+                <Avatar class="h-6 w-6">
+                    <AvatarFallback class="text-xs bg-[#ff6e02] text-white">
+                        {{ getInitials(post.user.creator_profile?.display_name || post.user.name) }}
+                    </AvatarFallback>
+                </Avatar>
+                <span class="font24 color999">
+                    {{ post.user.creator_profile?.display_name || post.user.name }}
+                </span>
+                <Badge v-if="post.user.creator_profile?.verification_status === 'verified'" class="bg-[#ff6e02] text-white text-xs rounded-40">
+                    ✓
+                </Badge>
+                <span class="font24 color666 ml-auto">
+                    {{ formatDate(post.published_at) }}
+                </span>
             </div>
 
             <!-- Stats -->
-            <div v-if="showStats" class="flex items-center justify-between mt-4 pt-3 border-t">
-                <div class="flex items-center gap-4 text-sm text-muted-foreground">
-                    <div class="flex items-center gap-1">
+            <div v-if="showStats" class="flex-x-center justify-between u-m-t-15 u-p-t-15 border-t border-[#333333]">
+                <div class="flex-x-center gap-4 font24 color999">
+                    <div class="flex-x-center gap-1">
                         <Eye class="w-4 h-4" />
                         <span>{{ post.view_count }}</span>
                     </div>
-                    <div class="flex items-center gap-1">
+                    <div class="flex-x-center gap-1">
                         <Heart class="w-4 h-4" />
                         <span>{{ post.like_count }}</span>
                     </div>
                 </div>
 
-                <Button v-if="showReadMore" size="sm" variant="ghost" as-child>
-                    <Link :href="`/posts/${post.slug}`">
-                        Read More
-                    </Link>
-                </Button>
+                <Link v-if="showReadMore" :href="`/posts/${post.slug}`" class="font24 colorz hover:text-white transition-colors">
+                    查看更多 →
+                </Link>
             </div>
-        </CardContent>
-    </Card>
+        </div>
+    </div>
 
     <!-- Compact Variant -->
-    <Card v-else-if="variant === 'compact'">
-        <CardContent class="p-4">
-            <div class="flex items-start gap-4">
-                <Avatar v-if="showAuthor">
-                    <AvatarFallback>
-                        {{ getInitials(post.user.creator_profile?.display_name || post.user.name) }}
-                    </AvatarFallback>
-                </Avatar>
-                <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2 mb-1">
-                        <Badge :style="{ backgroundColor: post.category.color }" class="text-white text-xs">
-                            {{ post.category.name }}
-                        </Badge>
-                        <Badge :class="getTypeColor(post.type)" variant="secondary" class="text-xs">
-                            {{ post.type }}
-                        </Badge>
-                        <span class="text-xs text-muted-foreground">
-                            {{ formatDate(post.published_at) }}
+    <div v-else-if="variant === 'compact'" class="listclass">
+        <div class="flex-x items-start gap-4">
+            <Avatar v-if="showAuthor" class="h-10 w-10">
+                <AvatarFallback class="bg-[#ff6e02] text-white">
+                    {{ getInitials(post.user.creator_profile?.display_name || post.user.name) }}
+                </AvatarFallback>
+            </Avatar>
+            <div class="flex-1 min-w-0">
+                <div class="flex-x-center gap-2 u-m-b-10">
+                    <Badge :style="{ backgroundColor: post.category.color }" class="text-white text-xs rounded-40">
+                        {{ post.category.name }}
+                    </Badge>
+                    <span class="font24 color666">
+                        {{ formatDate(post.published_at) }}
+                    </span>
+                </div>
+                <h3 class="font32 colorfff line-clamp-1 u-m-b-10">
+                    <Link :href="`/posts/${post.slug}`" class="hover:text-primary">
+                        {{ post.title }}
+                    </Link>
+                </h3>
+                <p class="font24 color999 line-clamp-2 u-m-b-10">
+                    {{ post.excerpt }}
+                </p>
+                <div class="flex-x-center justify-between">
+                    <span v-if="showAuthor" class="font24 color999">
+                        {{ post.user.creator_profile?.display_name || post.user.name }}
+                    </span>
+                    <div v-if="showStats" class="flex-x-center gap-3 font24 color999">
+                        <span class="flex-x-center gap-1">
+                            <Eye class="w-3 h-3" />
+                            {{ post.view_count }}
                         </span>
-                    </div>
-                    <h3 class="font-semibold line-clamp-1 mb-1">
-                        <Link :href="`/posts/${post.slug}`" class="hover:text-primary">
-                            {{ post.title }}
-                        </Link>
-                    </h3>
-                    <p class="text-sm text-muted-foreground line-clamp-2 mb-2">
-                        {{ post.excerpt }}
-                    </p>
-                    <div class="flex items-center justify-between">
-                        <span v-if="showAuthor" class="text-sm text-muted-foreground">
-                            by {{ post.user.creator_profile?.display_name || post.user.name }}
+                        <span class="flex-x-center gap-1">
+                            <Heart class="w-3 h-3" />
+                            {{ post.like_count }}
                         </span>
-                        <div v-if="showStats" class="flex items-center gap-3 text-xs text-muted-foreground">
-                            <span class="flex items-center gap-1">
-                                <Eye class="w-3 h-3" />
-                                {{ post.view_count }}
-                            </span>
-                            <span class="flex items-center gap-1">
-                                <Heart class="w-3 h-3" />
-                                {{ post.like_count }}
-                            </span>
-                        </div>
                     </div>
                 </div>
             </div>
-        </CardContent>
-    </Card>
+        </div>
+    </div>
 
-    <!-- Default Variant -->
-    <Card v-else class="hover:shadow-lg transition-all duration-200">
-        <CardHeader class="pb-3">
-            <div class="flex items-center gap-2 mb-3">
-                <Badge :style="{ backgroundColor: post.category.color }" class="text-white text-xs">
+    <!-- Default Variant - UniApp Style -->
+    <div v-else class="listclass hover:shadow-lg transition-all duration-200">
+        <div class="flex-y">
+            <div class="flex-x items-center gap-2 u-m-b-15">
+                <Badge :style="{ backgroundColor: post.category.color }" class="text-white text-xs rounded-40">
                     {{ post.category.name }}
                 </Badge>
-                <Badge :class="getTypeColor(post.type)" variant="secondary" class="text-xs">
-                    {{ post.type }}
-                </Badge>
-                <Badge v-if="post.is_premium" variant="default" class="bg-amber-500 text-xs">
+                <Badge v-if="post.is_premium" variant="default" class="bg-[#ff6e02] text-white text-xs rounded-40">
                     <Crown class="w-3 h-3 mr-1" />
-                    Premium
+                    VIP
                 </Badge>
             </div>
 
-            <CardTitle class="line-clamp-2">
+            <h3 class="font32 colorfff line-clamp-2 u-m-b-10">
                 <Link :href="`/posts/${post.slug}`" class="hover:text-primary">
                     {{ post.title }}
                 </Link>
-            </CardTitle>
+            </h3>
 
-            <CardDescription class="line-clamp-3">
+            <p class="font24 color999 line-clamp-2 u-m-b-15">
                 {{ post.excerpt }}
-            </CardDescription>
-        </CardHeader>
+            </p>
 
-        <CardContent>
             <!-- Author Info -->
-            <div v-if="showAuthor" class="flex items-center gap-2 mb-4">
+            <div v-if="showAuthor" class="flex-x-center gap-2 u-m-b-15">
                 <Avatar class="h-6 w-6">
-                    <AvatarFallback class="text-xs">
+                    <AvatarFallback class="text-xs bg-[#ff6e02] text-white">
                         {{ getInitials(post.user.creator_profile?.display_name || post.user.name) }}
                     </AvatarFallback>
                 </Avatar>
-                <span class="text-sm text-muted-foreground">
+                <span class="font24 color999">
                     {{ post.user.creator_profile?.display_name || post.user.name }}
                 </span>
-                <Badge v-if="post.user.creator_profile?.verification_status === 'verified'" variant="secondary" class="text-xs">
-                    ✓ Verified
+                <Badge v-if="post.user.creator_profile?.verification_status === 'verified'" class="bg-[#ff6e02] text-white text-xs rounded-40">
+                    ✓
                 </Badge>
             </div>
 
-            <!-- Stats and Actions -->
-            <div class="flex items-center justify-between">
-                <div v-if="showStats" class="flex items-center gap-3 text-sm text-muted-foreground">
-                    <div class="flex items-center gap-1">
+            <!-- Stats -->
+            <div class="flex-x-center justify-between">
+                <div v-if="showStats" class="flex-x-center gap-4 font24 color999">
+                    <div class="flex-x-center gap-1">
                         <Eye class="w-4 h-4" />
-                        {{ post.view_count }}
+                        <span>{{ post.view_count }}</span>
                     </div>
-                    <div class="flex items-center gap-1">
+                    <div class="flex-x-center gap-1">
                         <Heart class="w-4 h-4" />
-                        {{ post.like_count }}
+                        <span>{{ post.like_count }}</span>
                     </div>
                 </div>
-                <div class="flex items-center gap-2">
-                    <span class="text-xs text-muted-foreground">
-                        {{ formatDate(post.published_at) }}
-                    </span>
-                    <Button v-if="showReadMore" size="sm" variant="ghost" as-child>
-                        <Link :href="`/posts/${post.slug}`">
-                            Read More
-                        </Link>
-                    </Button>
-                </div>
+                <span class="font24 color666">
+                    {{ formatDate(post.published_at) }}
+                </span>
             </div>
-        </CardContent>
-    </Card>
+        </div>
+    </div>
 </template>
