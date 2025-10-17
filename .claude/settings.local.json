@@ -5,7 +5,8 @@
       "WebFetch(domain:chuyizhan.com)",
       "Read(//Users/Hiro/uniapp/ua/**)",
       "Bash(xargs -I {} sh -c 'echo \"\"\"\"=== {} ===\"\"\"\" && head -80 {}')",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(php artisan:*)"
     ],
     "deny": [],
     "ask": []

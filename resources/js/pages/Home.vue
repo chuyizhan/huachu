@@ -229,16 +229,16 @@ const formatTime = (dateString: string) => {
         </section>
 
         <!-- Categories Section -->
-        <section class="py-12  border-t border-gray-200">
-            <div class="max-w-[1000px] mx-auto px-4">
-                <h2 class="text-2xl font-bold text-foreground mb-6">热门分类</h2>
+        <section class="py-12 ">
+            <div class="max-w-full mx-auto px-4">
+                <h2 class=" lg:text-2xl bg-zinc-800 text-white py-2 rounded-lg  text-center font-bold  mb-6">技术交流区</h2>
 
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
                     <Link
                         v-for="category in popularCategories"
                         :key="category.id"
                         :href="`/community/posts?category=${category.slug}`"
-                        class="flex items-center gap-3 p-4 bg-background rounded-lg hover:bg-gray-500 transition-colors"
+                        class="flex items-center gap-3 p-2 bg-background rounded-lg hover:bg-gray-500 transition-colors"
                     >
                         <div class="text-3xl">{{ category.icon || '📝' }}</div>
                         <div>

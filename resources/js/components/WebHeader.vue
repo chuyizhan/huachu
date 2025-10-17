@@ -44,16 +44,16 @@ const user = computed(() => auth.value?.user);
             <div class="lg:hidden flex items-center justify-between u-p-20">
                 <!-- Logo -->
                 <Link href="/" class="flex items-center">
-                    <img src="/logo.png" alt="Logo" class="h-6 w-auto" />
+                    <img src="/logo.png" alt="Logo" class="w-12 h-auto" />
                 </Link>
 
                 <!-- Center Menu Items -->
-                <div class="flex-x-center gap-2">
+                <div class="flex space-x-2 items-center">
                     <Link
                         v-for="(category, index) in navCategories.slice(0, 4)"
                         :key="category.id"
                         :href="category.nav_route || '/'"
-                        class="text-white text-sm px-2 hover:text-[#ff6e02] transition-colors whitespace-nowrap"
+                        class="text-white text-sm  hover:text-[#ff6e02] transition-colors whitespace-nowrap"
                     >
                         {{ category.name }}
                     </Link>
@@ -230,11 +230,79 @@ const user = computed(() => auth.value?.user);
                                     设置
                                 </Link>
 
+                                <!-- Footer-style Links from UniApp -->
+                                <div class="-mx-3 px-3 py-3 border-t border-[#374151] mt-3">
+                                    <p class="text-xs font-semibold text-[#999999] uppercase tracking-wider mb-2">更多</p>
+
+                                    <!-- Privacy Policy -->
+                                    <Link
+                                        href="/privacy"
+                                        class="block rounded-lg px-3 py-2.5 text-sm text-[#999999] hover:bg-[#374151] hover:text-white"
+                                        @click="mobileMenuOpen = false"
+                                    >
+                                        隐私政策
+                                    </Link>
+
+                                    <!-- Terms of Service -->
+                                    <Link
+                                        href="/terms"
+                                        class="block rounded-lg px-3 py-2.5 text-sm text-[#999999] hover:bg-[#374151] hover:text-white"
+                                        @click="mobileMenuOpen = false"
+                                    >
+                                        服务条款
+                                    </Link>
+
+                                    <!-- Contact Us -->
+                                    <Link
+                                        href="/contact"
+                                        class="block rounded-lg px-3 py-2.5 text-sm text-[#999999] hover:bg-[#374151] hover:text-white"
+                                        @click="mobileMenuOpen = false"
+                                    >
+                                        联系我们
+                                    </Link>
+
+                                    <!-- Feedback -->
+                                    <Link
+                                        href="/feedback"
+                                        class="block rounded-lg px-3 py-2.5 text-sm text-[#999999] hover:bg-[#374151] hover:text-white"
+                                        @click="mobileMenuOpen = false"
+                                    >
+                                        意见反馈
+                                    </Link>
+
+                                    <!-- Credits Withdrawal -->
+                                    <Link
+                                        href="/credits/withdraw"
+                                        class="block rounded-lg px-3 py-2.5 text-sm text-[#999999] hover:bg-[#374151] hover:text-white"
+                                        @click="mobileMenuOpen = false"
+                                    >
+                                        金币提现
+                                    </Link>
+
+                                    <!-- Points Rules -->
+                                    <Link
+                                        href="/points/rules"
+                                        class="block rounded-lg px-3 py-2.5 text-sm text-[#999999] hover:bg-[#374151] hover:text-white"
+                                        @click="mobileMenuOpen = false"
+                                    >
+                                        积分规则
+                                    </Link>
+
+                                    <!-- About Us -->
+                                    <Link
+                                        href="/about"
+                                        class="block rounded-lg px-3 py-2.5 text-sm text-[#999999] hover:bg-[#374151] hover:text-white"
+                                        @click="mobileMenuOpen = false"
+                                    >
+                                        关于我们
+                                    </Link>
+                                </div>
+
                                 <!-- Logout -->
                                 <Link
                                     href="/logout"
                                     method="post"
-                                    class="-mx-3 block rounded-lg px-3 py-2.5 text-base font-semibold text-white hover:bg-[#374151]"
+                                    class="-mx-3 block rounded-lg px-3 py-2.5 text-base font-semibold text-white hover:bg-[#374151] mt-3"
                                     @click="mobileMenuOpen = false"
                                 >
                                     退出登录
