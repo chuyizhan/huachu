@@ -49,11 +49,20 @@ const user = computed(() => auth.value?.user);
 
                 <!-- Center Menu Items -->
                 <div class="flex space-x-2 items-center">
+                    <!-- Hard-coded Home Link -->
                     <Link
-                        v-for="(category, index) in navCategories.slice(0, 4)"
+                        href="/"
+                        class="text-white text-sm hover:text-[#ff6e02] transition-colors whitespace-nowrap"
+                    >
+                        首页
+                    </Link>
+
+                    <!-- Dynamic Categories (limit to 3 to keep 4 total items) -->
+                    <Link
+                        v-for="(category, index) in navCategories.slice(0, 3)"
                         :key="category.id"
                         :href="category.nav_route || '/'"
-                        class="text-white text-sm  hover:text-[#ff6e02] transition-colors whitespace-nowrap"
+                        class="text-white text-sm hover:text-[#ff6e02] transition-colors whitespace-nowrap"
                     >
                         {{ category.name }}
                     </Link>
@@ -81,6 +90,15 @@ const user = computed(() => auth.value?.user);
 
                 <!-- Desktop Navigation Links -->
                 <div class="flex gap-x-6">
+                    <!-- Hard-coded Home Link -->
+                    <Link
+                        href="/"
+                        class="text-sm font-semibold text-white hover:text-[#ff6e02] transition-colors"
+                    >
+                        首页
+                    </Link>
+
+                    <!-- Dynamic Categories -->
                     <Link
                         v-for="category in navCategories"
                         :key="category.id"
@@ -167,6 +185,16 @@ const user = computed(() => auth.value?.user);
                     <div class="-my-6 divide-y divide-[#374151]">
                         <!-- Navigation links -->
                         <div class="space-y-2 py-6">
+                            <!-- Hard-coded Home Link -->
+                            <Link
+                                href="/"
+                                class="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold text-white hover:bg-[#374151] hover:text-[#ff6e02]"
+                                @click="mobileMenuOpen = false"
+                            >
+                                首页
+                            </Link>
+
+                            <!-- Dynamic Categories -->
                             <Link
                                 v-for="category in navCategories"
                                 :key="category.id"

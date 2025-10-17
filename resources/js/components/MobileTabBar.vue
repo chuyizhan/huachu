@@ -28,7 +28,7 @@ const tabs: TabItem[] = [
         label: '收藏'
     },
     {
-        path: '/settings/profile',
+        path: '/profile',
         icon: User,
         label: '我的'
     }

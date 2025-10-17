@@ -306,31 +306,6 @@ function publishPost() {
                                     <InputError :message="form.errors.post_category_id" class="mt-1" />
                                 </div>
 
-                                <!-- Post Type -->
-                                <div>
-                                    <Label class="text-white">帖子类型 *</Label>
-                                    <div class="mt-2 grid grid-cols-2 gap-2">
-                                        <button
-                                            v-for="type in postTypes"
-                                            :key="type.value"
-                                            type="button"
-                                            @click="form.type = type.value"
-                                            class="p-3 rounded-lg border text-left transition-colors"
-                                            :class="form.type === type.value
-                                                ? 'border-[#ff6e02] bg-[#ff6e02]/10 text-[#ff6e02]'
-                                                : 'border-[#4B5563] bg-[#1c1c1c] text-white hover:border-[#6B7280]'"
-                                        >
-                                            <div class="flex items-center gap-2">
-                                                <span class="text-lg">{{ type.icon }}</span>
-                                                <div>
-                                                    <div class="font-medium">{{ type.label }}</div>
-                                                    <div class="text-xs opacity-75">{{ type.description }}</div>
-                                                </div>
-                                            </div>
-                                        </button>
-                                    </div>
-                                    <InputError :message="form.errors.type" class="mt-1" />
-                                </div>
 
                                 <!-- Content -->
                                 <div>
@@ -346,18 +321,6 @@ function publishPost() {
                                     <InputError :message="form.errors.content" class="mt-1" />
                                 </div>
 
-                                <!-- Excerpt -->
-                                <div>
-                                    <Label for="excerpt" class="text-white">摘要</Label>
-                                    <textarea
-                                        id="excerpt"
-                                        v-model="form.excerpt"
-                                        placeholder="简短描述你的帖子内容... (可选)"
-                                        rows="3"
-                                        class="mt-1 w-full bg-[#1c1c1c] border border-[#4B5563] text-white placeholder:text-[#999999] rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#ff6e02] focus:border-[#ff6e02] resize-y"
-                                    ></textarea>
-                                    <p class="text-xs text-[#999999] mt-1">用于搜索结果和社交分享的预览</p>
-                                </div>
                             </CardContent>
                         </Card>
 
@@ -376,15 +339,16 @@ function publishPost() {
 
                                     <!-- Existing Images -->
                                     <div v-if="existingImages.length > 0" class="mt-2 mb-4">
+                                        <p class="text-xs text-[#999999] mb-2">现有图片 (共 {{ existingImages.length }} 张)</p>
                                         <div class="grid grid-cols-2 gap-3">
                                             <div
                                                 v-for="image in existingImages"
                                                 :key="image.id"
-                                                class="relative group rounded-lg overflow-hidden border border-[#4B5563]"
+                                                class="relative group rounded-lg overflow-hidden border border-[#4B5563] bg-[#1c1c1c]"
                                             >
                                                 <img
-                                                    :src="image.medium"
-                                                    alt="Existing image"
+                                                    :src="image.url"
+                                                    :alt="`Image ${image.id}`"
                                                     class="w-full h-32 object-cover"
                                                 />
                                                 <Button
@@ -392,13 +356,13 @@ function publishPost() {
                                                     size="sm"
                                                     variant="ghost"
                                                     @click="removeExistingImage(image.id)"
-                                                    class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    class="absolute top-2 right-2 bg-red-500/90 hover:bg-red-600 text-white p-1 rounded opacity-80 group-hover:opacity-100 transition-opacity"
                                                 >
                                                     <X class="h-4 w-4" />
                                                 </Button>
                                             </div>
                                         </div>
-                                        <p class="text-xs text-[#999999] mt-2">现有图片 (点击图片上的 X 删除)</p>
+                                        <p class="text-xs text-[#999999] mt-2">鼠标悬停在图片上可以看到删除按钮</p>
                                     </div>
 
                                     <!-- Upload New Images -->

@@ -154,14 +154,14 @@ const unfavoritePost = async (postId: number) => {
                     <Card
                         v-for="post in favorites.data"
                         :key="post.id"
-                        class="bg-[#374151] border-[#4B5563] hover:border-[#6B7280] transition-all duration-200 hover:scale-105 group overflow-hidden"
+                        class="bg-[#374151] border-[#4B5563] hover:border-[#6B7280] transition-all duration-200 lg:hover:scale-105 group overflow-hidden"
                     >
                         <!-- Post Image -->
                         <div v-if="post.images && post.images.length > 0" class="aspect-video overflow-hidden">
                             <img
                                 :src="post.images[0]"
                                 :alt="post.title"
-                                class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                class="w-full h-full object-cover lg:group-hover:scale-110 transition-transform duration-300"
                             />
                         </div>
 

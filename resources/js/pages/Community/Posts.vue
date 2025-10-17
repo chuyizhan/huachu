@@ -201,10 +201,17 @@ const postTypes = [
                             <span v-else>探索社区中的精彩内容和讨论</span>
                         </p>
                     </div>
+
+                    <!-- Return to Home button when category is selected -->
+                    <div v-if="selectedCategory">
+                        <Link href="/" class="inline-flex items-center gap-2 px-4 py-2 bg-[#ff6e02] text-white rounded-lg hover:bg-[#e55a00] transition-colors">
+                            <span>返回首页</span>
+                        </Link>
+                    </div>
                 </div>
 
-                <!-- Search and Filters -->
-                <div class="bg-[#374151] rounded-lg p-4 mb-6">
+                <!-- Search and Filters (only show when no category is selected) -->
+                <div v-if="!selectedCategory" class="bg-[#374151] rounded-lg p-4 mb-6">
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                         <!-- Search -->
                         <div class="md:col-span-2">
@@ -245,8 +252,8 @@ const postTypes = [
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-                <!-- Sidebar - Categories -->
-                <div class="lg:col-span-1">
+                <!-- Sidebar - Categories (only show when no category is selected) -->
+                <div v-if="!selectedCategory" class="lg:col-span-1">
                     <Card class="bg-[#374151] border-0 mb-6">
                         <CardHeader class="pb-3">
                             <CardTitle class="text-white text-base flex items-center gap-2">
@@ -290,27 +297,29 @@ const postTypes = [
 
                     <!-- Stats -->
                     <Card class="bg-[#374151] border-0">
-                        <CardHeader class="pb-3">
-                            <CardTitle class="text-white text-base flex items-center gap-2">
-                                <TrendingUp class="w-4 h-4" />
+                        <CardHeader class="pb-2 lg:pb-3">
+                            <CardTitle class="text-white text-sm lg:text-base flex items-center gap-2">
+                                <TrendingUp class="w-3 h-3 lg:w-4 lg:h-4" />
                                 统计信息
                             </CardTitle>
                         </CardHeader>
-                        <CardContent class="space-y-3">
-                            <div class="flex items-center justify-between">
-                                <span class="text-sm text-[#999999]">总帖子数</span>
-                                <span class="text-white font-medium">{{ posts.total }}</span>
-                            </div>
-                            <div v-if="selectedCategory" class="flex items-center justify-between">
-                                <span class="text-sm text-[#999999]">当前分类</span>
-                                <span class="text-white font-medium">{{ posts.data.length }}</span>
+                        <CardContent class="py-2 lg:py-3">
+                            <div class="flex flex-row lg:flex-col items-center justify-around lg:justify-start lg:space-y-3 gap-2 lg:gap-0">
+                                <div class="flex flex-col lg:flex-row items-center lg:justify-between text-center lg:text-left w-full">
+                                    <span class="text-xs lg:text-sm text-[#999999]">总帖子数</span>
+                                    <span class="text-white font-medium text-sm lg:text-base">{{ posts.total }}</span>
+                                </div>
+                                <div v-if="selectedCategory" class="flex flex-col lg:flex-row items-center lg:justify-between text-center lg:text-left w-full">
+                                    <span class="text-xs lg:text-sm text-[#999999]">当前分类</span>
+                                    <span class="text-white font-medium text-sm lg:text-base">{{ posts.data.length }}</span>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>
                 </div>
 
                 <!-- Main Content -->
-                <div class="lg:col-span-3">
+                <div :class="selectedCategory ? 'lg:col-span-4' : 'lg:col-span-3'">
                     <!-- Posts List -->
                     <div v-if="posts.data.length > 0" class="space-y-4">
                         <Link

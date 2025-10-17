@@ -4,6 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Link } from '@inertiajs/vue3';
 import { ChefHat, Heart, Eye, MessageSquare, ArrowRight, Star, TrendingUp } from 'lucide-vue-next';
 import { computed } from 'vue';
+import { Carousel, Slide, Pagination, Navigation } from 'vue3-carousel';
+import 'vue3-carousel/dist/carousel.css';
 
 interface Post {
     id: number;
@@ -69,14 +71,21 @@ interface Props {
 
 const props = defineProps<Props>();
 
-// Banner slides from featured posts
-const bannerSlides = computed(() => {
-    return props.featuredPosts.slice(0, 3).map(post => ({
-        image: post.first_image?.url || '/placeholder.jpg',
-        title: post.title,
-        link: `/posts/${post.slug}`
-    }));
-});
+// Banner slides using static images from /public/slides
+const bannerSlides = [
+    {
+        image: '/slides/slide1.png',
+        title: '属于餐饮人的学习社区'
+    },
+    {
+        image: '/slides/slide2.png',
+        title: '分享美食，交流技艺'
+    },
+    {
+        image: '/slides/slide3.png',
+        title: '共同成长，创造价值'
+    }
+];
 
 const formatTime = (dateString: string) => {
     const date = new Date(dateString);
@@ -94,23 +103,34 @@ const formatTime = (dateString: string) => {
 
 <template>
     <WebLayout>
-        <!-- Hero Banner Section -->
-        <section class="bg-white border-b border-gray-200">
-            <div class="max-w-[1000px] mx-auto py-12 px-4">
+        <!-- Hero Banner Section with Carousel -->
+        <section class="bg-background border-b border-[#333333]">
+            <div class="max-w-[1000px] mx-auto py-6 lg:py-12 px-4">
                 <div class="relative rounded-xl overflow-hidden shadow-lg" style="height: 350px;">
-                    <!-- Simple banner with first featured post -->
-                    <div v-if="featuredPosts.length > 0" class="relative w-full h-full">
-                        <img
-                            :src="featuredPosts[0].first_image?.url || '/placeholder.jpg'"
-                            class="w-full h-full object-cover"
-                            alt="Banner"
-                        />
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                        <div class="absolute bottom-0 left-0 right-0 p-8 text-white">
-                            <h1 class="text-4xl font-bold mb-2">属于餐饮人的学习社区</h1>
-                            <p class="text-lg opacity-90">分享美食，交流技艺，共同成长</p>
-                        </div>
-                    </div>
+                    <Carousel
+                        v-if="bannerSlides.length > 0"
+                        :autoplay="5000"
+                        :wrap-around="true"
+                        :transition="500"
+                    >
+                        <Slide v-for="(slide, index) in bannerSlides" :key="index">
+                            <div class="relative w-full h-[350px]">
+                                <img
+                                    :src="slide.image"
+                                    class="w-full h-full object-cover"
+                                    :alt="slide.title"
+                                />
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                                <div class="absolute bottom-0 left-0 right-0 p-8 text-white">
+                                    <h2 class="text-2xl lg:text-4xl font-bold mb-2">{{ slide.title }}</h2>
+                                </div>
+                            </div>
+                        </Slide>
+
+                        <template #addons>
+                            <Pagination />
+                        </template>
+                    </Carousel>
                 </div>
             </div>
         </section>
@@ -177,9 +197,14 @@ const formatTime = (dateString: string) => {
                         class="block  rounded-lg shadow hover:shadow-md transition-shadow p-5"
                     >
                         <!-- Post Title -->
-                        <h3 class="text-lg font-semibold text-foreground mb-3 hover:text-[#ff6e02] transition-colors line-clamp-2">
+                        <h3 class="text-base lg:text-lg font-semibold text-foreground mb-3 hover:text-[#ff6e02] transition-colors line-clamp-2">
                             {{ post.title }}
                         </h3>
+
+                        <!-- Post Content -->
+                        <p class="font24 color999 line-clamp-3 u-m-b-15">
+                            {{ post.excerpt }}
+                        </p>
 
                         <!-- Post Images (if available) -->
                         <div v-if="post.first_image" class="mb-4">
@@ -231,7 +256,7 @@ const formatTime = (dateString: string) => {
         <!-- Categories Section -->
         <section class="py-12 ">
             <div class="max-w-full mx-auto px-4">
-                <h2 class=" lg:text-2xl bg-zinc-800 text-white py-2 rounded-lg  text-center font-bold  mb-6">技术交流区</h2>
+                <h2 class=" lg:text-2xl bg-zinc-800 text-white py-2 rounded-lg  text-center font-bold  mb-6">分类显示</h2>
 
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
                     <Link
@@ -259,5 +284,27 @@ const formatTime = (dateString: string) => {
 .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
+}
+
+/* Carousel dark theme styling */
+:deep(.carousel__prev),
+:deep(.carousel__next) {
+    background-color: rgba(255, 110, 2, 0.8);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+}
+
+:deep(.carousel__prev):hover,
+:deep(.carousel__next):hover {
+    background-color: rgba(255, 110, 2, 1);
+}
+
+:deep(.carousel__pagination-button) {
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+:deep(.carousel__pagination-button--active) {
+    background-color: #ff6e02;
 }
 </style>

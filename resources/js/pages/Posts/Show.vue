@@ -8,6 +8,8 @@ import { Link, usePage, router } from '@inertiajs/vue3';
 import { ref, computed } from 'vue';
 import axios from 'axios';
 import Comments from '@/components/Comments.vue';
+import { Carousel, Slide, Pagination } from 'vue3-carousel';
+import 'vue3-carousel/dist/carousel.css';
 import {
     Heart,
     Eye,
@@ -24,7 +26,8 @@ import {
     UserPlus,
     UserMinus,
     Edit,
-    Trash2
+    Trash2,
+    X
 } from 'lucide-vue-next';
 
 interface Creator {
@@ -120,6 +123,10 @@ const isFollowing = ref(false);
 const isPurchasing = ref(false);
 const canView = ref(props.canViewContent);
 const userCreditsRef = ref(props.userCredits);
+
+// Image modal state
+const showImageModal = ref(false);
+const currentImage = ref('');
 
 // Check if user is authenticated
 const isAuthenticated = computed(() => page.props.auth?.user);
@@ -288,6 +295,17 @@ const deletePost = () => {
         });
     }
 };
+
+// Image modal functions
+const openImageModal = (imageUrl: string) => {
+    currentImage.value = imageUrl;
+    showImageModal.value = true;
+};
+
+const closeImageModal = () => {
+    showImageModal.value = false;
+    currentImage.value = '';
+};
 </script>
 
 <template>
@@ -308,20 +326,27 @@ const deletePost = () => {
                         <img
                             :src="post.image_urls[0].url"
                             alt="Post image"
-                            class="w-full h-[350px] object-cover"
+                            class="w-full h-[350px] object-cover cursor-pointer"
+                            @click="openImageModal(post.image_urls[0].url)"
                         />
                     </div>
                     <div v-else class="relative">
-                        <!-- Simple image carousel -->
-                        <div class="overflow-x-auto flex snap-x snap-mandatory">
-                            <img
-                                v-for="image in post.image_urls"
-                                :key="image.id"
-                                :src="image.url"
-                                alt="Post image"
-                                class="w-full h-[350px] object-cover flex-shrink-0 snap-center"
-                            />
-                        </div>
+                        <!-- Multiple images carousel -->
+                        <Carousel :wrap-around="true">
+                            <Slide v-for="image in post.image_urls" :key="image.id">
+                                <div class="w-full h-[350px]">
+                                    <img
+                                        :src="image.url"
+                                        alt="Post image"
+                                        class="w-full h-full object-cover cursor-pointer"
+                                        @click="openImageModal(image.url)"
+                                    />
+                                </div>
+                            </Slide>
+                            <template #addons>
+                                <Pagination />
+                            </template>
+                        </Carousel>
                     </div>
                 </div>
 
@@ -525,6 +550,39 @@ const deletePost = () => {
                     />
                 </div>
             </div>
+
+            <!-- Image Modal -->
+            <div
+                v-if="showImageModal"
+                @click="closeImageModal"
+                class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-90 p-4"
+            >
+                <div class="relative max-w-4xl max-h-[90vh]">
+                    <button
+                        @click="closeImageModal"
+                        class="absolute -top-10 right-0 text-white hover:text-[#ff6e02] transition-colors"
+                    >
+                        <X class="w-8 h-8" />
+                    </button>
+                    <img
+                        :src="currentImage"
+                        alt="Full size image"
+                        class="max-w-full max-h-[90vh] object-contain"
+                        @click.stop
+                    />
+                </div>
+            </div>
         </div>
     </WebLayout>
 </template>
+
+<style scoped>
+/* Carousel dark theme styling */
+:deep(.carousel__pagination-button) {
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+:deep(.carousel__pagination-button--active) {
+    background-color: #ff6e02;
+}
+</style>

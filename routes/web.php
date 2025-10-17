@@ -13,6 +13,7 @@ use App\Http\Controllers\VipController;
 use App\Http\Controllers\RechargeController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\ProfileController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -37,6 +38,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'admin']
 // User favorites
 Route::get('/favorites', [PostFavoriteController::class, 'index'])->middleware('auth')->name('favorites');
 
+// Profile route
+Route::get('/profile', [ProfileController::class, 'index'])->middleware('auth')->name('profile');
+
 // Recharge routes
 Route::prefix('recharge')->name('recharge.')->middleware('auth')->group(function () {
     Route::get('/', [RechargeController::class, 'index'])->name('index');
@@ -53,7 +57,7 @@ Route::prefix('comments')->name('comments.')->middleware('auth')->group(function
 
 // Community routes
 Route::prefix('community')->name('community.')->group(function () {
-    Route::get('/', [CommunityController::class, 'index'])->name('index');
+    // Route::get('/', [CommunityController::class, 'index'])->name('index');
     Route::get('/posts', [CommunityController::class, 'posts'])->name('posts');
     Route::get('/creators', [CommunityController::class, 'creators'])->name('creators');
     Route::get('/leaderboard', [CommunityController::class, 'leaderboard'])->name('leaderboard');
