@@ -63,18 +63,19 @@ class PostController extends Controller
         $isLocked = $post->isLocked();
         $isPurchased = $user ? $post->isPurchasedBy($user) : false;
 
-        // Only show full content and media if user can view
-        if ($canView) {
-            // User has access - show full content and all media
-            $post->image_urls = $post->getMedia('images')->map(function ($media) {
-                return [
-                    'id' => $media->id,
-                    'url' => $media->getUrl(),
-                    'thumb' => $media->getUrl('thumb'),
-                    'medium' => $media->getUrl('medium'),
-                ];
-            });
+        // Always show images regardless of access
+        $post->image_urls = $post->getMedia('images')->map(function ($media) {
+            return [
+                'id' => $media->id,
+                'url' => $media->getUrl(),
+                'thumb' => $media->getUrl('thumb'),
+                'medium' => $media->getUrl('medium'),
+            ];
+        });
 
+        // Only show full content and videos if user can view
+        if ($canView) {
+            // User has access - show videos
             $post->video_urls = $post->getMedia('videos')->map(function ($media) {
                 return [
                     'id' => $media->id,
@@ -84,10 +85,9 @@ class PostController extends Controller
                 ];
             });
         } else {
-            // User doesn't have access - completely hide content and media
+            // User doesn't have access - hide text content and videos
             $post->content = null;
             $post->excerpt = null;
-            $post->image_urls = [];
             $post->video_urls = [];
             $post->videos = [];
         }

@@ -98,58 +98,58 @@ function formatDate(dateString: string) {
                 </div>
 
                 <!-- Stats Cards -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="grid grid-cols-4 md:grid-cols-4 gap-2 md:gap-6 mb-8">
                     <Card class="bg-[#374151] border-[#4B5563]">
-                        <CardContent class="p-6">
-                            <div class="flex items-center">
-                                <div class="p-2 bg-[#ff6e02]/20 rounded-lg">
-                                    <Edit class="h-5 w-5 text-[#ff6e02]" />
+                        <CardContent class="p-2 md:p-6">
+                            <div class="flex flex-col md:flex-row items-center md:items-center">
+                                <div class="p-1 md:p-2 bg-[#ff6e02]/20 rounded-lg mb-1 md:mb-0">
+                                    <Edit class="h-3 w-3 md:h-5 md:w-5 text-[#ff6e02]" />
                                 </div>
-                                <div class="ml-4">
-                                    <p class="text-sm text-[#999999]">总帖子</p>
-                                    <p class="text-2xl font-bold text-white">{{ stats.total }}</p>
+                                <div class="md:ml-4 text-center md:text-left">
+                                    <p class="text-xs md:text-sm text-[#999999]">总帖子</p>
+                                    <p class="text-sm md:text-2xl font-bold text-white">{{ stats.total }}</p>
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
 
                     <Card class="bg-[#374151] border-[#4B5563]">
-                        <CardContent class="p-6">
-                            <div class="flex items-center">
-                                <div class="p-2 bg-green-500/20 rounded-lg">
-                                    <Eye class="h-5 w-5 text-green-500" />
+                        <CardContent class="p-2 md:p-6">
+                            <div class="flex flex-col md:flex-row items-center md:items-center">
+                                <div class="p-1 md:p-2 bg-green-500/20 rounded-lg mb-1 md:mb-0">
+                                    <Eye class="h-3 w-3 md:h-5 md:w-5 text-green-500" />
                                 </div>
-                                <div class="ml-4">
-                                    <p class="text-sm text-[#999999]">已发布</p>
-                                    <p class="text-2xl font-bold text-white">{{ stats.published }}</p>
-                                </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-
-                    <Card class="bg-[#374151] border-[#4B5563]">
-                        <CardContent class="p-6">
-                            <div class="flex items-center">
-                                <div class="p-2 bg-yellow-500/20 rounded-lg">
-                                    <Edit class="h-5 w-5 text-yellow-500" />
-                                </div>
-                                <div class="ml-4">
-                                    <p class="text-sm text-[#999999]">草稿</p>
-                                    <p class="text-2xl font-bold text-white">{{ stats.drafts }}</p>
+                                <div class="md:ml-4 text-center md:text-left">
+                                    <p class="text-xs md:text-sm text-[#999999]">已发布</p>
+                                    <p class="text-sm md:text-2xl font-bold text-white">{{ stats.published }}</p>
                                 </div>
                             </div>
                         </CardContent>
                     </Card>
 
                     <Card class="bg-[#374151] border-[#4B5563]">
-                        <CardContent class="p-6">
-                            <div class="flex items-center">
-                                <div class="p-2 bg-purple-500/20 rounded-lg">
-                                    <Heart class="h-5 w-5 text-purple-500" />
+                        <CardContent class="p-2 md:p-6">
+                            <div class="flex flex-col md:flex-row items-center md:items-center">
+                                <div class="p-1 md:p-2 bg-yellow-500/20 rounded-lg mb-1 md:mb-0">
+                                    <Edit class="h-3 w-3 md:h-5 md:w-5 text-yellow-500" />
                                 </div>
-                                <div class="ml-4">
-                                    <p class="text-sm text-[#999999]">高级内容</p>
-                                    <p class="text-2xl font-bold text-white">{{ stats.premium }}</p>
+                                <div class="md:ml-4 text-center md:text-left">
+                                    <p class="text-xs md:text-sm text-[#999999]">草稿</p>
+                                    <p class="text-sm md:text-2xl font-bold text-white">{{ stats.drafts }}</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card class="bg-[#374151] border-[#4B5563]">
+                        <CardContent class="p-2 md:p-6">
+                            <div class="flex flex-col md:flex-row items-center md:items-center">
+                                <div class="p-1 md:p-2 bg-purple-500/20 rounded-lg mb-1 md:mb-0">
+                                    <Heart class="h-3 w-3 md:h-5 md:w-5 text-purple-500" />
+                                </div>
+                                <div class="md:ml-4 text-center md:text-left">
+                                    <p class="text-xs md:text-sm text-[#999999]">高级内容</p>
+                                    <p class="text-sm md:text-2xl font-bold text-white">{{ stats.premium }}</p>
                                 </div>
                             </div>
                         </CardContent>

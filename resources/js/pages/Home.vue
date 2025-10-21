@@ -1,29 +1,11 @@
 <script setup lang="ts">
 import WebLayout from '@/layouts/WebLayout.vue';
-import HeroCarousel from '@/components/HeroCarousel.vue';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Link, usePage } from '@inertiajs/vue3';
+import { Link } from '@inertiajs/vue3';
+import { ChefHat, Heart, Eye, MessageSquare, ArrowRight, Star, TrendingUp } from 'lucide-vue-next';
 import { computed } from 'vue';
-import {
-    ChefHat,
-    Users,
-    BookOpen,
-    Star,
-    ArrowRight,
-    Crown,
-    Heart,
-    Eye,
-    MessageSquare,
-    Award,
-    Utensils,
-    Clock,
-    TrendingUp
-} from 'lucide-vue-next';
-import PostCard from '@/components/PostCard.vue';
-import CreatorCard from '@/components/CreatorCard.vue';
+import { Carousel, Slide, Pagination, Navigation } from 'vue3-carousel';
+import 'vue3-carousel/dist/carousel.css';
 
 interface Post {
     id: number;
@@ -33,21 +15,22 @@ interface Post {
     user: {
         id: number;
         name: string;
+        avatar?: string;
         creator_profile?: {
+            id: number;
             display_name: string;
             specialty: string;
-            verification_status: string;
         };
     };
     category: {
         id: number;
         name: string;
         color: string;
+        icon?: string;
     };
-    type: string;
     view_count: number;
     like_count: number;
-    is_premium: boolean;
+    comment_count: number;
     published_at: string;
     first_image?: {
         url: string;
@@ -62,11 +45,11 @@ interface Creator {
     specialty: string;
     rating: number;
     follower_count: number;
-    is_featured: boolean;
-    verification_status: string;
+    avatar?: string;
     user: {
         id: number;
         name: string;
+        avatar?: string;
     };
 }
 
@@ -79,221 +62,250 @@ interface Category {
     posts_count: number;
 }
 
-interface Testimonial {
-    id: number;
-    content: string;
-    author: string;
-    rating: number;
-    specialty: string;
-}
-
-interface Stats {
-    total_recipes: number;
-    total_chefs: number;
-    total_cuisines: number;
-    total_members: number;
-}
-
 interface Props {
     featuredPosts: Post[];
     recentPosts: Post[];
     featuredCreators: Creator[];
     popularCategories: Category[];
-    stats: Stats;
-    testimonials: Testimonial[];
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
 
-const page = usePage();
-const appName = computed(() => page.props.name as string);
-
-const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
-};
-
-const features = [
+// Banner slides using static images from /public/slides
+const bannerSlides = [
     {
-        icon: BookOpen,
-        title: 'Discover Recipes',
-        description: 'Explore thousands of recipes from professional chefs and home cooks worldwide.'
+        image: '/slides/slide1.png',
+        title: '属于餐饮人的学习社区'
     },
     {
-        icon: Users,
-        title: 'Learn from Masters',
-        description: 'Connect with verified culinary experts and learn their secret techniques.'
+        image: '/slides/slide2.png',
+        title: '分享美食，交流技艺'
     },
     {
-        icon: Crown,
-        title: 'Premium Content',
-        description: 'Access exclusive recipes and advanced cooking tutorials with VIP membership.'
-    },
-    {
-        icon: Award,
-        title: 'Build Your Reputation',
-        description: 'Share your recipes, gain followers, and become a recognized chef in the community.'
+        image: '/slides/slide3.png',
+        title: '共同成长，创造价值'
     }
 ];
+
+const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (diff < 60) return '刚刚';
+    if (diff < 3600) return `${Math.floor(diff / 60)}分钟前`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}小时前`;
+    if (diff < 604800) return `${Math.floor(diff / 86400)}天前`;
+
+    return date.toLocaleDateString('zh-CN');
+};
 </script>
 
 <template>
     <WebLayout>
-        <!-- Hero Section with Carousel -->
-        <section class="relative overflow-hidden bg-[#1c1c1c]">
-            <div class="max-w-[1000px] mx-auto px-4 py-12">
-                <HeroCarousel />
-            </div>
-        </section>
-
-        <!-- Featured Categories Section -->
-        <section class="py-12 px-4">
-            <div class="max-w-[1000px] mx-auto">
-                <div class="mb-8">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="bg-[#ff6e02] text-white px-4 py-2 rounded text-base font-medium">
-                            技术交流区
-                        </div>
-                        <Link href="/community/posts" class="text-[#ff6e02] text-sm hover:underline flex items-center">
-                            更多 >>
-                        </Link>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <Link
-                        v-for="category in popularCategories.slice(0, 8)"
-                        :key="category.id"
-                        :href="`/community/posts?category=${category.slug}`"
-                        class="group"
+        <!-- Hero Banner Section with Carousel -->
+        <section class="bg-background border-b border-[#333333]">
+            <div class="max-w-[1000px] mx-auto py-6 lg:py-12 px-4">
+                <div class="relative rounded-xl overflow-hidden shadow-lg" style="height: 350px;">
+                    <Carousel
+                        v-if="bannerSlides.length > 0"
+                        :autoplay="5000"
+                        :wrap-around="true"
+                        :transition="500"
                     >
-                        <div class="bg-[#374151] rounded-lg p-4 text-center hover:bg-[#1f2937] transition-colors">
-                            <div class="text-3xl mb-2">{{ category.icon || '🍽️' }}</div>
-                            <h3 class="text-white text-sm font-medium mb-1">{{ category.name }}</h3>
-                            <div class="text-[#999999] text-xs">{{ category.posts_count }} 个菜谱</div>
-                        </div>
-                    </Link>
-                </div>
-            </div>
-        </section>
-
-        <!-- Featured Recipes Section -->
-        <section v-if="featuredPosts.length > 0" class="py-12 px-4 bg-[#1c1c1c]">
-            <div class="max-w-[1000px] mx-auto">
-                <div class="mb-8">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="bg-[#ff6e02] text-white px-4 py-2 rounded text-base font-medium">
-                            热门帖子
-                        </div>
-                        <Link href="/community/posts" class="text-[#ff6e02] text-sm hover:underline flex items-center">
-                            更多 >>
-                        </Link>
-                    </div>
-                </div>
-
-                <div class="space-y-4">
-                    <div v-for="post in featuredPosts.slice(0, 6)" :key="post.id" class="bg-[#374151] rounded-lg p-4 hover:bg-[#1f2937] transition-colors">
-                        <div class="flex items-start gap-4">
-                            <Link :href="`/posts/${post.slug}`" class="w-20 h-16 bg-[#1f2937] rounded-lg flex-shrink-0 overflow-hidden">
-                                <img v-if="post.first_image" :src="post.first_image.thumb" :alt="post.title" class="w-full h-full object-cover" />
-                                <div v-else class="w-full h-full flex items-center justify-center text-2xl">🍳</div>
-                            </Link>
-                            <div class="flex-1 min-w-0">
-                                <Link :href="`/posts/${post.slug}`" class="text-white hover:text-[#ff6e02] font-medium text-base line-clamp-2 mb-2 block">
-                                    {{ post.title }}
-                                </Link>
-                                <p class="text-[#999999] text-sm line-clamp-2 mb-3">{{ post.excerpt }}</p>
-                                <div class="flex items-center justify-between text-xs text-[#999999]">
-                                    <div class="flex items-center gap-4">
-                                        <span>{{ post.user.creator_profile?.display_name || post.user.name }}</span>
-                                        <span>{{ new Date(post.published_at).toLocaleDateString('zh-CN') }}</span>
-                                    </div>
-                                    <div class="flex items-center gap-3">
-                                        <span class="flex items-center gap-1">
-                                            <Eye class="w-3 h-3" />
-                                            {{ post.view_count }}
-                                        </span>
-                                        <span class="flex items-center gap-1">
-                                            <Heart class="w-3 h-3" />
-                                            {{ post.like_count }}
-                                        </span>
-                                    </div>
+                        <Slide v-for="(slide, index) in bannerSlides" :key="index">
+                            <div class="relative w-full h-[350px]">
+                                <img
+                                    :src="slide.image"
+                                    class="w-full h-full object-cover"
+                                    :alt="slide.title"
+                                />
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                                <div class="absolute bottom-0 left-0 right-0 p-8 text-white">
+                                    <h2 class="text-2xl lg:text-4xl font-bold mb-2">{{ slide.title }}</h2>
                                 </div>
                             </div>
-                        </div>
-                    </div>
+                        </Slide>
+
+                        <template #addons>
+                            <Pagination />
+                        </template>
+                    </Carousel>
                 </div>
             </div>
         </section>
 
-        <!-- Featured Chefs Section -->
-        <section v-if="featuredCreators.length > 0" class="py-12 px-4 bg-[#1c1c1c]">
-            <div class="max-w-[1000px] mx-auto">
-                <div class="mb-8">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="bg-[#ff6e02] text-white px-4 py-2 rounded text-base font-medium">
-                            推荐博主
-                        </div>
-                        <Link href="/community/creators" class="text-[#ff6e02] text-sm hover:underline flex items-center">
-                            更多 >>
-                        </Link>
-                    </div>
+        <!-- Recommended Creators Section -->
+        <section class="py-12 bg-background">
+            <div class="max-w-[1000px] mx-auto px-4">
+                <!-- Section Title -->
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-foreground flex items-center gap-2">
+                        <Star class="h-6 w-6 text-[#ff6e02]" fill="#ff6e02" />
+                        推荐博主
+                    </h2>
+                    <Link href="/community/creators" class="text-[#ff6e02] hover:underline flex items-center gap-1 text-sm">
+                        更多
+                        <ArrowRight class="h-4 w-4" />
+                    </Link>
                 </div>
 
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <!-- Creators Horizontal Scroll -->
+                <div class="flex gap-6 overflow-x-auto pb-4 scrollbar-hide">
                     <Link
-                        v-for="creator in featuredCreators.slice(0, 8)"
+                        v-for="creator in featuredCreators"
                         :key="creator.id"
                         :href="`/creators/${creator.id}`"
-                        class="group"
+                        class="flex-shrink-0 w-24 group"
                     >
-                        <div class="bg-[#374151] rounded-lg p-4 text-center hover:bg-[#1f2937] transition-colors">
-                            <div class="w-12 h-12 bg-[#1f2937] rounded-full flex items-center justify-center mx-auto mb-3">
-                                <div class="text-lg">👨‍🍳</div>
-                            </div>
-                            <h3 class="text-white text-sm font-medium mb-1">{{ creator.display_name }}</h3>
-                            <div class="text-[#999999] text-xs mb-2">{{ creator.specialty }}</div>
-                            <div class="flex items-center justify-center gap-2 text-xs">
-                                <span class="text-[#ff6e02]">⭐ {{ creator.rating }}</span>
-                                <span class="text-[#999999]">{{ creator.follower_count }} 粉丝</span>
-                            </div>
+                        <div class="bg-white rounded-lg shadow hover:shadow-md transition-shadow p-3">
+                            <img
+                                :src="creator.user.avatar || `https://ui-avatars.com/api/?name=${creator.display_name}&size=130`"
+                                class="w-full h-18 object-cover rounded-lg mb-3"
+                                :alt="creator.display_name"
+                            />
+                            <p class="text-sm text-center text-foreground font-medium truncate">
+                                {{ creator.display_name }}
+                            </p>
                         </div>
                     </Link>
                 </div>
             </div>
         </section>
 
-        <!-- Recent Posts Section -->
-        <section v-if="recentPosts.length > 0" class="py-12 px-4 bg-[#1c1c1c]">
-            <div class="max-w-[1000px] mx-auto">
-                <div class="mb-8">
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="bg-[#ff6e02] text-white px-4 py-2 rounded text-base font-medium">
-                            网站自制教学板块
-                        </div>
-                        <Link href="/community/posts" class="text-[#ff6e02] text-sm hover:underline flex items-center">
-                            更多 >>
-                        </Link>
-                    </div>
+        <!-- Hot Posts Section -->
+        <section class="py-12 bg-background">
+            <div class="max-w-[1000px] mx-auto px-4">
+                <!-- Section Title -->
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-2xl font-bold text-foreground flex items-center gap-2">
+                        <TrendingUp class="h-6 w-6 text-[#ff6e02]" />
+                        热门帖子
+                    </h2>
+                    <Link href="/community/posts" class="text-[#ff6e02] hover:underline flex items-center gap-1 text-sm">
+                        更多
+                        <ArrowRight class="h-4 w-4" />
+                    </Link>
                 </div>
 
-                <div class="space-y-3">
-                    <div v-for="post in recentPosts.slice(0, 8)" :key="post.id" class="bg-[#374151] rounded-lg p-3 hover:bg-[#1f2937] transition-colors">
-                        <div class="flex items-center justify-between">
-                            <Link :href="`/posts/${post.slug}`" class="text-white hover:text-[#ff6e02] text-sm font-medium line-clamp-1 flex-1 mr-4">
-                                {{ post.title }}
-                            </Link>
-                            <div class="flex items-center gap-4 text-xs text-[#999999] flex-shrink-0">
-                                <span>{{ post.user.creator_profile?.display_name || post.user.name }}</span>
-                                <span>{{ new Date(post.published_at).toLocaleDateString('zh-CN') }}</span>
+                <!-- Posts List -->
+                <div class="space-y-4">
+                    <Link
+                        v-for="post in recentPosts"
+                        :key="post.id"
+                        :href="`/posts/${post.slug}`"
+                        class="block  rounded-lg shadow hover:shadow-md transition-shadow p-5"
+                    >
+                        <!-- Post Title -->
+                        <h3 class="text-base lg:text-lg font-semibold text-foreground mb-3 hover:text-[#ff6e02] transition-colors line-clamp-2">
+                            {{ post.title }}
+                        </h3>
+
+                        <!-- Post Content -->
+                        <p class="font24 color999 line-clamp-3 u-m-b-15">
+                            {{ post.excerpt }}
+                        </p>
+
+                        <!-- Post Images (if available) -->
+                        <div v-if="post.first_image" class="mb-4">
+                            <img
+                                :src="post.first_image.thumb"
+                                class="w-full h-[200px] object-cover rounded-lg"
+                                :alt="post.title"
+                            />
+                        </div>
+
+                        <!-- Post Footer -->
+                        <div class="flex items-center justify-between text-sm">
+                            <div class="flex items-center gap-4">
+                                <!-- Avatar -->
+                                <div class="flex items-center gap-2">
+                                    <img
+                                        :src="post.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.user.creator_profile?.display_name || post.user.name)}&size=32&background=ff6e02&color=fff`"
+                                        class="w-8 h-8 rounded-full object-cover"
+                                        :alt="post.user.name"
+                                        @error="(e) => e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(post.user.name)}&size=32&background=ff6e02&color=fff`"
+                                    />
+                                    <span class="text-foreground">
+                                        {{ post.user.creator_profile?.display_name || post.user.name }}
+                                    </span>
+                                </div>
+
+                                <!-- Time -->
+                                <span class="text-muted-foreground">
+                                    {{ formatTime(post.published_at) }}
+                                </span>
+                            </div>
+
+                            <!-- Stats -->
+                            <div class="flex items-center gap-4 text-muted-foreground">
                                 <span class="flex items-center gap-1">
-                                    <Eye class="w-3 h-3" />
+                                    <Eye class="h-4 w-4" />
                                     {{ post.view_count }}
+                                </span>
+                                <span class="flex items-center gap-1 hover:text-[#ff6e02] transition-colors">
+                                    <Heart class="h-4 w-4" />
+                                    {{ post.like_count }}
                                 </span>
                             </div>
                         </div>
-                    </div>
+                    </Link>
+                </div>
+            </div>
+        </section>
+
+        <!-- Categories Section -->
+        <section class="py-12 ">
+            <div class="max-w-full mx-auto px-4">
+                <h2 class=" lg:text-2xl bg-zinc-800 text-white py-2 rounded-lg  text-center font-bold  mb-6">分类显示</h2>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    <Link
+                        v-for="category in popularCategories"
+                        :key="category.id"
+                        :href="`/community/posts?category=${category.slug}`"
+                        class="flex items-center gap-3 p-2 bg-background rounded-lg hover:bg-gray-500 transition-colors"
+                    >
+                        <div class="text-3xl">{{ category.icon || '📝' }}</div>
+                        <div>
+                            <p class="font-medium text-foreground">{{ category.name }}</p>
+                            <p class="text-xs text-muted-foreground">{{ category.posts_count }} 帖子</p>
+                        </div>
+                    </Link>
                 </div>
             </div>
         </section>
     </WebLayout>
 </template>
+
+<style scoped>
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+/* Carousel dark theme styling */
+:deep(.carousel__prev),
+:deep(.carousel__next) {
+    background-color: rgba(255, 110, 2, 0.8);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+}
+
+:deep(.carousel__prev):hover,
+:deep(.carousel__next):hover {
+    background-color: rgba(255, 110, 2, 1);
+}
+
+:deep(.carousel__pagination-button) {
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+:deep(.carousel__pagination-button--active) {
+    background-color: #ff6e02;
+}
+</style>

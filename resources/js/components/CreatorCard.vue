@@ -79,8 +79,8 @@ const getSocialIcon = (platform: string) => {
 
 <template>
     <!-- Featured Variant -->
-    <Card v-if="variant === 'featured'" class="hover:shadow-lg transition-all duration-200">
-        <CardHeader class="text-center pb-3">
+    <div v-if="variant === 'featured'" class="listclass hover:shadow-lg transition-all duration-200">
+        <div class="text-center pb-3">
             <div class="flex justify-center mb-4">
                 <Avatar class="h-20 w-20">
                     <AvatarFallback class="text-lg">
@@ -119,9 +119,9 @@ const getSocialIcon = (platform: string) => {
                     {{ creator.follower_count }}
                 </div>
             </div>
-        </CardHeader>
+        </div>
 
-        <CardContent class="space-y-4">
+        <div class="space-y-4 u-m-t-20">
             <p class="text-sm text-muted-foreground line-clamp-3 text-center">
                 {{ creator.bio }}
             </p>
@@ -154,17 +154,18 @@ const getSocialIcon = (platform: string) => {
                 </template>
             </div>
 
-            <Button class="w-full" variant="outline" as-child>
-                <Link :href="`/creators/${creator.id}`">
-                    View Profile
-                </Link>
-            </Button>
-        </CardContent>
-    </Card>
+            <Link
+                :href="`/creators/${creator.id}`"
+                class="bg-[#ff6e02] text-white px-6 py-2 rounded-40 font24 hover:bg-[#e55a00] transition-colors inline-block w-full text-center"
+            >
+                View Profile
+            </Link>
+        </div>
+    </div>
 
     <!-- Compact Variant -->
-    <Card v-else-if="variant === 'compact'">
-        <CardContent class="p-4">
+    <div v-else-if="variant === 'compact'" class="listclass">
+        <div class="p-4">
             <Link
                 :href="`/creators/${creator.id}`"
                 class="flex items-center gap-3 hover:bg-muted transition-colors rounded-lg p-2 -m-2"
@@ -192,90 +193,89 @@ const getSocialIcon = (platform: string) => {
                     </div>
                 </div>
             </Link>
-        </CardContent>
-    </Card>
+        </div>
+    </div>
 
-    <!-- Default Variant -->
-    <Card v-else class="hover:shadow-lg transition-all duration-200">
-        <CardHeader class="text-center pb-3">
-            <div class="flex justify-center mb-4">
+    <!-- Default Variant - UniApp Style -->
+    <div v-else class="listclass hover:shadow-lg transition-all duration-200">
+        <div class="flex-y text-center">
+            <div class="flex-xy-center u-m-b-20">
                 <Avatar class="h-16 w-16">
-                    <AvatarFallback class="text-lg">
+                    <AvatarFallback class="text-lg bg-[#ff6e02] text-white">
                         {{ getInitials(creator.display_name) }}
                     </AvatarFallback>
                 </Avatar>
             </div>
 
-            <div class="flex items-center justify-center gap-2 mb-2">
-                <Badge v-if="creator.is_featured" variant="default" class="bg-amber-500">
+            <div class="flex-x-center justify-center gap-2 u-m-b-15">
+                <Badge v-if="creator.is_featured" class="bg-[#ff6e02] text-white text-xs rounded-40">
                     <Star class="w-3 h-3 mr-1" />
-                    Featured
+                    博主
                 </Badge>
-                <Badge :class="getVerificationColor(creator.verification_status)" variant="secondary">
-                    {{ getVerificationText(creator.verification_status) }}
+                <Badge v-if="creator.verification_status === 'verified'" class="bg-[#ff6e02] text-white text-xs rounded-40">
+                    ✓ 认证
                 </Badge>
             </div>
 
-            <CardTitle>
+            <h3 class="font32 colorfff u-m-b-10">
                 <Link :href="`/creators/${creator.id}`" class="hover:text-primary">
                     {{ creator.display_name }}
                 </Link>
-            </CardTitle>
+            </h3>
 
-            <CardDescription>
+            <p class="font24 color999 u-m-b-15">
                 {{ creator.specialty }}
-            </CardDescription>
+            </p>
 
-            <div v-if="showStats" class="flex items-center justify-center gap-4 mt-3 text-sm text-muted-foreground">
-                <div class="flex items-center gap-1">
-                    <Star class="w-4 h-4 fill-current text-yellow-500" />
-                    {{ creator.rating }}/5
+            <div v-if="showStats" class="flex-x-center justify-center gap-4 u-m-b-15 font24 color999">
+                <div class="flex-x-center gap-1">
+                    <Star class="w-4 h-4 fill-current text-[#ff6e02]" />
+                    <span>{{ creator.rating }}/5</span>
                 </div>
-                <div class="flex items-center gap-1">
+                <div class="flex-x-center gap-1">
                     <Users class="w-4 h-4" />
-                    {{ creator.follower_count }}
+                    <span>{{ creator.follower_count }}</span>
                 </div>
             </div>
-        </CardHeader>
 
-        <CardContent class="space-y-4">
-            <p class="text-sm text-muted-foreground line-clamp-3">
+            <p class="font24 color999 line-clamp-2 u-m-b-15">
                 {{ creator.bio }}
             </p>
 
-            <div class="space-y-2">
-                <div v-if="creator.location" class="flex items-center gap-2 text-sm text-muted-foreground">
+            <div class="flex-y gap-2 u-m-b-15">
+                <div v-if="creator.location" class="flex-x-center justify-center gap-2 font24 color999">
                     <MapPin class="w-4 h-4" />
-                    {{ creator.location }}
+                    <span>{{ creator.location }}</span>
                 </div>
-                <div class="text-sm text-muted-foreground">
-                    {{ creator.experience_years }} years experience
+                <div class="font24 color999">
+                    {{ creator.experience_years }} 年经验
                 </div>
-                <div v-if="creator.posts_count" class="text-sm text-muted-foreground">
-                    {{ creator.posts_count }} {{ creator.posts_count === 1 ? 'post' : 'posts' }}
+                <div v-if="creator.posts_count" class="font24 color999">
+                    {{ creator.posts_count }} 个菜谱
                 </div>
             </div>
 
             <!-- Social Links -->
-            <div v-if="showSocials && creator.social_links && Object.keys(creator.social_links).length > 0" class="flex items-center gap-2">
+            <div v-if="showSocials && creator.social_links && Object.keys(creator.social_links).length > 0" class="flex-x-center justify-center gap-2 u-m-b-15">
                 <template v-for="(url, platform) in creator.social_links" :key="platform">
                     <a
                         v-if="url"
                         :href="url"
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="p-2 rounded-lg hover:bg-muted transition-colors"
+                        class="p-2 rounded-lg hover:bg-[#333333] transition-colors"
                     >
-                        <component :is="getSocialIcon(platform)" class="w-4 h-4" />
+                        <component :is="getSocialIcon(platform)" class="w-4 h-4 text-[#ff6e02]" />
                     </a>
                 </template>
             </div>
 
-            <Button class="w-full" variant="outline" as-child>
-                <Link :href="`/creators/${creator.id}`">
-                    View Profile
-                </Link>
-            </Button>
-        </CardContent>
-    </Card>
+            <Link
+                :href="`/creators/${creator.id}`"
+                class="bg-[#ff6e02] text-white px-6 py-2 rounded-40 font24 hover:bg-[#e55a00] transition-colors inline-block"
+            >
+                查看主页
+            </Link>
+        </div>
+    </div>
 </template>

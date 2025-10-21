@@ -12,6 +12,8 @@ use App\Http\Controllers\CreatorController;
 use App\Http\Controllers\VipController;
 use App\Http\Controllers\RechargeController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\PageController;
+use App\Http\Controllers\ProfileController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -36,6 +38,9 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'admin']
 // User favorites
 Route::get('/favorites', [PostFavoriteController::class, 'index'])->middleware('auth')->name('favorites');
 
+// Profile route
+Route::get('/profile', [ProfileController::class, 'index'])->middleware('auth')->name('profile');
+
 // Recharge routes
 Route::prefix('recharge')->name('recharge.')->middleware('auth')->group(function () {
     Route::get('/', [RechargeController::class, 'index'])->name('index');
@@ -52,7 +57,7 @@ Route::prefix('comments')->name('comments.')->middleware('auth')->group(function
 
 // Community routes
 Route::prefix('community')->name('community.')->group(function () {
-    Route::get('/', [CommunityController::class, 'index'])->name('index');
+    // Route::get('/', [CommunityController::class, 'index'])->name('index');
     Route::get('/posts', [CommunityController::class, 'posts'])->name('posts');
     Route::get('/creators', [CommunityController::class, 'creators'])->name('creators');
     Route::get('/leaderboard', [CommunityController::class, 'leaderboard'])->name('leaderboard');
@@ -104,6 +109,15 @@ Route::prefix('vip')->name('vip.')->middleware('auth')->group(function () {
     Route::post('/{slug}/subscribe', [VipController::class, 'subscribe'])->name('subscribe');
     Route::delete('/subscriptions/{id}/cancel', [VipController::class, 'cancel'])->name('cancel');
 });
+
+// Static pages routes
+Route::get('/privacy', [PageController::class, 'privacy'])->name('privacy');
+Route::get('/terms', [PageController::class, 'terms'])->name('terms');
+Route::get('/contact', [PageController::class, 'contact'])->name('contact');
+Route::get('/feedback', [PageController::class, 'feedback'])->name('feedback');
+Route::get('/credits/withdraw', [PageController::class, 'creditsWithdraw'])->middleware('auth')->name('credits.withdraw');
+Route::get('/points/rules', [PageController::class, 'pointsRules'])->name('points.rules');
+Route::get('/about', [PageController::class, 'about'])->name('about');
 
 require __DIR__.'/settings.php';
 require __DIR__.'/auth.php';
