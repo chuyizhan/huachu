@@ -263,13 +263,13 @@ function publishPost() {
                             <CardContent class="space-y-4">
                                 <!-- Images -->
                                 <div>
-                                    <Label class="text-white">图片 (最多4张)</Label>
+                                    <Label class="text-white">图片 (最多12张)</Label>
                                     <div class="mt-2">
                                         <FilePond
                                             ref="pond"
                                             name="images"
                                             :allow-multiple="true"
-                                            :max-files="4"
+                                            :max-files="12"
                                             accepted-file-types="image/jpeg, image/jpg, image/png, image/gif, image/webp"
                                             :max-file-size="'5MB'"
                                             label-idle="拖放图片或 <span class='filepond--label-action'>浏览</span>"

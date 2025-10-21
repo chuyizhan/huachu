@@ -195,8 +195,8 @@ class PostController extends Controller
         // Handle image uploads with Media Library
         if ($request->hasFile('images')) {
             $files = $request->file('images');
-            // Limit to 4 images
-            $files = array_slice($files, 0, 4);
+            // Limit to 12 images
+            $files = array_slice($files, 0, 12);
 
             foreach ($files as $file) {
                 $post->addMedia($file)
@@ -291,7 +291,7 @@ class PostController extends Controller
         // Handle new image uploads
         if ($request->hasFile('images')) {
             $currentCount = $post->getMedia('images')->count();
-            $remainingSlots = 4 - $currentCount;
+            $remainingSlots = 12 - $currentCount;
             $files = array_slice($request->file('images'), 0, $remainingSlots);
 
             foreach ($files as $file) {

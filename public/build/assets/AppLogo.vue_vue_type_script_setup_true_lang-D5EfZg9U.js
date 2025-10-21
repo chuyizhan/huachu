@@ -1,0 +1,1 @@
+import{d as o,i as s,o as t,b as a}from"./app-CNSZuFRu.js";const n={class:"flex items-center gap-2"},l=o({__name:"AppLogo",setup(r){return(p,e)=>(t(),s("div",n,e[0]||(e[0]=[a("img",{src:"/logo.png",alt:"Logo",class:"h-8 w-auto"},null,-1)])))}});export{l as _};
