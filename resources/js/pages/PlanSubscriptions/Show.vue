@@ -56,7 +56,7 @@ const formatDateTime = (dateString: string) => {
 
 const getStatusText = (status: string) => {
     const statusMap: Record<string, string> = {
-        'active': '进行中',
+        'active': '当前有效',
         'cancelled': '已取消',
         'expired': '已过期',
         'suspended': '已暂停',

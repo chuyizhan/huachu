@@ -206,15 +206,6 @@ const formatTime = (dateString: string) => {
                             {{ post.excerpt }}
                         </p>
 
-                        <!-- Post Images (if available) -->
-                        <div v-if="post.first_image" class="mb-4">
-                            <img
-                                :src="post.first_image.thumb"
-                                class="w-full h-[200px] object-cover rounded-lg"
-                                :alt="post.title"
-                            />
-                        </div>
-
                         <!-- Post Footer -->
                         <div class="flex items-center justify-between text-sm">
                             <div class="flex items-center gap-4">

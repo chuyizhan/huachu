@@ -136,7 +136,7 @@ const user = computed(() => auth.value?.user);
                                     </AvatarFallback>
                                 </Avatar>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" class="w-56">
+                            <DropdownMenuContent align="end" class="w-56 bg-[#1f2937] border-[#374151]">
                                 <UserMenuContent :user="user" />
                             </DropdownMenuContent>
                         </DropdownMenu>
