@@ -26,9 +26,15 @@ class ProfileController extends Controller
             'subscriptions_count' => $user->subscriptions()->count(),
         ];
 
+        // Get active plan subscription with plan details
+        $activePlanSubscription = $user->activePlanSubscription()
+            ->with('plan')
+            ->first();
+
         return Inertia::render('Profile/Index', [
             'user' => $user->load('creatorProfile'),
             'stats' => $stats,
+            'activePlanSubscription' => $activePlanSubscription,
         ]);
     }
 }

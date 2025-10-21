@@ -21,6 +21,23 @@ interface User {
     };
 }
 
+interface PlanSubscription {
+    id: number;
+    subscription_number: string;
+    status: string;
+    started_at: string;
+    expires_at: string | null;
+    auto_renew: boolean;
+    plan: {
+        id: number;
+        name: string;
+        slug: string;
+        level: number;
+        badge_color: string;
+        badge_text_color: string;
+    };
+}
+
 interface Props {
     user: User;
     stats: {
@@ -30,6 +47,7 @@ interface Props {
         favorites_count: number;
         subscriptions_count: number;
     };
+    activePlanSubscription?: PlanSubscription | null;
 }
 
 const props = defineProps<Props>();
@@ -50,6 +68,38 @@ const logout = () => {
     if (confirm('确认退出登录吗？')) {
         router.post('/logout');
     }
+};
+
+const formatDateTime = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('zh-CN', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+};
+
+const getStatusText = (status: string) => {
+    const statusMap: Record<string, string> = {
+        'active': '进行中',
+        'cancelled': '已取消',
+        'expired': '已过期',
+        'suspended': '已暂停',
+        'trial': '试用中'
+    };
+    return statusMap[status] || status;
+};
+
+const getStatusColor = (status: string) => {
+    const colorMap: Record<string, string> = {
+        'active': 'bg-green-500/20 text-green-400',
+        'cancelled': 'bg-red-500/20 text-red-400',
+        'expired': 'bg-gray-500/20 text-gray-400',
+        'suspended': 'bg-yellow-500/20 text-yellow-400',
+        'trial': 'bg-blue-500/20 text-blue-400'
+    };
+    return colorMap[status] || 'bg-gray-500/20 text-gray-400';
 };
 </script>
 
@@ -82,10 +132,23 @@ const logout = () => {
                             <span class="colorfff font28 font-w-500 u-p-r-25">
                                 {{ user.creator_profile?.display_name || user.name }}
                             </span>
+                            <!-- VIP Badge -->
+                            <Badge
+                                v-if="activePlanSubscription"
+                                :style="{
+                                    backgroundColor: activePlanSubscription.plan.badge_color,
+                                    color: activePlanSubscription.plan.badge_text_color
+                                }"
+                                class="text-xs u-p-r-10"
+                            >
+                                <Crown class="w-3 h-3 u-p-r-5 inline" />
+                                {{ activePlanSubscription.plan.name }}
+                            </Badge>
+                            <!-- Creator Badge -->
                             <Badge v-if="user.creator_profile?.verification_status === 'verified'" class="bg-[#ff6e02] text-white text-xs">
                                 已认证
                             </Badge>
-                            <Badge v-else class="bg-[#374151] text-[#ff6e02] text-xs">
+                            <Badge v-else-if="user.is_creator" class="bg-[#374151] text-[#ff6e02] text-xs">
                                 未认证
                             </Badge>
                         </div>
@@ -123,11 +186,53 @@ const logout = () => {
                 </div>
             </div>
 
+            <!-- Plan Subscription Status -->
+            <div v-if="activePlanSubscription" class="u-m-25">
+                <div class="listclass u-p-25">
+                    <div class="flex items-center justify-between u-m-b-20">
+                        <h3 class="font28 colorfff font-w-600">会员订阅状态</h3>
+                        <Link :href="`/plan-subscriptions/${activePlanSubscription.id}`">
+                            <span class="font22 text-[#ff6e02]">详情</span>
+                        </Link>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <span class="font24 color999">当前套餐</span>
+                            <Badge
+                                :style="{
+                                    backgroundColor: activePlanSubscription.plan.badge_color,
+                                    color: activePlanSubscription.plan.badge_text_color
+                                }"
+                                class="font22"
+                            >
+                                {{ activePlanSubscription.plan.name }}
+                            </Badge>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="font24 color999">状态</span>
+                            <Badge :class="getStatusColor(activePlanSubscription.status)" class="font22">
+                                {{ getStatusText(activePlanSubscription.status) }}
+                            </Badge>
+                        </div>
+                        <div v-if="activePlanSubscription.expires_at" class="flex items-center justify-between">
+                            <span class="font24 color999">到期时间</span>
+                            <span class="font24 colorz">{{ formatDateTime(activePlanSubscription.expires_at) }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="font24 color999">自动续费</span>
+                            <Badge :class="activePlanSubscription.auto_renew ? 'bg-green-500/20 text-green-400' : 'bg-gray-500/20 text-gray-400'" class="font22">
+                                {{ activePlanSubscription.auto_renew ? '已开启' : '已关闭' }}
+                            </Badge>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Menu Items -->
             <div class="u-m-25">
                 <div class="listclass space-y-0">
                     <!-- VIP -->
-                    <Link href="/vip" class="flex items-center justify-between u-p-25 border-b border-[#374151]">
+                    <Link href="/plan-subscriptions/create" class="flex items-center justify-between u-p-25 border-b border-[#374151]">
                         <div class="flex items-center">
                             <Crown class="w-7 h-7 text-white" />
                             <span class="font28 colorfff u-p-l-15">VIP会员</span>
@@ -196,14 +301,13 @@ const logout = () => {
                         </div>
                     </Link>
 
-                    <!-- My Subscriptions -->
-                    <Link href="/vip/subscriptions" class="flex items-center justify-between u-p-25 border-b border-[#374151]">
+                    <!-- My Plan Subscriptions -->
+                    <Link href="/plan-subscriptions" class="flex items-center justify-between u-p-25 border-b border-[#374151]">
                         <div class="flex items-center">
                             <Users class="w-7 h-7 text-white" />
-                            <span class="font28 colorfff u-p-l-15">我的订阅</span>
+                            <span class="font28 colorfff u-p-l-15">我的会员订阅</span>
                         </div>
                         <div class="flex items-center">
-                            <span class="colorz font32 u-p-r-20">{{ stats.subscriptions_count }}</span>
                             <ChevronRight class="w-5 h-5 text-[#999999]" />
                         </div>
                     </Link>

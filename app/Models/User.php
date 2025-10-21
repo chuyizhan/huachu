@@ -163,6 +163,28 @@ class User extends Authenticatable
     }
 
     /**
+     * Get all plan subscriptions for this user.
+     */
+    public function planSubscriptions()
+    {
+        return $this->hasMany(PlanSubscription::class);
+    }
+
+    /**
+     * Get the active plan subscription for this user.
+     */
+    public function activePlanSubscription()
+    {
+        return $this->hasOne(PlanSubscription::class)
+            ->where('status', 'active')
+            ->where(function ($query) {
+                $query->whereNull('expires_at')
+                    ->orWhere('expires_at', '>', now());
+            })
+            ->latest();
+    }
+
+    /**
      * Get all creators this user is following.
      */
     public function following()

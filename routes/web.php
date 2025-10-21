@@ -110,6 +110,19 @@ Route::prefix('vip')->name('vip.')->middleware('auth')->group(function () {
     Route::delete('/subscriptions/{id}/cancel', [VipController::class, 'cancel'])->name('cancel');
 });
 
+// Plan Subscriptions routes
+Route::prefix('plan-subscriptions')->name('plan-subscriptions.')->middleware('auth')->group(function () {
+    Route::get('/', [App\Http\Controllers\PlanSubscriptionController::class, 'index'])->name('index');
+    Route::get('/create', [App\Http\Controllers\PlanSubscriptionController::class, 'create'])->name('create');
+    Route::post('/', [App\Http\Controllers\PlanSubscriptionController::class, 'store'])->name('store');
+    Route::get('/{id}', [App\Http\Controllers\PlanSubscriptionController::class, 'show'])->name('show');
+    Route::get('/{id}/edit', [App\Http\Controllers\PlanSubscriptionController::class, 'edit'])->name('edit');
+    Route::put('/{id}', [App\Http\Controllers\PlanSubscriptionController::class, 'update'])->name('update');
+    Route::delete('/{id}', [App\Http\Controllers\PlanSubscriptionController::class, 'destroy'])->name('destroy');
+    Route::post('/{id}/cancel', [App\Http\Controllers\PlanSubscriptionController::class, 'cancel'])->name('cancel');
+    Route::post('/{id}/renew', [App\Http\Controllers\PlanSubscriptionController::class, 'renew'])->name('renew');
+});
+
 // Static pages routes
 Route::get('/privacy', [PageController::class, 'privacy'])->name('privacy');
 Route::get('/terms', [PageController::class, 'terms'])->name('terms');
