@@ -48,6 +48,14 @@ class Plan extends Model
     }
 
     /**
+     * Get all plan subscriptions for this plan.
+     */
+    public function planSubscriptions()
+    {
+        return $this->hasMany(PlanSubscription::class);
+    }
+
+    /**
      * Scope for active plans.
      */
     public function scopeActive($query)

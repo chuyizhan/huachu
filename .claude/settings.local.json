@@ -6,7 +6,8 @@
       "Read(//Users/Hiro/uniapp/ua/**)",
       "Bash(xargs -I {} sh -c 'echo \"\"\"\"=== {} ===\"\"\"\" && head -80 {}')",
       "Bash(npm run build:*)",
-      "Bash(php artisan:*)"
+      "Bash(php artisan:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": [],
     "ask": []
