@@ -118,7 +118,7 @@ const user = computed(() => auth.value?.user);
                         class="bg-[#ff6e02] text-white px-4 py-2 rounded text-sm hover:bg-[#e55a00] transition-colors flex items-center gap-2"
                     >
                         <PlusCircle class="w-4 h-4" />
-                        发菜谱
+                        发帖子
                     </Link>
 
                     <!-- User Menu for authenticated users -->
@@ -237,7 +237,7 @@ const user = computed(() => auth.value?.user);
                                     @click="mobileMenuOpen = false"
                                 >
                                     <PlusCircle class="w-4 h-4" />
-                                    发菜谱
+                                    发帖子
                                 </Link>
 
                                 <!-- Favorites -->

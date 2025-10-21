@@ -401,24 +401,8 @@ function publishPost() {
                                 <CardTitle class="text-white">发布设置</CardTitle>
                             </CardHeader>
                             <CardContent class="space-y-4">
-                                <!-- Premium Toggle -->
-                                <div class="flex items-center justify-between">
-                                    <div>
-                                        <Label class="text-white">高级内容</Label>
-                                        <p class="text-xs text-[#999999]">仅VIP会员可见</p>
-                                    </div>
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input
-                                            type="checkbox"
-                                            v-model="form.is_premium"
-                                            class="sr-only peer"
-                                        />
-                                        <div class="w-11 h-6 bg-[#4B5563] peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-[#ff6e02] rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#ff6e02]"></div>
-                                    </label>
-                                </div>
-
                                 <!-- Paid Content (Creators Only) -->
-                                <div v-if="isCreator" class="space-y-4 pt-4 border-t border-[#4B5563]">
+                                <div v-if="isCreator" class="space-y-4">
                                     <div>
                                         <Label for="price" class="text-white flex items-center gap-2">
                                             💰 内容定价
