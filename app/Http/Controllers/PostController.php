@@ -200,6 +200,7 @@ class PostController extends Controller
 
             foreach ($files as $file) {
                 $post->addMedia($file)
+                    ->withResponsiveImages()
                     ->toMediaCollection('images');
             }
         }
@@ -325,6 +326,7 @@ class PostController extends Controller
 
             foreach ($files as $file) {
                 $post->addMedia($file)
+                    ->withResponsiveImages()
                     ->toMediaCollection('images');
             }
         }

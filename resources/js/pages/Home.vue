@@ -251,7 +251,7 @@ const formatTime = (dateString: string) => {
                                 class="relative overflow-hidden rounded-lg w-20 h-20 flex-shrink-0"
                             >
                                 <img
-                                    :src="image.url"
+                                    :src="image.thumb || image.url"
                                     class="w-full h-full object-cover"
                                     :alt="`${post.title} - Image ${index + 1}`"
                                 />
