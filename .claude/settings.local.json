@@ -9,7 +9,8 @@
       "Bash(php artisan:*)",
       "Bash(mkdir:*)",
       "WebFetch(domain:202.95.8.8)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(php -r:*)"
     ],
     "deny": [],
     "ask": []
