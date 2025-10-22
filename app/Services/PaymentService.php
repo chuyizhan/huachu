@@ -200,7 +200,7 @@ class PaymentService
         Log::info('Payment signature generation - all variations', [
             'params' => $params,
             'sign_string' => $signString,
-            'variations' => $variations
+            // 'variations' => $variations
         ]);
 
         // Generate MD5 - try with &key= and lowercase
