@@ -213,11 +213,56 @@ class PaymentCallbackController extends Controller
                 // Add credits to user
                 $user = $order->user;
                 if ($user) {
+                    $paymentInfo = is_array($order->payment_info) ? $order->payment_info : [];
+                    $bonus = $paymentInfo['bonus_credits'] ?? 0;
+                    $packageId = $paymentInfo['package_id'] ?? null;
+
+                    // Add base amount
                     $user->credits += $order->amount;
                     $user->save();
+
+                    // Create credit transaction for recharge
+                    \App\Models\CreditTransaction::create([
+                        'user_id' => $user->id,
+                        'type' => 'earned',
+                        'credits' => $order->amount,
+                        'reason' => 'recharge',
+                        'metadata' => [
+                            'order_id' => $order->id,
+                            'order_number' => $order->order_number,
+                            'payment_method' => $order->payment_method,
+                            'package_id' => $packageId,
+                        ],
+                        'related_type' => Order::class,
+                        'related_id' => $order->id,
+                    ]);
+
+                    // Add bonus if exists
+                    if ($bonus > 0) {
+                        $user->credits += $bonus;
+                        $user->save();
+
+                        \App\Models\CreditTransaction::create([
+                            'user_id' => $user->id,
+                            'type' => 'earned',
+                            'credits' => $bonus,
+                            'reason' => 'recharge_bonus',
+                            'metadata' => [
+                                'order_id' => $order->id,
+                                'order_number' => $order->order_number,
+                                'package_id' => $packageId,
+                                'base_amount' => $order->amount,
+                            ],
+                            'related_type' => Order::class,
+                            'related_id' => $order->id,
+                        ]);
+                    }
+
                     Log::info('Credits added to user', [
                         'user_id' => $user->id,
-                        'amount' => $order->amount
+                        'base_amount' => $order->amount,
+                        'bonus' => $bonus,
+                        'total' => $order->amount + $bonus
                     ]);
                 }
                 break;

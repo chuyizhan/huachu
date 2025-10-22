@@ -87,7 +87,7 @@ class PaymentService
     }
 
     /**
-     * Get payment URL for redirect
+     * Get payment URL for redirect (GET method - deprecated, use getPaymentParams for POST)
      *
      * @param Order $order
      * @param string $paymentMethod
@@ -112,6 +112,36 @@ class PaymentService
 
         // Build GET URL
         return $this->apiUrl . '/trade/pay?' . http_build_query($params);
+    }
+
+    /**
+     * Get payment parameters for POST form submission
+     *
+     * @param Order $order
+     * @param string $paymentMethod
+     * @param string $userIp
+     * @return array
+     */
+    public function getPaymentParams(Order $order, string $paymentMethod, string $userIp): array
+    {
+        $params = [
+            'version' => '1.0',
+            'partnerid' => $this->partnerId,
+            'orderid' => $order->order_number,
+            'payamount' => (int)($order->amount * 100), // Convert to cents
+            'payip' => $userIp,
+            'notifyurl' => route('payment.callback'),
+            'returnurl' => route('payment.return'),
+            'paytype' => $this->getPayType($paymentMethod),
+        ];
+
+        // Generate signature
+        $params['sign'] = $this->generateSignature($params);
+
+        return [
+            'url' => $this->apiUrl . '/trade/pay',
+            'params' => $params,
+        ];
     }
 
     /**
@@ -142,10 +172,10 @@ class PaymentService
      */
     protected function generateSignature(array $params): string
     {
-        // Remove empty values
-        $params = array_filter($params, function ($value) {
-            return $value !== '' && $value !== null;
-        });
+        // Remove empty values and sign field itself
+        $params = array_filter($params, function ($value, $key) {
+            return $value !== '' && $value !== null && $key !== 'sign';
+        }, ARRAY_FILTER_USE_BOTH);
 
         // Sort by key
         ksort($params);
@@ -158,6 +188,13 @@ class PaymentService
 
         // Append API key
         $signString .= 'key=' . $this->apiKey;
+
+        // Log for debugging
+        Log::info('Payment signature generation', [
+            'params' => $params,
+            'sign_string' => $signString,
+            'md5' => strtoupper(md5($signString))
+        ]);
 
         // Generate MD5
         return strtoupper(md5($signString));
