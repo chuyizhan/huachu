@@ -10,6 +10,7 @@ use App\Services\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -62,6 +63,7 @@ class RechargeController extends Controller
             // Get package details if it's a package purchase
             $package = null;
             $baseAmount = $validated['amount'];
+            Log::info('baseAmount', ['baseAmount' => $baseAmount]);
             $bonus = 0;
 
             if (isset($validated['package_id'])) {
@@ -182,6 +184,8 @@ class RechargeController extends Controller
                 }
 
                 // Show intermediate payment page that will POST to HTTP gateway
+                Log::info('paymentData going to payment page
+                ', ['paymentData' => $paymentData]);
                 return Inertia::render('Recharge/Payment', [
                     'paymentUrl' => $paymentData['url'],
                     'paymentParams' => $paymentData['params'],
