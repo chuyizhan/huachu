@@ -144,6 +144,9 @@ const getStatusColor = (status: string) => {
                                 <Crown class="w-3 h-3 u-p-r-5 inline" />
                                 {{ activePlanSubscription.plan.name }}
                             </Badge>
+                            <Badge v-else class="bg-[#374151] text-[#999999] text-xs u-p-r-10">
+                                普通会员
+                            </Badge>
                             <!-- Creator Badge -->
                             <Badge v-if="user.creator_profile?.verification_status === 'verified'" class="bg-[#ff6e02] text-white text-xs">
                                 已认证
