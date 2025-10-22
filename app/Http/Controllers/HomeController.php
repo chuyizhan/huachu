@@ -86,6 +86,10 @@ class HomeController extends Controller
                 ];
             });
 
+        // Get categories
+        $categories = PostCategory::where('is_nav_item', true)
+            ->get();
+
         return Inertia::render('Home', [
             'featuredPosts' => $featuredPosts,
             'recentPosts' => $recentPosts,
@@ -93,6 +97,7 @@ class HomeController extends Controller
             'popularCategories' => $popularCategories,
             'stats' => $stats,
             'testimonials' => $testimonials,
+            'categories' => $categories,
         ]);
     }
 }

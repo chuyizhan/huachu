@@ -60,6 +60,7 @@ interface Category {
     color: string;
     icon: string;
     posts_count: number;
+    nav_route: string;
 }
 
 interface Props {
@@ -67,10 +68,11 @@ interface Props {
     recentPosts: Post[];
     featuredCreators: Creator[];
     popularCategories: Category[];
+    categories: Category[];
 }
 
-const props = defineProps<Props>();
 
+console.log(props.categories);
 // Banner slides using static images from /public/slides
 const bannerSlides = [
     {
@@ -132,6 +134,37 @@ const formatTime = (dateString: string) => {
                         </template>
                     </Carousel>
                 </div>
+            </div>
+        </section>
+
+
+        <!-- 赚钱大佬推荐 -->
+        <section class="py-12 bg-background">
+            <div class="max-w-[1000px] mx-auto px-4">
+                
+                <div class="grid grid-cols-4 gap-6">
+                    <Link
+                        v-for="category in categories"
+                        :key="category.id"
+                        :href="category.nav_route || '/'"
+                        class="flex flex-col items-center justify-center hover:bg-accent rounded-lg py-4 transition cursor-pointer group"
+                       
+                    >
+                        <div class="w-14 h-14 mb-2 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden shadow group-hover:bg-[#fffaee]">
+                            <!-- <img
+                                v-if="category.icon"
+                                :src="category.icon"
+                                :alt="category.name"
+                                class="w-8 h-8 object-contain"
+                            /> -->
+                            <span  class="text-2xl">{{ category.icon || '📁' }}</span>
+                        </div>
+                        <div class="text-center text-sm text-white font-medium mt-1 truncate max-w-[64px]">
+                            {{ category.name }}
+                        </div>
+                    </Link>
+                </div>
+                <!-- End Categories Grid -->
             </div>
         </section>
 
