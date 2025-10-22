@@ -71,8 +71,8 @@ interface Props {
     categories: Category[];
 }
 
+const props = defineProps<Props>();
 
-console.log(props.categories);
 // Banner slides using static images from /public/slides
 const bannerSlides = [
     {
