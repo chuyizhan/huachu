@@ -1,1 +1,0 @@
-import{c as t}from"./Primitive-C3ivfPLo.js";import{d as a,i as r,o as n,z as c,n as p,e as l}from"./app-DNIi3XAd.js";const f=a({__name:"CardDescription",props:{class:{}},setup(s){const e=s;return(o,m)=>(n(),r("p",{"data-slot":"card-description",class:p(l(t)("text-muted-foreground text-sm",e.class))},[c(o.$slots,"default")],2))}});export{f as _};

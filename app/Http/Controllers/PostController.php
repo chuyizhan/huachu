@@ -213,10 +213,18 @@ class PostController extends Controller
         // Award points if post is published and has minimum required images
         if ($post->status === 'published' && config('points.post_creation.enabled')) {
             $imageCount = $post->getMedia('images')->count();
-            $minImages = config('points.post_creation.minimum_images');
-            $pointsToAward = config('points.post_creation.points');
 
-            if ($imageCount >= $minImages) {
+            // Get category-specific settings or fall back to defaults
+            $category = $post->category;
+            $minImages = $category->minimum_images > 0
+                ? $category->minimum_images
+                : config('points.post_creation.default_minimum_images');
+            $pointsToAward = $category->points_reward > 0
+                ? $category->points_reward
+                : config('points.post_creation.default_points');
+
+            // Only award if category has points enabled and meets minimum images
+            if ($pointsToAward > 0 && $imageCount >= $minImages) {
                 $user->awardPoints(
                     $pointsToAward,
                     'post_created_with_images',
@@ -224,6 +232,8 @@ class PostController extends Controller
                     [
                         'image_count' => $imageCount,
                         'minimum_required' => $minImages,
+                        'category_id' => $category->id,
+                        'category_name' => $category->name,
                     ]
                 );
             }
