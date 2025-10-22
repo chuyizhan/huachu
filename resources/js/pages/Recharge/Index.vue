@@ -78,7 +78,7 @@ const getPackageBonus = (bonus: number) => {
                     <div class="p-6 text-gray-900 dark:text-gray-100">
                         <div class="mb-8">
                             <h1 class="text-3xl font-bold text-white mb-2">充值金币</h1>
-                            <p class="text-[#999999]">选择充值套餐或自定义金额</p>
+                            <p class="text-[#999999]">选择充值套餐</p>
                         </div>
 
                         <!-- Current Balance -->
@@ -142,46 +142,39 @@ const getPackageBonus = (bonus: number) => {
                             </div>
                         </div>
 
-                        <!-- Custom Amount -->
-                        <Card class="bg-[#374151] border-[#4B5563] mb-6">
-                            <CardHeader>
-                                <CardTitle class="text-white">自定义金额</CardTitle>
-                                <CardDescription class="text-[#999999]">输入您想要充值的金额</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <div class="flex gap-4">
-                                    <Input
-                                        v-model.number="customAmount"
-                                        type="number"
-                                        placeholder="输入金额 (1-10000)"
-                                        min="1"
-                                        max="10000"
-                                        class="bg-[#4B5563] border-[#6B7280] text-white"
-                                        @input="useCustomAmount"
-                                    />
-                                    <span class="flex items-center text-white">元</span>
-                                </div>
-                            </CardContent>
-                        </Card>
-
                         <!-- Payment Method -->
                         <Card class="bg-[#374151] border-[#4B5563] mb-6">
                             <CardHeader>
                                 <CardTitle class="text-white">支付方式</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <RadioGroup v-model="paymentMethod" class="space-y-2">
-                                    <div class="flex items-center space-x-2">
+                                <RadioGroup v-model="paymentMethod" class="space-y-3">
+                                    <div class="flex items-center space-x-2 p-3 rounded-lg border-2 transition-all cursor-pointer" :class="paymentMethod === 'alipay' ? 'border-[#ff6e02] bg-orange-950' : 'border-[#4B5563] hover:border-[#6B7280]'" @click="paymentMethod = 'alipay'">
+                                        <RadioGroupItem id="alipay" value="alipay" />
+                                        <div class="flex items-center gap-3 flex-1">
+                                            <div class="w-10 h-10 bg-[#1677FF] rounded-lg flex items-center justify-center">
+                                                <span class="text-white font-bold text-lg">支</span>
+                                            </div>
+                                            <Label for="alipay" class="text-white cursor-pointer text-lg">支付宝</Label>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-2 p-3 rounded-lg border-2 transition-all cursor-pointer" :class="paymentMethod === 'wechat' ? 'border-[#ff6e02] bg-orange-950' : 'border-[#4B5563] hover:border-[#6B7280]'" @click="paymentMethod = 'wechat'">
+                                        <RadioGroupItem id="wechat" value="wechat" />
+                                        <div class="flex items-center gap-3 flex-1">
+                                            <div class="w-10 h-10 bg-[#07C160] rounded-lg flex items-center justify-center">
+                                                <span class="text-white font-bold text-lg">微</span>
+                                            </div>
+                                            <Label for="wechat" class="text-white cursor-pointer text-lg">微信支付</Label>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center space-x-2 p-3 rounded-lg border-2 transition-all cursor-pointer" :class="paymentMethod === 'fake' ? 'border-[#ff6e02] bg-orange-950' : 'border-[#4B5563] hover:border-[#6B7280]'" @click="paymentMethod = 'fake'">
                                         <RadioGroupItem id="fake" value="fake" />
-                                        <Label for="fake" class="text-white cursor-pointer">模拟支付（测试）</Label>
-                                    </div>
-                                    <div class="flex items-center space-x-2">
-                                        <RadioGroupItem id="alipay" value="alipay" disabled />
-                                        <Label for="alipay" class="text-[#999999] cursor-not-allowed">支付宝（即将开放）</Label>
-                                    </div>
-                                    <div class="flex items-center space-x-2">
-                                        <RadioGroupItem id="wechat" value="wechat" disabled />
-                                        <Label for="wechat" class="text-[#999999] cursor-not-allowed">微信支付（即将开放）</Label>
+                                        <div class="flex items-center gap-3 flex-1">
+                                            <div class="w-10 h-10 bg-gray-600 rounded-lg flex items-center justify-center">
+                                                <span class="text-white font-bold text-lg">测</span>
+                                            </div>
+                                            <Label for="fake" class="text-white cursor-pointer text-lg">模拟支付（测试）</Label>
+                                        </div>
                                     </div>
                                 </RadioGroup>
                             </CardContent>
