@@ -19,6 +19,8 @@ class PostCategory extends Model
         'is_active',
         'is_nav_item',
         'nav_route',
+        'points_reward',
+        'minimum_images',
     ];
 
     protected function casts(): array
@@ -26,6 +28,8 @@ class PostCategory extends Model
         return [
             'is_active' => 'boolean',
             'is_nav_item' => 'boolean',
+            'points_reward' => 'integer',
+            'minimum_images' => 'integer',
         ];
     }
 

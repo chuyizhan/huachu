@@ -326,7 +326,7 @@ const closeImageModal = () => {
                         <img
                             :src="post.image_urls[0].url"
                             alt="Post image"
-                            class="w-full h-[350px] object-cover cursor-pointer"
+                            class="w-full h-[350px] object-contain bg-black cursor-pointer"
                             @click="openImageModal(post.image_urls[0].url)"
                         />
                     </div>
@@ -334,11 +334,11 @@ const closeImageModal = () => {
                         <!-- Multiple images carousel -->
                         <Carousel :wrap-around="true">
                             <Slide v-for="image in post.image_urls" :key="image.id">
-                                <div class="w-full h-[350px]">
+                                <div class="w-full h-[350px] bg-black">
                                     <img
                                         :src="image.url"
                                         alt="Post image"
-                                        class="w-full h-full object-cover cursor-pointer"
+                                        class="w-full h-full object-contain cursor-pointer"
                                         @click="openImageModal(image.url)"
                                     />
                                 </div>
