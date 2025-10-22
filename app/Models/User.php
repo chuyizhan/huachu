@@ -318,4 +318,31 @@ class User extends Authenticatable
     {
         $this->decrement('following_count');
     }
+
+    /**
+     * Award points to the user and create a transaction record.
+     *
+     * @param int $points Amount of points to award
+     * @param string $reason Reason for awarding points
+     * @param \Illuminate\Database\Eloquent\Model|null $related Related model (e.g., Post)
+     * @param array $metadata Additional metadata
+     * @return \App\Models\PointTransaction
+     */
+    public function awardPoints(int $points, string $reason, $related = null, array $metadata = []): PointTransaction
+    {
+        // Update user's points
+        $this->increment('points', $points);
+
+        // Create transaction record
+        $transaction = $this->pointTransactions()->create([
+            'type' => 'earned',
+            'points' => $points,
+            'reason' => $reason,
+            'metadata' => $metadata,
+            'related_type' => $related ? get_class($related) : null,
+            'related_id' => $related?->id,
+        ]);
+
+        return $transaction;
+    }
 }

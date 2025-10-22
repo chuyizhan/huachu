@@ -210,6 +210,25 @@ class PostController extends Controller
                 ->toMediaCollection('videos');
         }
 
+        // Award points if post is published and has minimum required images
+        if ($post->status === 'published' && config('points.post_creation.enabled')) {
+            $imageCount = $post->getMedia('images')->count();
+            $minImages = config('points.post_creation.minimum_images');
+            $pointsToAward = config('points.post_creation.points');
+
+            if ($imageCount >= $minImages) {
+                $user->awardPoints(
+                    $pointsToAward,
+                    'post_created_with_images',
+                    $post,
+                    [
+                        'image_count' => $imageCount,
+                        'minimum_required' => $minImages,
+                    ]
+                );
+            }
+        }
+
         return redirect()->route('posts.show', $post->slug)
             ->with('success', 'Post created successfully!');
     }
