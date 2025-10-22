@@ -29,7 +29,7 @@ const props = defineProps<Props>()
 const selectedPackage = ref<number | null>(null)
 const selectedPackageId = ref<number | null>(null)
 const customAmount = ref<number | null>(null)
-const paymentMethod = ref('fake')
+const paymentMethod = ref('alipay')
 
 const form = useForm({
     package_id: null as number | null,

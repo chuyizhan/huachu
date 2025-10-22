@@ -38,6 +38,7 @@ class PaymentService
             'notifyurl' => route('payment.callback'),
             'returnurl' => route('payment.return'),
             'paytype' => $this->getPayType($paymentMethod),
+            // 'paytype' => '111',
         ];
 
         // Generate signature
@@ -180,24 +181,30 @@ class PaymentService
         // Sort by key
         ksort($params);
 
-        // Build sign string
-        $signString = '';
+        // Build sign string - join with & separator
+        $parts = [];
         foreach ($params as $key => $value) {
-            $signString .= $key . '=' . $value . '&';
+            $parts[] = $key . '=' . $value;
         }
+        $signString = implode('&', $parts) . '&key=' . $this->apiKey;
 
-        // Append API key
-        $signString .= 'key=' . $this->apiKey;
+        // Try different variations
+        $variations = [
+            'with_key_upper' => strtoupper(md5($signString)),
+            'with_key_lower' => strtolower(md5($signString)),
+            'direct_append_upper' => strtoupper(md5(implode('&', $parts) . $this->apiKey)),
+            'direct_append_lower' => strtolower(md5(implode('&', $parts) . $this->apiKey)),
+        ];
 
         // Log for debugging
-        Log::info('Payment signature generation', [
+        Log::info('Payment signature generation - all variations', [
             'params' => $params,
             'sign_string' => $signString,
-            'md5' => strtoupper(md5($signString))
+            'variations' => $variations
         ]);
 
-        // Generate MD5
-        return strtoupper(md5($signString));
+        // Generate MD5 - try with &key= and lowercase
+        return strtolower(md5($signString));
     }
 
     /**
@@ -208,13 +215,21 @@ class PaymentService
      */
     protected function getPayType(string $method): string
     {
+        // Common payment type codes used by Chinese payment gateways
         $types = [
-            'alipay' => 'alipay',
-            'wechat' => 'wechat',
-            'bank' => 'bank',
+            'alipay' => '111',      // or 'ALIPAY', 'ALI', 'zfb'
+            'wechat' => '111',       // or 'WECHAT', 'WX', 'weixin'
+            // 'bank' => 'bank',          // or 'BANK'
         ];
 
-        return $types[$method] ?? 'alipay';
+        $paytype = $types[$method] ?? '111';
+
+        Log::info('Payment type mapping', [
+            'input_method' => $method,
+            'output_paytype' => $paytype
+        ]);
+
+        return $paytype;
     }
 
     /**
