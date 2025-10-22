@@ -36,6 +36,10 @@ interface Post {
         url: string;
         thumb: string;
     } | null;
+    post_images?: Array<{
+        url: string;
+        thumb: string;
+    }>;
 }
 
 interface Creator {
@@ -227,7 +231,7 @@ const formatTime = (dateString: string) => {
                         v-for="post in recentPosts"
                         :key="post.id"
                         :href="`/posts/${post.slug}`"
-                        class="block  rounded-lg shadow hover:shadow-md transition-shadow p-5"
+                        class="block rounded-lg shadow hover:shadow-md transition-shadow p-5"
                     >
                         <!-- Post Title -->
                         <h3 class="text-base lg:text-lg font-semibold text-foreground mb-3 hover:text-[#ff6e02] transition-colors line-clamp-2">
@@ -238,6 +242,21 @@ const formatTime = (dateString: string) => {
                         <p class="font24 color999 line-clamp-3 u-m-b-15">
                             {{ post.excerpt }}
                         </p>
+
+                        <!-- Post Images (First 4) -->
+                        <div v-if="post.post_images && post.post_images.length > 0" class="flex gap-2 mb-4">
+                            <div
+                                v-for="(image, index) in post.post_images.slice(0, 4)"
+                                :key="index"
+                                class="relative overflow-hidden rounded-lg w-20 h-20 flex-shrink-0"
+                            >
+                                <img
+                                    :src="image.url"
+                                    class="w-full h-full object-cover"
+                                    :alt="`${post.title} - Image ${index + 1}`"
+                                />
+                            </div>
+                        </div>
 
                         <!-- Post Footer -->
                         <div class="flex items-center justify-between text-sm">

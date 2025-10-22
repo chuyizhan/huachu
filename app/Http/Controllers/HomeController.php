@@ -36,11 +36,14 @@ class HomeController extends Controller
             ->limit(8)
             ->get()
             ->map(function ($post) {
-                $firstMedia = $post->getFirstMedia('images');
-                $post->first_image = $firstMedia ? [
-                    'url' => $firstMedia->getUrl(),
-                    'thumb' => $firstMedia->getUrl('thumb'),
-                ] : null;
+                // Get first 4 images from media library
+                $post->post_images = $post->getMedia('images')->take(4)->map(function ($media) {
+                    return [
+                        'url' => $media->getUrl(),
+                        'thumb' => $media->getUrl('thumb'),
+                    ];
+                })->toArray();
+
                 return $post;
             });
 
