@@ -55,6 +55,30 @@ class Order extends Model
     }
 
     /**
+     * Get all payments for this order
+     */
+    public function payments()
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    /**
+     * Get the latest payment for this order
+     */
+    public function latestPayment()
+    {
+        return $this->hasOne(Payment::class)->latestOfMany();
+    }
+
+    /**
+     * Get the completed payment for this order
+     */
+    public function completedPayment()
+    {
+        return $this->hasOne(Payment::class)->where('status', 'completed');
+    }
+
+    /**
      * Mark order as completed
      */
     public function markAsCompleted(): void

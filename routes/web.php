@@ -123,6 +123,10 @@ Route::prefix('plan-subscriptions')->name('plan-subscriptions.')->middleware('au
     Route::post('/{id}/renew', [App\Http\Controllers\PlanSubscriptionController::class, 'renew'])->name('renew');
 });
 
+// Payment callback routes
+Route::post('/payment/callback', [App\Http\Controllers\PaymentCallbackController::class, 'callback'])->name('payment.callback');
+Route::get('/payment/return', [App\Http\Controllers\PaymentCallbackController::class, 'returnUrl'])->name('payment.return');
+
 // Static pages routes
 Route::get('/privacy', [PageController::class, 'privacy'])->name('privacy');
 Route::get('/terms', [PageController::class, 'terms'])->name('terms');
