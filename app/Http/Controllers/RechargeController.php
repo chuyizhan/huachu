@@ -170,19 +170,23 @@ class RechargeController extends Controller
 
                 DB::commit();
 
-                // Get payment URL from payment gateway
-                $paymentUrl = $paymentService->getPaymentUrl(
+                // Get payment parameters for POST form submission
+                $paymentData = $paymentService->getPaymentParams(
                     $order,
                     $validated['payment_method'],
                     $request->ip()
                 );
 
-                if (!$paymentUrl) {
+                if (!$paymentData) {
                     return back()->withErrors(['payment' => '支付请求失败，请重试']);
                 }
 
-                // Redirect to payment gateway
-                return redirect()->away($paymentUrl);
+                // Show intermediate payment page that will POST to HTTP gateway
+                return Inertia::render('Recharge/Payment', [
+                    'paymentUrl' => $paymentData['url'],
+                    'paymentParams' => $paymentData['params'],
+                    'orderNumber' => $order->order_number,
+                ]);
             }
         } catch (\Exception $e) {
             DB::rollBack();

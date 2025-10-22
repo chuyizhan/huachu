@@ -38,6 +38,7 @@ class PaymentService
             'notifyurl' => route('payment.callback'),
             'returnurl' => route('payment.return'),
             'paytype' => $this->getPayType($paymentMethod),
+            // 'paytype' => '111',
         ];
 
         // Generate signature
@@ -87,7 +88,7 @@ class PaymentService
     }
 
     /**
-     * Get payment URL for redirect
+     * Get payment URL for redirect (GET method - deprecated, use getPaymentParams for POST)
      *
      * @param Order $order
      * @param string $paymentMethod
@@ -112,6 +113,36 @@ class PaymentService
 
         // Build GET URL
         return $this->apiUrl . '/trade/pay?' . http_build_query($params);
+    }
+
+    /**
+     * Get payment parameters for POST form submission
+     *
+     * @param Order $order
+     * @param string $paymentMethod
+     * @param string $userIp
+     * @return array
+     */
+    public function getPaymentParams(Order $order, string $paymentMethod, string $userIp): array
+    {
+        $params = [
+            'version' => '1.0',
+            'partnerid' => $this->partnerId,
+            'orderid' => $order->order_number,
+            'payamount' => (int)($order->amount * 100), // Convert to cents
+            'payip' => $userIp,
+            'notifyurl' => route('payment.callback'),
+            'returnurl' => route('payment.return'),
+            'paytype' => $this->getPayType($paymentMethod),
+        ];
+
+        // Generate signature
+        $params['sign'] = $this->generateSignature($params);
+
+        return [
+            'url' => $this->apiUrl . '/trade/pay',
+            'params' => $params,
+        ];
     }
 
     /**
@@ -142,25 +173,38 @@ class PaymentService
      */
     protected function generateSignature(array $params): string
     {
-        // Remove empty values
-        $params = array_filter($params, function ($value) {
-            return $value !== '' && $value !== null;
-        });
+        // Remove empty values and sign field itself
+        $params = array_filter($params, function ($value, $key) {
+            return $value !== '' && $value !== null && $key !== 'sign';
+        }, ARRAY_FILTER_USE_BOTH);
 
         // Sort by key
         ksort($params);
 
-        // Build sign string
-        $signString = '';
+        // Build sign string - join with & separator
+        $parts = [];
         foreach ($params as $key => $value) {
-            $signString .= $key . '=' . $value . '&';
+            $parts[] = $key . '=' . $value;
         }
+        $signString = implode('&', $parts) . '&key=' . $this->apiKey;
 
-        // Append API key
-        $signString .= 'key=' . $this->apiKey;
+        // Try different variations
+        $variations = [
+            'with_key_upper' => strtoupper(md5($signString)),
+            'with_key_lower' => strtolower(md5($signString)),
+            'direct_append_upper' => strtoupper(md5(implode('&', $parts) . $this->apiKey)),
+            'direct_append_lower' => strtolower(md5(implode('&', $parts) . $this->apiKey)),
+        ];
 
-        // Generate MD5
-        return strtoupper(md5($signString));
+        // Log for debugging
+        Log::info('Payment signature generation - all variations', [
+            'params' => $params,
+            'sign_string' => $signString,
+            'variations' => $variations
+        ]);
+
+        // Generate MD5 - try with &key= and lowercase
+        return strtolower(md5($signString));
     }
 
     /**
@@ -171,13 +215,21 @@ class PaymentService
      */
     protected function getPayType(string $method): string
     {
+        // Common payment type codes used by Chinese payment gateways
         $types = [
-            'alipay' => 'alipay',
-            'wechat' => 'wechat',
-            'bank' => 'bank',
+            'alipay' => '111',      // or 'ALIPAY', 'ALI', 'zfb'
+            'wechat' => '111',       // or 'WECHAT', 'WX', 'weixin'
+            // 'bank' => 'bank',          // or 'BANK'
         ];
 
-        return $types[$method] ?? 'alipay';
+        $paytype = $types[$method] ?? '111';
+
+        Log::info('Payment type mapping', [
+            'input_method' => $method,
+            'output_paytype' => $paytype
+        ]);
+
+        return $paytype;
     }
 
     /**
