@@ -184,7 +184,8 @@ class RechargeController extends Controller
                 }
 
                 // Show intermediate payment page that will POST to HTTP gateway
-                Log::info('paymentData going to payment page', ['paymentData' => $paymentData]);
+                Log::info('paymentData going to payment page
+                ', ['paymentData' => $paymentData]);
                 return Inertia::render('Recharge/Payment', [
                     'paymentUrl' => $paymentData['url'],
                     'paymentParams' => $paymentData['params'],
