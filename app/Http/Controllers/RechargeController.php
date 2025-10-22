@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\CreditTransaction;
 use App\Models\RechargePackage;
+use App\Models\Payment;
+use App\Services\PaymentService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -43,9 +45,9 @@ class RechargeController extends Controller
     }
 
     /**
-     * Process the recharge (fake payment)
+     * Process the recharge
      */
-    public function process(Request $request)
+    public function process(Request $request, PaymentService $paymentService)
     {
         $validated = $request->validate([
             'package_id' => 'nullable|exists:recharge_packages,id',
@@ -79,65 +81,112 @@ class RechargeController extends Controller
                 'status' => 'pending',
                 'payment_method' => $validated['payment_method'],
                 'payment_info' => [
-                    'fake_payment' => true,
-                    'processed_at' => now()->toDateTimeString(),
                     'package_id' => $package ? $package->id : null,
                     'bonus_credits' => $bonus,
                 ],
             ]);
 
-            // Simulate successful payment (fake)
-            $order->markAsCompleted();
-
-            // Add base amount credits to user
-            $user->credits += $baseAmount;
-            $user->save();
-
-            // Create credit transaction for base amount (recharge)
-            CreditTransaction::create([
-                'user_id' => $user->id,
-                'type' => 'earned',
-                'credits' => $baseAmount,
-                'reason' => 'recharge',
-                'metadata' => [
+            // Handle different payment methods
+            if ($validated['payment_method'] === 'fake') {
+                // Simulate successful payment (fake/test mode)
+                // Create payment record
+                $payment = Payment::create([
+                    'user_id' => $user->id,
                     'order_id' => $order->id,
-                    'order_number' => $order->order_number,
-                    'payment_method' => $validated['payment_method'],
-                    'package_id' => $package ? $package->id : null,
-                ],
-                'related_type' => Order::class,
-                'related_id' => $order->id,
-            ]);
+                    'gateway' => 'fake',
+                    'payment_method' => 'fake',
+                    'amount' => $baseAmount,
+                    'actual_amount' => $baseAmount,
+                    'fee' => 0,
+                    'status' => 'completed',
+                    'payer_ip' => $request->ip(),
+                    'paid_at' => now(),
+                ]);
 
-            // If there's a bonus, add it separately and create another transaction
-            if ($bonus > 0) {
-                $user->credits += $bonus;
+                $order->markAsCompleted();
+
+                // Add base amount credits to user
+                $user->credits += $baseAmount;
                 $user->save();
 
+                // Create credit transaction for base amount (recharge)
                 CreditTransaction::create([
                     'user_id' => $user->id,
                     'type' => 'earned',
-                    'credits' => $bonus,
-                    'reason' => 'recharge_bonus',
+                    'credits' => $baseAmount,
+                    'reason' => 'recharge',
                     'metadata' => [
                         'order_id' => $order->id,
                         'order_number' => $order->order_number,
-                        'package_id' => $package->id,
-                        'package_name' => $package->name,
-                        'base_amount' => $baseAmount,
+                        'payment_id' => $payment->id,
+                        'payment_method' => $validated['payment_method'],
+                        'package_id' => $package ? $package->id : null,
                     ],
                     'related_type' => Order::class,
                     'related_id' => $order->id,
                 ]);
+
+                // If there's a bonus, add it separately and create another transaction
+                if ($bonus > 0) {
+                    $user->credits += $bonus;
+                    $user->save();
+
+                    CreditTransaction::create([
+                        'user_id' => $user->id,
+                        'type' => 'earned',
+                        'credits' => $bonus,
+                        'reason' => 'recharge_bonus',
+                        'metadata' => [
+                            'order_id' => $order->id,
+                            'order_number' => $order->order_number,
+                            'payment_id' => $payment->id,
+                            'package_id' => $package->id,
+                            'package_name' => $package->name,
+                            'base_amount' => $baseAmount,
+                        ],
+                        'related_type' => Order::class,
+                        'related_id' => $order->id,
+                    ]);
+                }
+
+                DB::commit();
+
+                return redirect()->route('recharge.success', ['order' => $order->id])
+                    ->with('success', '充值成功！');
+            } else {
+                // Real payment (Alipay/WeChat)
+                // Create pending payment record
+                $payment = Payment::create([
+                    'user_id' => $user->id,
+                    'order_id' => $order->id,
+                    'gateway' => 'third_party',
+                    'payment_method' => $validated['payment_method'],
+                    'amount' => $baseAmount,
+                    'actual_amount' => $baseAmount,
+                    'fee' => 0,
+                    'status' => 'pending',
+                    'payer_ip' => $request->ip(),
+                ]);
+
+                DB::commit();
+
+                // Get payment URL from payment gateway
+                $paymentUrl = $paymentService->getPaymentUrl(
+                    $order,
+                    $validated['payment_method'],
+                    $request->ip()
+                );
+
+                if (!$paymentUrl) {
+                    return back()->withErrors(['payment' => '支付请求失败，请重试']);
+                }
+
+                // Redirect to payment gateway
+                return redirect()->away($paymentUrl);
             }
-
-            DB::commit();
-
-            return redirect()->route('recharge.success', ['order' => $order->id])
-                ->with('success', '充值成功！');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', '充值失败，请重试');
+            return back()->withErrors(['payment' => '充值失败：' . $e->getMessage()]);
         }
     }
 
