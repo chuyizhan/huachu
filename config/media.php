@@ -9,9 +9,10 @@ return [
     |
     | This option controls the default disk that will be used for storing
     | media files like images and videos. You may configure this to use
-    | local storage ('public') or cloud storage like Amazon S3 ('s3').
+    | local storage ('public'), cloud storage like Amazon S3 ('s3'),
+    | or Wasabi ('wasabi').
     |
-    | Supported: "public", "s3"
+    | Supported: "public", "s3", "wasabi"
     |
     */
 
