@@ -126,8 +126,8 @@ function handleVideoUpload(event: Event) {
 
     if (file) {
         // Validate file size (max 100MB)
-        if (file.size > 100 * 1024 * 1024) {
-            alert('视频文件太大！最大支持100MB');
+        if (file.size > 1024 * 1024 * 1024) {
+            alert('视频文件太大！最大支持1GB');
             return;
         }
 
@@ -309,7 +309,7 @@ function publishPost() {
                                                 <p class="mb-2 text-sm text-[#999999]">
                                                     <span class="font-semibold text-[#ff6e02]">点击上传视频</span>
                                                 </p>
-                                                <p class="text-xs text-[#999999]">支持 MP4, WebM, MOV (最大100MB)</p>
+                                                <p class="text-xs text-[#999999]">支持 MP4, WebM, MOV (最大1GB)</p>
                                             </div>
                                             <input
                                                 ref="videoInput"
@@ -340,7 +340,7 @@ function publishPost() {
                                             </Button>
                                         </div>
                                         <p class="text-xs text-[#999999] mt-1">
-                                            {{ form.video?.name }} ({{ (form.video?.size / 1024 / 1024).toFixed(2) }}MB)
+                                            {{ form.video?.name }} ({{ (form.video?.size ? (form.video.size / 1024 / 1024 / 1024).toFixed(2) : 0) }}GB)
                                         </p>
                                     </div>
 
