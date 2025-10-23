@@ -15,6 +15,8 @@ class PostCategory extends Model
         'description',
         'color',
         'icon',
+        'icon_image',
+        'category_image',
         'sort_order',
         'is_active',
         'is_nav_item',
