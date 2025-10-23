@@ -93,6 +93,10 @@ class CategoryController extends Controller
             'description' => 'nullable|string',
             'color' => 'required|string|size:7|regex:/^#[0-9A-Fa-f]{6}$/',
             'icon' => 'nullable|string|max:255',
+            'icon_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'category_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'remove_icon_image' => 'boolean',
+            'remove_category_image' => 'boolean',
             'sort_order' => 'required|integer',
             'is_active' => 'boolean',
             'is_nav_item' => 'boolean',
@@ -108,6 +112,50 @@ class CategoryController extends Controller
             $validated['nav_route'] = null;
         }
 
+        // Handle icon image upload or removal
+        if ($request->boolean('remove_icon_image')) {
+            // User wants to remove the icon image
+            if ($category->icon_image && \Storage::disk('public')->exists($category->icon_image)) {
+                \Storage::disk('public')->delete($category->icon_image);
+            }
+            $validated['icon_image'] = null;
+        } elseif ($request->hasFile('icon_image')) {
+            // User uploaded a new icon image
+            if ($category->icon_image && \Storage::disk('public')->exists($category->icon_image)) {
+                \Storage::disk('public')->delete($category->icon_image);
+            }
+            $iconImage = $request->file('icon_image');
+            $iconPath = $iconImage->store('categories/icons', 'public');
+            $validated['icon_image'] = $iconPath;
+        } else {
+            // No change to icon image, don't update
+            unset($validated['icon_image']);
+        }
+
+        // Handle category image upload or removal
+        if ($request->boolean('remove_category_image')) {
+            // User wants to remove the category image
+            if ($category->category_image && \Storage::disk('public')->exists($category->category_image)) {
+                \Storage::disk('public')->delete($category->category_image);
+            }
+            $validated['category_image'] = null;
+        } elseif ($request->hasFile('category_image')) {
+            // User uploaded a new category image
+            if ($category->category_image && \Storage::disk('public')->exists($category->category_image)) {
+                \Storage::disk('public')->delete($category->category_image);
+            }
+            $categoryImage = $request->file('category_image');
+            $categoryPath = $categoryImage->store('categories/images', 'public');
+            $validated['category_image'] = $categoryPath;
+        } else {
+            // No change to category image, don't update
+            unset($validated['category_image']);
+        }
+
+        // Remove the removal flags from validated data
+        unset($validated['remove_icon_image']);
+        unset($validated['remove_category_image']);
+
         $category->update($validated);
 
         return redirect()->route('admin.categories.index')->with('success', '分类已更新');
@@ -120,6 +168,14 @@ class CategoryController extends Controller
     {
         if ($category->posts()->count() > 0) {
             return redirect()->back()->with('error', '无法删除有关联帖子的分类');
+        }
+
+        // Delete associated images
+        if ($category->icon_image && \Storage::disk('public')->exists($category->icon_image)) {
+            \Storage::disk('public')->delete($category->icon_image);
+        }
+        if ($category->category_image && \Storage::disk('public')->exists($category->category_image)) {
+            \Storage::disk('public')->delete($category->category_image);
         }
 
         $category->delete();

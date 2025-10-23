@@ -46,6 +46,7 @@ interface Category {
     slug: string;
     color: string;
     icon?: string;
+    icon_image?: string | null;
     is_nav_item?: boolean;
     nav_route?: string;
     posts_count?: number;
@@ -290,7 +291,15 @@ const postTypes = [
                                 ]"
                             >
                                 <div class="flex items-center gap-2">
-                                    <span class="text-sm">{{ category.icon || '📝' }}</span>
+                                    <div class="w-5 h-5 flex-shrink-0 rounded overflow-hidden flex items-center justify-center">
+                                        <img
+                                            v-if="category.icon_image"
+                                            :src="`/storage/${category.icon_image}`"
+                                            :alt="category.name"
+                                            class="w-full h-full object-cover"
+                                        />
+                                        <span v-else class="text-sm">{{ category.icon || '📝' }}</span>
+                                    </div>
                                     <span class="text-sm">{{ category.name }}</span>
                                 </div>
                                 <span v-if="category.posts_count" class="text-xs bg-[#1f2937] px-2 py-1 rounded">
@@ -339,6 +348,9 @@ const postTypes = [
                                         <!-- Post Icon/Image -->
                                         <div class="w-16 h-12 bg-[#1f2937] rounded-lg flex-shrink-0 overflow-hidden">
                                             <img v-if="post.first_image" :src="post.first_image.thumb" :alt="post.title" class="w-full h-full object-cover" />
+                                            <div v-else-if="post.category.icon_image" class="w-full h-full">
+                                                <img :src="`/storage/${post.category.icon_image}`" :alt="post.category.name" class="w-full h-full object-cover" />
+                                            </div>
                                             <div v-else class="w-full h-full flex items-center justify-center">
                                                 <span class="text-lg">{{ post.category.icon || '📝' }}</span>
                                             </div>
@@ -378,11 +390,11 @@ const postTypes = [
                                             </p>
 
                                             <!-- Post Images (First 4) -->
-                                            <div v-if="post.post_images && post.post_images.length > 0" class="flex gap-2 mb-3">
+                                            <div v-if="post.post_images && post.post_images.length > 0" class="grid grid-cols-4 gap-2 mb-3">
                                                 <div
                                                     v-for="(image, index) in post.post_images.slice(0, 4)"
                                                     :key="index"
-                                                    class="relative overflow-hidden rounded-lg w-20 h-20 flex-shrink-0"
+                                                    class="relative overflow-hidden rounded-lg aspect-square"
                                                 >
                                                     <img
                                                         :src="image.thumb || image.url"

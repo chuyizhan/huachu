@@ -63,6 +63,7 @@ interface Category {
     slug: string;
     color: string;
     icon: string;
+    icon_image?: string | null;
     posts_count: number;
     nav_route: string;
 }
@@ -152,16 +153,16 @@ const formatTime = (dateString: string) => {
                         :key="category.id"
                         :href="category.nav_route || '/'"
                         class="flex flex-col items-center justify-center hover:bg-accent rounded-lg py-4 transition cursor-pointer group"
-                       
+
                     >
                         <div class="w-14 h-14 mb-2 rounded-full bg-gray-100 flex items-center justify-center overflow-hidden shadow group-hover:bg-[#fffaee]">
-                            <!-- <img
-                                v-if="category.icon"
-                                :src="category.icon"
+                            <img
+                                v-if="category.icon_image"
+                                :src="`/storage/${category.icon_image}`"
                                 :alt="category.name"
-                                class="w-8 h-8 object-contain"
-                            /> -->
-                            <span  class="text-2xl">{{ category.icon || '📁' }}</span>
+                                class="w-full h-full object-cover"
+                            />
+                            <span v-else class="text-2xl">{{ category.icon || '📁' }}</span>
                         </div>
                         <div class="text-center text-sm text-white font-medium mt-1 truncate max-w-[64px]">
                             {{ category.name }}
@@ -244,11 +245,11 @@ const formatTime = (dateString: string) => {
                         </p>
 
                         <!-- Post Images (First 4) -->
-                        <div v-if="post.post_images && post.post_images.length > 0" class="flex gap-2 mb-4">
+                        <div v-if="post.post_images && post.post_images.length > 0" class="grid grid-cols-4 gap-2 mb-4">
                             <div
                                 v-for="(image, index) in post.post_images.slice(0, 4)"
                                 :key="index"
-                                class="relative overflow-hidden rounded-lg w-20 h-20 flex-shrink-0"
+                                class="relative overflow-hidden rounded-lg aspect-square"
                             >
                                 <img
                                     :src="image.thumb || image.url"
@@ -309,7 +310,15 @@ const formatTime = (dateString: string) => {
                         :href="`/community/posts?category=${category.slug}`"
                         class="flex items-center gap-3 p-2 bg-background rounded-lg hover:bg-gray-500 transition-colors"
                     >
-                        <div class="text-3xl">{{ category.icon || '📝' }}</div>
+                        <div class="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center">
+                            <img
+                                v-if="category.icon_image"
+                                :src="`/storage/${category.icon_image}`"
+                                :alt="category.name"
+                                class="w-full h-full object-cover"
+                            />
+                            <span v-else class="text-3xl">{{ category.icon || '📝' }}</span>
+                        </div>
                         <div>
                             <p class="font-medium text-foreground">{{ category.name }}</p>
                             <p class="text-xs text-muted-foreground">{{ category.posts_count }} 帖子</p>

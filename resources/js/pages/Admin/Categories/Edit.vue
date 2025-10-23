@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import Textarea from '@/components/ui/Textarea.vue'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowLeft } from 'lucide-vue-next'
+import { ArrowLeft, Upload, X } from 'lucide-vue-next'
+import { ref } from 'vue'
 
 interface Category {
     id: number
@@ -15,6 +16,8 @@ interface Category {
     description: string | null
     color: string
     icon: string | null
+    icon_image: string | null
+    category_image: string | null
     sort_order: number
     is_active: boolean
     is_nav_item: boolean
@@ -36,15 +39,68 @@ const form = useForm({
     description: props.category.description || '',
     color: props.category.color,
     icon: props.category.icon || '',
+    icon_image: null as File | null,
+    category_image: null as File | null,
+    remove_icon_image: false,
+    remove_category_image: false,
     sort_order: props.category.sort_order,
     is_active: props.category.is_active,
     is_nav_item: props.category.is_nav_item,
     nav_route: props.category.nav_route || '',
 })
 
+const iconImagePreview = ref<string | null>(
+    props.category.icon_image ? `/storage/${props.category.icon_image}` : null
+)
+const categoryImagePreview = ref<string | null>(
+    props.category.category_image ? `/storage/${props.category.category_image}` : null
+)
+
+const handleIconImageChange = (event: Event) => {
+    const target = event.target as HTMLInputElement
+    const file = target.files?.[0]
+    if (file) {
+        form.icon_image = file
+        form.remove_icon_image = false
+        iconImagePreview.value = URL.createObjectURL(file)
+    }
+}
+
+const handleCategoryImageChange = (event: Event) => {
+    const target = event.target as HTMLInputElement
+    const file = target.files?.[0]
+    if (file) {
+        form.category_image = file
+        form.remove_category_image = false
+        categoryImagePreview.value = URL.createObjectURL(file)
+    }
+}
+
+const removeIconImage = () => {
+    form.icon_image = null
+    form.remove_icon_image = true
+    iconImagePreview.value = null
+    // Reset file input
+    const fileInput = document.getElementById('icon_image') as HTMLInputElement
+    if (fileInput) fileInput.value = ''
+}
+
+const removeCategoryImage = () => {
+    form.category_image = null
+    form.remove_category_image = true
+    categoryImagePreview.value = null
+    // Reset file input
+    const fileInput = document.getElementById('category_image') as HTMLInputElement
+    if (fileInput) fileInput.value = ''
+}
+
 const submit = () => {
-    form.put(`/admin/categories/${props.category.id}`, {
+    form.transform((data) => ({
+        ...data,
+        _method: 'PUT',
+    })).post(`/admin/categories/${props.category.id}`, {
         preserveScroll: true,
+        forceFormData: true,
         onSuccess: () => {
             // Success message will be shown via Laravel flash message
         },
@@ -177,6 +233,82 @@ const goBack = () => {
                                             <p v-if="form.errors.icon" class="text-sm text-red-500">
                                                 {{ form.errors.icon }}
                                             </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Icon Image Upload -->
+                                    <div class="space-y-2">
+                                        <Label for="icon_image">图标图片</Label>
+                                        <div class="flex items-start gap-4">
+                                            <div v-if="iconImagePreview" class="relative">
+                                                <img
+                                                    :src="iconImagePreview"
+                                                    alt="Icon preview"
+                                                    class="w-24 h-24 object-cover rounded-lg border-2 border-gray-200 dark:border-gray-700"
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    variant="destructive"
+                                                    size="icon"
+                                                    class="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                                                    @click="removeIconImage"
+                                                >
+                                                    <X class="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                            <div class="flex-1">
+                                                <Input
+                                                    id="icon_image"
+                                                    type="file"
+                                                    accept="image/*"
+                                                    @change="handleIconImageChange"
+                                                    :class="{ 'border-red-500': form.errors.icon_image }"
+                                                />
+                                                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                                    推荐尺寸: 200x200px, 最大 2MB
+                                                </p>
+                                                <p v-if="form.errors.icon_image" class="text-sm text-red-500 mt-1">
+                                                    {{ form.errors.icon_image }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Category Image Upload -->
+                                    <div class="space-y-2">
+                                        <Label for="category_image">分类封面图</Label>
+                                        <div class="flex items-start gap-4">
+                                            <div v-if="categoryImagePreview" class="relative">
+                                                <img
+                                                    :src="categoryImagePreview"
+                                                    alt="Category preview"
+                                                    class="w-48 h-32 object-cover rounded-lg border-2 border-gray-200 dark:border-gray-700"
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    variant="destructive"
+                                                    size="icon"
+                                                    class="absolute -top-2 -right-2 h-6 w-6 rounded-full"
+                                                    @click="removeCategoryImage"
+                                                >
+                                                    <X class="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                            <div class="flex-1">
+                                                <Input
+                                                    id="category_image"
+                                                    type="file"
+                                                    accept="image/*"
+                                                    @change="handleCategoryImageChange"
+                                                    :class="{ 'border-red-500': form.errors.category_image }"
+                                                />
+                                                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                                    推荐尺寸: 800x600px, 最大 5MB
+                                                </p>
+                                                <p v-if="form.errors.category_image" class="text-sm text-red-500 mt-1">
+                                                    {{ form.errors.category_image }}
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
 
