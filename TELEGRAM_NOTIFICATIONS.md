@@ -146,6 +146,7 @@ class NewPaymentReceived extends Notification implements ShouldQueue
         $message .= "*支付方式:* {$this->payment->getMethodText()}\n";
 
         return TelegramMessage::create()
+            ->token(config('services.telegram.bot_token'))
             ->to(config('services.telegram.chat_id'))
             ->content($message);
     }

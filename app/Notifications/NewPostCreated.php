@@ -51,6 +51,7 @@ class NewPostCreated extends Notification implements ShouldQueue
         $message .= "\n[查看完整内容]({$url})";
 
         return TelegramMessage::create()
+            ->token(config('services.telegram.bot_token'))
             ->to(config('services.telegram.chat_id'))
             ->content($message)
             ->button('查看帖子', $url);
