@@ -116,7 +116,7 @@ class PaymentService
     }
 
     /**
-     * Get payment parameters for POST form submission
+     * Get payment URL by making request to payment gateway
      *
      * @param Order $order
      * @param string $paymentMethod
@@ -139,10 +139,59 @@ class PaymentService
         // Generate signature
         $params['sign'] = $this->generateSignature($params);
 
-        return [
-            'url' => $this->apiUrl . '/trade/pay',
-            'params' => $params,
-        ];
+        try {
+            // Make POST request to get payment URL
+            $response = Http::timeout(30)
+                ->asForm()
+                ->post($this->apiUrl . '/trade/pay', $params);
+
+            if ($response->successful()) {
+                $result = $response->json();
+
+                Log::info('Payment gateway response', [
+                    'order_number' => $order->order_number,
+                    'response' => $result
+                ]);
+
+                // Check if we got a payment URL
+                if (isset($result['payurl'])) {
+                    return [
+                        'success' => true,
+                        'payurl' => $result['payurl'],
+                        'gateway_order_id' => $result['orderid'] ?? null,
+                        'data' => $result,
+                    ];
+                }
+
+                // If no payurl, return error
+                return [
+                    'success' => false,
+                    'message' => $result['message'] ?? 'No payment URL received',
+                    'data' => $result,
+                ];
+            }
+
+            Log::error('Payment gateway request failed', [
+                'order_number' => $order->order_number,
+                'status' => $response->status(),
+                'body' => $response->body()
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Payment gateway request failed',
+            ];
+        } catch (\Exception $e) {
+            Log::error('Payment gateway exception', [
+                'order_number' => $order->order_number,
+                'error' => $e->getMessage()
+            ]);
+
+            return [
+                'success' => false,
+                'message' => $e->getMessage(),
+            ];
+        }
     }
 
     /**
