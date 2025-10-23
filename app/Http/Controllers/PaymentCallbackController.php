@@ -36,9 +36,10 @@ class PaymentCallbackController extends Controller
             return response('FAIL', 400);
         }
 
-        $orderNumber = $params['orderid'] ?? null;
-        $tradeNumber = $params['ordernumber'] ?? null;
-        $status = $params['paystatus'] ?? null;
+        // Extract parameters according to payment gateway's format
+        $orderNumber = $params['partnerorderid'] ?? null; // Our order number
+        $tradeNumber = $params['orderno'] ?? null; // Gateway's order number
+        $status = $params['orderstatus'] ?? null;
         $amount = isset($params['payamount']) ? (int)$params['payamount'] : null;
 
         if (!$orderNumber) {
@@ -170,8 +171,8 @@ class PaymentCallbackController extends Controller
             return redirect()->route('recharge.index')->withErrors(['payment' => '支付验证失败']);
         }
 
-        $orderNumber = $params['orderid'] ?? null;
-        $status = $params['paystatus'] ?? null;
+        $orderNumber = $params['partnerorderid'] ?? null; // Our order number
+        $status = $params['orderstatus'] ?? null;
 
         if (!$orderNumber) {
             return redirect()->route('recharge.index')->withErrors(['payment' => '订单号缺失']);
