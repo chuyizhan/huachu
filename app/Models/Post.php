@@ -258,7 +258,7 @@ class Post extends Model implements HasMedia
      */
     public function mediaDisk(): string
     {
-        return 'public';
+        return config('media.disk', 'public');
     }
 
     /**
@@ -267,10 +267,10 @@ class Post extends Model implements HasMedia
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('images')
-            ->useDisk($this->mediaDisk());
+            ->useDisk(config('media.collections.images.disk', $this->mediaDisk()));
 
         $this->addMediaCollection('videos')
-            ->useDisk($this->mediaDisk());
+            ->useDisk(config('media.collections.videos.disk', $this->mediaDisk()));
     }
 
     /**
