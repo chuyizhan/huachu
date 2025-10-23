@@ -252,12 +252,25 @@ class Post extends Model implements HasMedia
     }
 
     /**
+     * Get the disk name for media storage.
+     *
+     * @return string
+     */
+    public function mediaDisk(): string
+    {
+        return 'public';
+    }
+
+    /**
      * Register media collections for this model.
      */
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('images')
-            ->useDisk('public');
+            ->useDisk($this->mediaDisk());
+
+        $this->addMediaCollection('videos')
+            ->useDisk($this->mediaDisk());
     }
 
     /**
