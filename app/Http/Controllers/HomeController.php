@@ -24,7 +24,9 @@ class HomeController extends Controller
                 $firstMedia = $post->getFirstMedia('images');
                 $post->first_image = $firstMedia ? [
                     'url' => $firstMedia->getUrl(),
-                    'thumb' => $firstMedia->getUrl('thumb'),
+                    'thumb' => $firstMedia->hasGeneratedConversion('thumb')
+                        ? $firstMedia->getUrl('thumb')
+                        : $firstMedia->getUrl(),
                 ] : null;
                 return $post;
             });
@@ -40,7 +42,9 @@ class HomeController extends Controller
                 $post->post_images = $post->getMedia('images')->take(4)->map(function ($media) {
                     return [
                         'url' => $media->getUrl(),
-                        'thumb' => $media->getUrl('thumb'),
+                        'thumb' => $media->hasGeneratedConversion('thumb')
+                            ? $media->getUrl('thumb')
+                            : $media->getUrl(),
                     ];
                 })->toArray();
 

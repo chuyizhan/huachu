@@ -36,6 +36,7 @@ interface Creator {
 interface User {
     id: number;
     name: string;
+    avatar?: string | null;
     creator_profile?: Creator;
 }
 
@@ -73,6 +74,10 @@ interface Post {
         url: string;
         thumb: string;
     } | null;
+    post_images?: Array<{
+        url: string;
+        thumb: string;
+    }>;
 }
 
 interface PaginatedPosts {
@@ -372,16 +377,32 @@ const postTypes = [
                                                 {{ post.excerpt }}
                                             </p>
 
+                                            <!-- Post Images (First 4) -->
+                                            <div v-if="post.post_images && post.post_images.length > 0" class="flex gap-2 mb-3">
+                                                <div
+                                                    v-for="(image, index) in post.post_images.slice(0, 4)"
+                                                    :key="index"
+                                                    class="relative overflow-hidden rounded-lg w-20 h-20 flex-shrink-0"
+                                                >
+                                                    <img
+                                                        :src="image.thumb || image.url"
+                                                        class="w-full h-full object-cover"
+                                                        :alt="`${post.title} - Image ${index + 1}`"
+                                                    />
+                                                </div>
+                                            </div>
+
                                             <!-- Meta -->
                                             <div class="flex items-center justify-between">
                                                 <div class="flex items-center gap-3">
                                                     <!-- Author -->
                                                     <div class="flex items-center gap-2">
-                                                        <Avatar class="w-6 h-6">
-                                                            <AvatarFallback class="bg-[#1f2937] text-white text-xs">
-                                                                {{ getInitials(post.user.creator_profile?.display_name || post.user.name) }}
-                                                            </AvatarFallback>
-                                                        </Avatar>
+                                                        <img
+                                                            :src="post.user.avatar ? `/storage/${post.user.avatar}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(post.user.creator_profile?.display_name || post.user.name)}&size=32&background=ff6e02&color=fff`"
+                                                            class="w-6 h-6 rounded-full object-cover"
+                                                            :alt="post.user.name"
+                                                            @error="(e) => e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(post.user.name)}&size=32&background=ff6e02&color=fff`"
+                                                        />
                                                         <span class="text-xs text-[#999999]">
                                                             {{ post.user.creator_profile?.display_name || post.user.name }}
                                                         </span>
