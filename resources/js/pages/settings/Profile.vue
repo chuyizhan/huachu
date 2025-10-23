@@ -39,7 +39,33 @@ const user = page.props.auth.user;
                         v-bind="ProfileController.update.form()"
                         class="space-y-6"
                         v-slot="{ errors, processing, recentlySuccessful }"
+                        enctype="multipart/form-data"
                     >
+                        <div class="grid gap-2">
+                            <Label for="avatar" class="text-white">头像</Label>
+                            <div class="flex items-center gap-4">
+                                <div v-if="user.avatar" class="shrink-0">
+                                    <img
+                                        :src="`/storage/${user.avatar}`"
+                                        alt="当前头像"
+                                        class="h-20 w-20 rounded-full object-cover"
+                                    />
+                                </div>
+                                <div v-else class="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[#1c1c1c] border border-[#4B5563]">
+                                    <span class="text-2xl text-[#999999]">{{ user.name?.charAt(0).toUpperCase() }}</span>
+                                </div>
+                                <Input
+                                    id="avatar"
+                                    type="file"
+                                    name="avatar"
+                                    accept="image/*"
+                                    class="bg-[#1c1c1c] border-[#4B5563] text-white file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#ff6e02] file:text-white hover:file:bg-[#e55a00]"
+                                />
+                            </div>
+                            <InputError class="mt-2" :message="errors.avatar" />
+                            <p class="text-sm text-[#999999]">最大文件大小: 2MB。支持的格式: JPG, PNG, GIF</p>
+                        </div>
+
                         <div class="grid gap-2">
                             <Label for="name" class="text-white">姓名</Label>
                             <Input
