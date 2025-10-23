@@ -172,6 +172,17 @@ class RechargeController extends Controller
 
                 DB::commit();
 
+                // Send Telegram notification for payment initiation
+                try {
+                    $telegramNotifiable = new \App\Services\TelegramNotifiable();
+                    $telegramNotifiable->notify(new \App\Notifications\PaymentInitiated($order));
+                } catch (\Exception $e) {
+                    Log::error('Failed to send payment initiated notification', [
+                        'order_id' => $order->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+
                 // Get payment URL from payment gateway
                 $paymentData = $paymentService->getPaymentParams(
                     $order,
