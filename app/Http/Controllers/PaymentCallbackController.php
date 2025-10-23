@@ -114,6 +114,17 @@ class PaymentCallbackController extends Controller
                 // Handle order fulfillment based on order type
                 $this->fulfillOrder($order);
 
+                // Send Telegram notification for payment completion
+                try {
+                    $telegramNotifiable = new \App\Services\TelegramNotifiable();
+                    $telegramNotifiable->notify(new \App\Notifications\PaymentCompleted($order, $payment));
+                } catch (\Exception $e) {
+                    Log::error('Failed to send payment completed notification', [
+                        'order_id' => $order->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+
                 Log::info('Payment callback order completed', [
                     'order_number' => $orderNumber,
                     'payment_id' => $payment->id

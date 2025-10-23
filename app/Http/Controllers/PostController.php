@@ -246,6 +246,20 @@ class PostController extends Controller
             }
         }
 
+        // Send Telegram notification if post is published
+        if ($post->status === 'published') {
+            try {
+                $telegramNotifiable = new \App\Services\TelegramNotifiable();
+                $telegramNotifiable->notify(new \App\Notifications\NewPostCreated($post));
+            } catch (\Exception $e) {
+                // Log error but don't fail the request
+                \Illuminate\Support\Facades\Log::error('Failed to send Telegram notification', [
+                    'post_id' => $post->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
+
         return redirect()->route('posts.show', $post->slug)
             ->with('success', 'Post created successfully!');
     }

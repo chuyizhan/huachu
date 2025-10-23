@@ -10,7 +10,8 @@
       "Bash(mkdir:*)",
       "WebFetch(domain:202.95.8.8)",
       "Bash(curl:*)",
-      "Bash(php -r:*)"
+      "Bash(php -r:*)",
+      "Bash(composer require:*)"
     ],
     "deny": [],
     "ask": []
