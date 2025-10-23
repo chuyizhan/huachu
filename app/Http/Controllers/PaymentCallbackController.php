@@ -280,9 +280,32 @@ class PaymentCallbackController extends Controller
                 break;
 
             case 'subscription':
-                // Subscription is already created when order is created
-                // The subscription status should be updated if needed
-                Log::info('Subscription order fulfilled', ['order_id' => $order->id]);
+                // Activate the subscription
+                $paymentInfo = is_array($order->payment_info) ? $order->payment_info : [];
+                $subscriptionId = $paymentInfo['subscription_id'] ?? $order->related_id;
+
+                if ($subscriptionId) {
+                    $subscription = \App\Models\PlanSubscription::find($subscriptionId);
+
+                    if ($subscription && $subscription->status === 'pending') {
+                        $subscription->status = 'active';
+                        $subscription->started_at = now();
+
+                        // Set expiration date based on plan period
+                        if ($subscription->plan) {
+                            $subscription->expires_at = now()->addDays($subscription->plan->period_days);
+                        }
+
+                        $subscription->save();
+
+                        Log::info('Subscription activated', [
+                            'subscription_id' => $subscription->id,
+                            'order_id' => $order->id,
+                            'plan_id' => $subscription->plan_id,
+                            'expires_at' => $subscription->expires_at
+                        ]);
+                    }
+                }
                 break;
 
             case 'post_purchase':
