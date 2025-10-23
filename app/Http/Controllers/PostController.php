@@ -31,7 +31,9 @@ class PostController extends Controller
             $firstMedia = $post->getFirstMedia('images');
             $post->first_image = $firstMedia ? [
                 'url' => $firstMedia->getUrl(),
-                'thumb' => $firstMedia->getUrl('thumb'),
+                'thumb' => $firstMedia->hasGeneratedConversion('thumb')
+                    ? $firstMedia->getUrl('thumb')
+                    : $firstMedia->getUrl(),
             ] : null;
             return $post;
         });
@@ -68,8 +70,12 @@ class PostController extends Controller
             return [
                 'id' => $media->id,
                 'url' => $media->getUrl(),
-                'thumb' => $media->getUrl('thumb'),
-                'medium' => $media->getUrl('medium'),
+                'thumb' => $media->hasGeneratedConversion('thumb')
+                    ? $media->getUrl('thumb')
+                    : $media->getUrl(),
+                'medium' => $media->hasGeneratedConversion('medium')
+                    ? $media->getUrl('medium')
+                    : $media->getUrl(),
             ];
         });
 
@@ -254,8 +260,12 @@ class PostController extends Controller
             return [
                 'id' => $media->id,
                 'url' => $media->getUrl(),
-                'thumb' => $media->getUrl('thumb'),
-                'medium' => $media->getUrl('medium'),
+                'thumb' => $media->hasGeneratedConversion('thumb')
+                    ? $media->getUrl('thumb')
+                    : $media->getUrl(),
+                'medium' => $media->hasGeneratedConversion('medium')
+                    ? $media->getUrl('medium')
+                    : $media->getUrl(),
             ];
         });
 

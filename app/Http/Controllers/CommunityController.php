@@ -23,7 +23,9 @@ class CommunityController extends Controller
                 $firstMedia = $post->getFirstMedia('images');
                 $post->first_image = $firstMedia ? [
                     'url' => $firstMedia->getUrl(),
-                    'thumb' => $firstMedia->getUrl('thumb'),
+                    'thumb' => $firstMedia->hasGeneratedConversion('thumb')
+                        ? $firstMedia->getUrl('thumb')
+                        : $firstMedia->getUrl(),
                 ] : null;
                 return $post;
             });
@@ -38,7 +40,9 @@ class CommunityController extends Controller
                 $firstMedia = $post->getFirstMedia('images');
                 $post->first_image = $firstMedia ? [
                     'url' => $firstMedia->getUrl(),
-                    'thumb' => $firstMedia->getUrl('thumb'),
+                    'thumb' => $firstMedia->hasGeneratedConversion('thumb')
+                        ? $firstMedia->getUrl('thumb')
+                        : $firstMedia->getUrl(),
                 ] : null;
                 return $post;
             });
@@ -103,13 +107,26 @@ class CommunityController extends Controller
 
         $posts = $query->paginate(15);
 
-        // Add first image to each post
+        // Add first image and first 4 images to each post
         $posts->getCollection()->transform(function ($post) {
             $firstMedia = $post->getFirstMedia('images');
             $post->first_image = $firstMedia ? [
                 'url' => $firstMedia->getUrl(),
-                'thumb' => $firstMedia->getUrl('thumb'),
+                'thumb' => $firstMedia->hasGeneratedConversion('thumb')
+                    ? $firstMedia->getUrl('thumb')
+                    : $firstMedia->getUrl(),
             ] : null;
+
+            // Get first 4 images from media library
+            $post->post_images = $post->getMedia('images')->take(4)->map(function ($media) {
+                return [
+                    'url' => $media->getUrl(),
+                    'thumb' => $media->hasGeneratedConversion('thumb')
+                        ? $media->getUrl('thumb')
+                        : $media->getUrl(),
+                ];
+            })->toArray();
+
             return $post;
         });
 
