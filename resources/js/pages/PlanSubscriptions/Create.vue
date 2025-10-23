@@ -45,12 +45,39 @@ const getSelectedPlan = () => {
 };
 
 const submit = () => {
+    console.log('Submit function called');
+    console.log('Form data:', {
+        plan_id: form.plan_id,
+        payment_method: form.payment_method,
+        auto_renew: form.auto_renew
+    });
+
     if (!form.plan_id) {
+        console.log('No plan selected');
         alert('请选择一个套餐');
         return;
     }
+
+    console.log('Submitting to /plan-subscriptions');
     form.post('/plan-subscriptions', {
-        preserveScroll: true,
+        preserveScroll: false,
+        onError: (errors) => {
+            console.error('Subscription error:', errors);
+            if (errors.subscription) {
+                alert(errors.subscription);
+            } else if (errors.payment) {
+                alert(errors.payment);
+            }
+        },
+        onSuccess: () => {
+            console.log('Subscription request successful');
+        },
+        onStart: () => {
+            console.log('Form submission started');
+        },
+        onFinish: () => {
+            console.log('Form submission finished');
+        }
     });
 };
 
@@ -86,6 +113,13 @@ const getPeriodText = (days: number) => {
                         <ArrowLeft class="w-6 h-6 text-white" />
                     </Link>
                     <h1 class="colorz font32 font-w-600">开通VIP会员</h1>
+                </div>
+            </div>
+
+            <!-- Error Messages -->
+            <div v-if="form.errors.subscription || form.errors.payment" class="u-m-25">
+                <div class="bg-red-500/20 border border-red-500 rounded-lg u-p-25">
+                    <p class="font24 text-red-500">{{ form.errors.subscription || form.errors.payment }}</p>
                 </div>
             </div>
 
@@ -193,6 +227,27 @@ const getPeriodText = (days: number) => {
                             </div>
                         </div>
                     </div>
+
+                    <div
+                        @click="form.payment_method = 'fake'"
+                        class="listclass u-p-25 cursor-pointer transition-all"
+                        :class="form.payment_method === 'fake' ? 'ring-2 ring-[#ff6e02]' : ''"
+                    >
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="w-12 h-12 bg-[#666666] rounded-lg flex items-center justify-center u-p-r-15">
+                                    <span class="text-white font-w-700 font24">测</span>
+                                </div>
+                                <span class="font28 colorfff">测试支付</span>
+                            </div>
+                            <div
+                                class="w-6 h-6 rounded-full border-2 flex items-center justify-center"
+                                :class="form.payment_method === 'fake' ? 'border-[#ff6e02] bg-[#ff6e02]' : 'border-[#999999]'"
+                            >
+                                <Check v-if="form.payment_method === 'fake'" class="w-4 h-4 text-white" />
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -212,7 +267,7 @@ const getPeriodText = (days: number) => {
                         </div>
                         <div class="flex items-center justify-between">
                             <span class="font24 color999">支付方式</span>
-                            <span class="font24 colorfff">{{ form.payment_method === 'alipay' ? '支付宝' : '微信支付' }}</span>
+                            <span class="font24 colorfff">{{ form.payment_method === 'alipay' ? '支付宝' : form.payment_method === 'wechat' ? '微信支付' : '测试支付' }}</span>
                         </div>
                         <div class="border-t border-[#374151] u-p-t-15 u-m-t-15"></div>
                         <div class="flex items-center justify-between">

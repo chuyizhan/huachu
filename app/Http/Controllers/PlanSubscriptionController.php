@@ -55,18 +55,22 @@ class PlanSubscriptionController extends Controller
     /**
      * Store a newly created subscription in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request, \App\Services\PaymentService $paymentService)
     {
         $user = Auth::user();
 
-        $request->validate([
+        \Illuminate\Support\Facades\Log::info('VIP Subscription request received', [
+            'user_id' => $user->id,
+            'request_data' => $request->all(),
+        ]);
+
+        $validated = $request->validate([
             'plan_id' => 'required|exists:plans,id',
-            'payment_method' => 'required|string',
-            'payment_transaction_id' => 'nullable|string',
+            'payment_method' => 'required|in:fake,alipay,wechat',
             'auto_renew' => 'boolean',
         ]);
 
-        $plan = Plan::findOrFail($request->plan_id);
+        $plan = Plan::findOrFail($validated['plan_id']);
 
         // Check if user already has an active subscription
         $existingSubscription = PlanSubscription::where('user_id', $user->id)
@@ -75,56 +79,131 @@ class PlanSubscriptionController extends Controller
 
         if ($existingSubscription) {
             return back()->withErrors([
-                'subscription' => 'You already have an active subscription. Please cancel it before subscribing to a new plan.'
+                'subscription' => '您已有一个有效订阅，请先取消后再订阅新套餐。'
             ]);
         }
 
         DB::beginTransaction();
         try {
-            // Create the subscription
+            // Create a pending subscription
             $subscription = PlanSubscription::create([
                 'user_id' => $user->id,
                 'plan_id' => $plan->id,
-                'status' => 'active',
+                'status' => 'pending',
                 'price_paid' => $plan->price,
-                'payment_method' => $request->payment_method,
-                'payment_transaction_id' => $request->payment_transaction_id,
-                'started_at' => now(),
-                'expires_at' => now()->addDays($plan->period_days),
+                'payment_method' => $validated['payment_method'],
+                'started_at' => now(), // Set temporary started_at, will be updated on activation
                 'auto_renew' => $request->boolean('auto_renew', false),
                 'renewal_count' => 0,
             ]);
 
-            // Create an order record
+            // Create order record
             $order = Order::create([
                 'user_id' => $user->id,
                 'order_number' => Order::generateOrderNumber(),
                 'type' => 'subscription',
                 'amount' => $plan->price,
-                'status' => 'completed',
-                'payment_method' => $request->payment_method,
-                'payment_info' => json_encode([
+                'status' => 'pending',
+                'payment_method' => $validated['payment_method'],
+                'payment_info' => [
                     'plan_id' => $plan->id,
                     'plan_name' => $plan->name,
                     'period_days' => $plan->period_days,
-                    'transaction_id' => $request->payment_transaction_id,
-                ]),
+                    'subscription_id' => $subscription->id,
+                    'auto_renew' => $validated['auto_renew'] ?? false,
+                ],
                 'related_id' => $subscription->id,
                 'related_type' => PlanSubscription::class,
-                'paid_at' => now(),
             ]);
 
-            // Deduct credits or process payment here
-            // Example: $user->credits -= $plan->price;
-            // $user->save();
+            // Handle different payment methods
+            if ($validated['payment_method'] === 'fake') {
+                // Fake payment for testing
+                $payment = \App\Models\Payment::create([
+                    'user_id' => $user->id,
+                    'order_id' => $order->id,
+                    'gateway' => 'fake',
+                    'payment_method' => 'fake',
+                    'amount' => $plan->price,
+                    'actual_amount' => $plan->price,
+                    'fee' => 0,
+                    'status' => 'completed',
+                    'payer_ip' => $request->ip(),
+                    'paid_at' => now(),
+                ]);
 
-            DB::commit();
+                $order->markAsCompleted();
 
-            return redirect()->route('plan-subscriptions.show', $subscription->id)
-                ->with('success', 'Successfully subscribed to ' . $plan->name . '!');
+                // Activate subscription
+                $subscription->status = 'active';
+                $subscription->started_at = now();
+                $subscription->expires_at = now()->addDays($plan->period_days);
+                $subscription->payment_transaction_id = 'FAKE' . time();
+                $subscription->save();
+
+                DB::commit();
+
+                return redirect()->route('plan-subscriptions.show', $subscription->id)
+                    ->with('success', '订阅成功！');
+            } else {
+                // Real payment (Alipay/WeChat)
+                // Create pending payment record
+                $payment = \App\Models\Payment::create([
+                    'user_id' => $user->id,
+                    'order_id' => $order->id,
+                    'gateway' => 'third_party',
+                    'payment_method' => $validated['payment_method'],
+                    'amount' => $plan->price,
+                    'actual_amount' => $plan->price,
+                    'fee' => 0,
+                    'status' => 'pending',
+                    'payer_ip' => $request->ip(),
+                ]);
+
+                DB::commit();
+
+                // Send Telegram notification for payment initiation
+                try {
+                    $telegramNotifiable = new \App\Services\TelegramNotifiable();
+                    $telegramNotifiable->notify(new \App\Notifications\PaymentInitiated($order));
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error('Failed to send payment initiated notification', [
+                        'order_id' => $order->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+
+                // Get payment URL from payment gateway
+                $paymentData = $paymentService->getPaymentParams(
+                    $order,
+                    $validated['payment_method'],
+                    $request->ip()
+                );
+
+                if (!$paymentData || !$paymentData['success']) {
+                    $errorMsg = $paymentData['message'] ?? '支付请求失败，请重试';
+                    return back()->withErrors(['payment' => $errorMsg]);
+                }
+
+                // Update payment with gateway order ID if available
+                if (isset($paymentData['gateway_order_id'])) {
+                    $payment->update([
+                        'trade_number' => $paymentData['gateway_order_id'],
+                        'response_data' => $paymentData['data'],
+                    ]);
+                }
+
+                // Use Inertia location visit for external redirect (full page redirect)
+                return Inertia::location($paymentData['payurl']);
+            }
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withErrors(['subscription' => 'Failed to create subscription. Please try again.']);
+            \Illuminate\Support\Facades\Log::error('VIP subscription creation failed', [
+                'user_id' => $user->id,
+                'plan_id' => $validated['plan_id'],
+                'error' => $e->getMessage()
+            ]);
+            return back()->withErrors(['subscription' => '订阅创建失败：' . $e->getMessage()]);
         }
     }
 
