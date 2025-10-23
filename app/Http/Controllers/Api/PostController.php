@@ -96,8 +96,12 @@ class PostController extends Controller
         $post = Post::with(['user', 'category', 'likedByUsers'])
             ->findOrFail($id);
 
-        // Increment view count
-        $post->increment('view_count');
+        // Increment view count only once per session
+        $sessionKey = 'post_viewed_' . $post->id;
+        if (!session()->has($sessionKey)) {
+            $post->increment('view_count');
+            session()->put($sessionKey, true);
+        }
 
         return response()->json($post);
     }

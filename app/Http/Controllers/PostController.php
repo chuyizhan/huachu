@@ -98,8 +98,12 @@ class PostController extends Controller
             $post->videos = [];
         }
 
-        // Increment view count
-        $post->increment('view_count');
+        // Increment view count only once per session
+        $sessionKey = 'post_viewed_' . $post->id;
+        if (!session()->has($sessionKey)) {
+            $post->increment('view_count');
+            session()->put($sessionKey, true);
+        }
 
         // Get related posts
         $relatedPosts = Post::with(['user', 'category'])
