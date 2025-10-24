@@ -17,7 +17,12 @@ class CustomPathGenerator implements PathGenerator
             return "posts/{$media->model_id}/videos/{$media->id}/";
         }
 
-        // For images and other media, use default structure: {mediaId}/
+        // For images, use organized structure: posts/{postId}/images/{mediaId}/
+        if ($media->collection_name === 'images') {
+            return "posts/{$media->model_id}/images/{$media->id}/";
+        }
+
+        // For other media, use default structure: {mediaId}/
         return $media->id . '/';
     }
 

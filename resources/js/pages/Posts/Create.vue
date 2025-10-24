@@ -42,6 +42,7 @@ interface Category {
 
 interface Props {
     categories: Category[];
+    useCloudForImages: boolean;
 }
 
 const props = defineProps<Props>();
@@ -58,6 +59,7 @@ const form = useForm({
     type: 'showcase',
     excerpt: '',
     images: [] as File[],
+    image_temp_upload_ids: [] as number[],
     video_temp_upload_id: null as number | null,
     videos: [] as string[],
     tags: [] as string[],
@@ -77,6 +79,18 @@ const videoFileSize = ref<number>(0);
 const isUploadingVideo = ref(false);
 const videoUploadProgress = ref(0);
 const uploadError = ref<string | null>(null);
+
+// Image upload state (for cloud storage)
+const uploadedImages = ref<Array<{
+    tempUploadId: number;
+    preview: string;
+    name: string;
+    size: number;
+    uploading: boolean;
+    progress: number;
+    error: string | null;
+}>>([]);
+const imageInput = ref<HTMLInputElement | null>(null);
 
 const postTypes = [
     { value: 'discussion', label: '讨论', icon: '💬', description: '分享想法和观点' },
@@ -253,6 +267,150 @@ function removeVideoFile() {
     uploadError.value = null;
 }
 
+// Image upload functions (for cloud storage)
+async function handleImageSelect(event: Event) {
+    const target = event.target as HTMLInputElement;
+    const files = target.files;
+
+    if (files && files.length > 0) {
+        // Limit to 12 images total
+        const remainingSlots = 12 - uploadedImages.value.length;
+        const filesToUpload = Array.from(files).slice(0, remainingSlots);
+
+        for (const file of filesToUpload) {
+            // Validate file
+            if (!file.type.startsWith('image/')) {
+                alert('请上传有效的图片文件');
+                continue;
+            }
+
+            if (file.size > 5 * 1024 * 1024) {
+                alert(`图片 ${file.name} 太大！最大支持5MB`);
+                continue;
+            }
+
+            // Add to uploaded images array
+            const preview = URL.createObjectURL(file);
+            const imageEntry = {
+                tempUploadId: 0, // Will be set after upload
+                preview,
+                name: file.name,
+                size: file.size,
+                uploading: true,
+                progress: 0,
+                error: null,
+            };
+            uploadedImages.value.push(imageEntry);
+
+            // Upload the image
+            await uploadImageToCloud(file, imageEntry);
+        }
+
+        // Clear the input
+        if (imageInput.value) {
+            imageInput.value.value = '';
+        }
+    }
+}
+
+async function uploadImageToCloud(file: File, imageEntry: any) {
+    try {
+        // Step 1: Get presigned URL
+        const presignedResponse = await fetch('/api/v1/media/presigned-url', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({
+                file_name: file.name,
+                file_type: file.type,
+                file_size: file.size,
+                type: 'image',
+            }),
+        });
+
+        if (!presignedResponse.ok) {
+            throw new Error('获取上传链接失败');
+        }
+
+        const { presigned_url, temp_upload_id, s3_path } = await presignedResponse.json();
+
+        // Step 2: Upload to cloud
+        const xhr = new XMLHttpRequest();
+
+        xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable) {
+                imageEntry.progress = Math.round((e.loaded / e.total) * 95);
+            }
+        });
+
+        await new Promise((resolve, reject) => {
+            xhr.addEventListener('load', () => {
+                if (xhr.status === 200) {
+                    resolve(xhr.response);
+                } else {
+                    reject(new Error('云端上传失败'));
+                }
+            });
+
+            xhr.addEventListener('error', () => reject(new Error('网络错误')));
+            xhr.addEventListener('abort', () => reject(new Error('上传已取消')));
+
+            xhr.open('PUT', presigned_url);
+            xhr.setRequestHeader('Content-Type', file.type);
+            xhr.send(file);
+        });
+
+        imageEntry.progress = 95;
+
+        // Step 3: Confirm upload
+        const confirmResponse = await fetch(`/api/v1/media/confirm-upload/${temp_upload_id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({ s3_path }),
+        });
+
+        if (!confirmResponse.ok) {
+            throw new Error('确认上传失败');
+        }
+
+        // Success!
+        imageEntry.tempUploadId = temp_upload_id;
+        imageEntry.progress = 100;
+        imageEntry.uploading = false;
+
+        // Add to form data
+        form.image_temp_upload_ids.push(temp_upload_id);
+
+    } catch (error) {
+        console.error('Image upload failed:', error);
+        imageEntry.error = error instanceof Error ? error.message : '上传失败';
+        imageEntry.uploading = false;
+    }
+}
+
+function removeImage(index: number) {
+    const image = uploadedImages.value[index];
+
+    // Remove from form data
+    const tempIdIndex = form.image_temp_upload_ids.indexOf(image.tempUploadId);
+    if (tempIdIndex > -1) {
+        form.image_temp_upload_ids.splice(tempIdIndex, 1);
+    }
+
+    // Revoke preview URL
+    URL.revokeObjectURL(image.preview);
+
+    // Remove from array
+    uploadedImages.value.splice(index, 1);
+}
+
 function saveDraft() {
     form.status = 'draft';
     form.post('/posts', {
@@ -359,7 +517,100 @@ function publishPost() {
                                 <!-- Images -->
                                 <div>
                                     <Label class="text-white">图片 (最多12张)</Label>
-                                    <div class="mt-2">
+
+                                    <!-- Cloud Upload (Wasabi/S3) -->
+                                    <div v-if="props.useCloudForImages" class="mt-2">
+                                        <!-- Upload Button -->
+                                        <div v-if="uploadedImages.length < 12">
+                                            <label
+                                                class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-[#4B5563] rounded-lg cursor-pointer hover:border-[#ff6e02] transition-colors bg-[#1c1c1c]"
+                                            >
+                                                <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                                    <Image class="w-10 h-10 mb-3 text-[#999999]" />
+                                                    <p class="mb-2 text-sm text-[#999999]">
+                                                        <span class="font-semibold text-[#ff6e02]">点击上传图片</span>
+                                                    </p>
+                                                    <p class="text-xs text-[#999999]">支持 JPG, PNG, GIF, WebP (最大5MB) - 已上传 {{ uploadedImages.length }}/12</p>
+                                                </div>
+                                                <input
+                                                    ref="imageInput"
+                                                    type="file"
+                                                    class="hidden"
+                                                    accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                                                    multiple
+                                                    @change="handleImageSelect"
+                                                />
+                                            </label>
+                                        </div>
+
+                                        <!-- Image Preview Grid -->
+                                        <div v-if="uploadedImages.length > 0" class="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-4">
+                                            <div
+                                                v-for="(image, index) in uploadedImages"
+                                                :key="index"
+                                                class="relative bg-[#1c1c1c] rounded-lg overflow-hidden aspect-square"
+                                            >
+                                                <!-- Image Preview -->
+                                                <img
+                                                    :src="image.preview"
+                                                    :alt="image.name"
+                                                    class="w-full h-full object-cover"
+                                                />
+
+                                                <!-- Remove Button -->
+                                                <Button
+                                                    v-if="!image.uploading"
+                                                    type="button"
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    @click="removeImage(index)"
+                                                    class="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white p-1 h-auto"
+                                                >
+                                                    <X class="h-4 w-4" />
+                                                </Button>
+
+                                                <!-- Upload Progress Overlay -->
+                                                <div
+                                                    v-if="image.uploading"
+                                                    class="absolute inset-0 bg-black/60 flex flex-col items-center justify-center"
+                                                >
+                                                    <div class="w-3/4">
+                                                        <div class="flex items-center justify-between text-xs text-white mb-1">
+                                                            <span>上传中...</span>
+                                                            <span>{{ image.progress }}%</span>
+                                                        </div>
+                                                        <div class="w-full bg-[#4B5563] rounded-full h-2">
+                                                            <div
+                                                                class="bg-[#ff6e02] h-2 rounded-full transition-all duration-300"
+                                                                :style="{ width: `${image.progress}%` }"
+                                                            ></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <!-- Success Badge -->
+                                                <div
+                                                    v-if="!image.uploading && !image.error && image.tempUploadId"
+                                                    class="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded"
+                                                >
+                                                    ✓ 已上传
+                                                </div>
+
+                                                <!-- Error Overlay -->
+                                                <div
+                                                    v-if="image.error"
+                                                    class="absolute inset-0 bg-red-500/90 flex items-center justify-center p-2"
+                                                >
+                                                    <p class="text-xs text-white text-center">{{ image.error }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <p class="text-xs text-[#999999] mt-2">支持 JPG, PNG, GIF, WebP，单张最大5MB。图片将直接上传到云端存储。</p>
+                                    </div>
+
+                                    <!-- Local Upload (FilePond) -->
+                                    <div v-else class="mt-2">
                                         <FilePond
                                             ref="pond"
                                             name="images"
@@ -386,8 +637,9 @@ function publishPost() {
                                             :style-button-remove-item-position="'left bottom'"
                                             :style-button-process-item-position="'right bottom'"
                                         />
+                                        <p class="text-xs text-[#999999] mt-2">支持 JPG, PNG, GIF, WebP，单张最大5MB。图片将自动优化。</p>
                                     </div>
-                                    <p class="text-xs text-[#999999] mt-2">支持 JPG, PNG, GIF, WebP，单张最大5MB。图片将自动优化。</p>
+
                                     <InputError :message="form.errors.images" class="mt-1" />
                                 </div>
 
