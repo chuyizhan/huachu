@@ -67,15 +67,30 @@ class PostController extends Controller
 
         // Always show images regardless of access
         $post->image_urls = $post->getMedia('images')->map(function ($media) {
+            // Generate signed URL for Wasabi/S3 (valid for 24 hours), use regular URL for local storage
+            $isCloudStorage = $media->disk === 'wasabi' || $media->disk === 's3';
+
+            $url = $isCloudStorage
+                ? \Storage::disk($media->disk)->temporaryUrl($media->getPath() . $media->file_name, now()->addHours(24))
+                : $media->getUrl();
+
+            $thumbUrl = $media->hasGeneratedConversion('thumb')
+                ? ($isCloudStorage
+                    ? \Storage::disk($media->disk)->temporaryUrl($media->getPath('thumb'), now()->addHours(24))
+                    : $media->getUrl('thumb'))
+                : $url;
+
+            $mediumUrl = $media->hasGeneratedConversion('medium')
+                ? ($isCloudStorage
+                    ? \Storage::disk($media->disk)->temporaryUrl($media->getPath('medium'), now()->addHours(24))
+                    : $media->getUrl('medium'))
+                : $url;
+
             return [
                 'id' => $media->id,
-                'url' => $media->getUrl(),
-                'thumb' => $media->hasGeneratedConversion('thumb')
-                    ? $media->getUrl('thumb')
-                    : $media->getUrl(),
-                'medium' => $media->hasGeneratedConversion('medium')
-                    ? $media->getUrl('medium')
-                    : $media->getUrl(),
+                'url' => $url,
+                'thumb' => $thumbUrl,
+                'medium' => $mediumUrl,
             ];
         });
 
@@ -157,8 +172,13 @@ class PostController extends Controller
     {
         $categories = PostCategory::active()->orderBy('sort_order')->get();
 
+        // Check if using Wasabi/S3 for images
+        $imagesDisk = config('media.collections.images.disk', config('media.disk', 'public'));
+        $useCloudForImages = in_array($imagesDisk, ['s3', 'wasabi']);
+
         return Inertia::render('Posts/Create', [
             'categories' => $categories,
+            'useCloudForImages' => $useCloudForImages,
         ]);
     }
 
@@ -173,7 +193,9 @@ class PostController extends Controller
             'type' => 'required|in:discussion,tutorial,showcase,question',
             'excerpt' => 'nullable|string|max:500',
             'images.*' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:5120',
-            'video_temp_upload_id' => 'nullable|exists:temp_media_uploads,id', // S3 uploaded video
+            'image_temp_upload_ids' => 'nullable|array',
+            'image_temp_upload_ids.*' => 'nullable|exists:temp_media_uploads,id',
+            'video_temp_upload_id' => 'nullable|exists:temp_media_uploads,id',
             'videos' => 'nullable|array',
             'tags' => 'nullable|array',
             'is_premium' => 'boolean',
@@ -207,8 +229,51 @@ class PostController extends Controller
 
         $post->save();
 
-        // Handle image uploads with Media Library
-        if ($request->hasFile('images')) {
+        // Handle image uploads - either from temp uploads (Wasabi/S3) or direct file upload (local)
+        if ($request->filled('image_temp_upload_ids') && is_array($request->image_temp_upload_ids)) {
+            // Handle cloud-uploaded images (from temporary uploads)
+            $tempUploadIds = array_slice($request->image_temp_upload_ids, 0, 12); // Limit to 12 images
+
+            foreach ($tempUploadIds as $tempUploadId) {
+                $tempUpload = \App\Models\TempMediaUpload::where('id', $tempUploadId)
+                    ->where('status', 'confirmed')
+                    ->first();
+
+                if ($tempUpload && (!$tempUpload->user_id || $tempUpload->user_id === $user->id)) {
+                    if ($tempUpload->s3_path) {
+                        $disk = $tempUpload->disk;
+                        $tempPath = $tempUpload->s3_path;
+
+                        // Create media record
+                        $media = new \Spatie\MediaLibrary\MediaCollections\Models\Media();
+                        $media->model_type = Post::class;
+                        $media->model_id = $post->id;
+                        $media->collection_name = 'images';
+                        $media->name = pathinfo($tempUpload->file_name, PATHINFO_FILENAME);
+                        $media->file_name = $tempUpload->file_name;
+                        $media->disk = $disk;
+                        $media->conversions_disk = $disk;
+                        $media->size = $tempUpload->file_size;
+                        $media->mime_type = $tempUpload->file_type;
+                        $media->manipulations = [];
+                        $media->custom_properties = [];
+                        $media->generated_conversions = [];
+                        $media->responsive_images = [];
+                        $media->uuid = \Illuminate\Support\Str::uuid();
+                        $media->save();
+
+                        // Copy file to permanent location using CustomPathGenerator
+                        $permanentPath = $media->getPath() . $tempUpload->file_name;
+                        \Storage::disk($disk)->copy($tempPath, $permanentPath);
+
+                        // Delete temp file and record
+                        \Storage::disk($disk)->delete($tempPath);
+                        $tempUpload->delete();
+                    }
+                }
+            }
+        } elseif ($request->hasFile('images')) {
+            // Handle direct file upload (for local storage)
             $files = $request->file('images');
             // Limit to 12 images
             $files = array_slice($files, 0, 12);
