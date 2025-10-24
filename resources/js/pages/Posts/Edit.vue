@@ -162,9 +162,9 @@ function handleVideoUpload(event: Event) {
     const file = target.files?.[0];
 
     if (file) {
-        // Validate file size (max 100MB)
-        if (file.size > 100 * 1024 * 1024) {
-            alert('视频文件太大！最大支持100MB');
+        // Validate file size (max 1GB)
+        if (file.size > 1024 * 1024 * 1024) {
+            alert('视频文件太大！最大支持1GB');
             return;
         }
 
@@ -435,7 +435,7 @@ function publishPost() {
                                                 <p class="mb-2 text-sm text-[#999999]">
                                                     <span class="font-semibold text-[#ff6e02]">点击上传视频</span>
                                                 </p>
-                                                <p class="text-xs text-[#999999]">支持 MP4, WebM, MOV (最大100MB)</p>
+                                                <p class="text-xs text-[#999999]">支持 MP4, WebM, MOV (最大1GB)</p>
                                             </div>
                                             <input
                                                 ref="videoInput"
