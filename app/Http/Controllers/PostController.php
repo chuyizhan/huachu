@@ -224,19 +224,30 @@ class PostController extends Controller
             // Verify user owns this upload (if user_id is set)
             if ($tempUpload && (!$tempUpload->user_id || $tempUpload->user_id === $user->id)) {
                 if ($tempUpload->s3_path) {
-                    // Move file from temp to permanent location
                     $disk = $tempUpload->disk;
                     $tempPath = $tempUpload->s3_path;
-                    $extension = pathinfo($tempUpload->file_name, PATHINFO_EXTENSION);
-                    $permanentPath = "posts/{$post->id}/videos/" . \Str::uuid() . '.' . $extension;
 
-                    // Copy from temp to permanent location
+                    // Create media record first to get the ID
+                    $media = new \Spatie\MediaLibrary\MediaCollections\Models\Media();
+                    $media->model_type = Post::class;
+                    $media->model_id = $post->id;
+                    $media->collection_name = 'videos';
+                    $media->name = pathinfo($tempUpload->file_name, PATHINFO_FILENAME);
+                    $media->file_name = $tempUpload->file_name;
+                    $media->disk = $disk;
+                    $media->conversions_disk = $disk;
+                    $media->size = $tempUpload->file_size;
+                    $media->mime_type = $tempUpload->file_type;
+                    $media->manipulations = [];
+                    $media->custom_properties = [];
+                    $media->generated_conversions = [];
+                    $media->responsive_images = [];
+                    $media->uuid = \Illuminate\Support\Str::uuid();
+                    $media->save();
+
+                    // Now copy file to the path that MediaLibrary expects (media_id/filename)
+                    $permanentPath = $media->id . '/' . $tempUpload->file_name;
                     \Storage::disk($disk)->copy($tempPath, $permanentPath);
-
-                    // Add video to Media Library
-                    $post->addMediaFromDisk($permanentPath, $disk)
-                        ->usingFileName(basename($permanentPath))
-                        ->toMediaCollection('videos', $disk);
 
                     // Delete temp file and record
                     \Storage::disk($disk)->delete($tempPath);

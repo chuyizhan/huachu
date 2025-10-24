@@ -267,10 +267,12 @@ class Post extends Model implements HasMedia
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('images')
-            ->useDisk(config('media.collections.images.disk', $this->mediaDisk()));
+            ->useDisk(config('media.collections.images.disk', $this->mediaDisk()))
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
 
         $this->addMediaCollection('videos')
-            ->useDisk(config('media.collections.videos.disk', $this->mediaDisk()));
+            ->useDisk(config('media.collections.videos.disk', $this->mediaDisk()))
+            ->acceptsMimeTypes(['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo']);
     }
 
     /**
