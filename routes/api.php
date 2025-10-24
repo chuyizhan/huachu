@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\CreatorProfileController;
 use App\Http\Controllers\Api\PlanController;
 use App\Http\Controllers\Api\UserPointsController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\MediaController;
 
 // Auth routes
 Route::post('/auth/token', [AuthController::class, 'token']);
@@ -61,4 +62,11 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
 
     // User Points
     Route::get('my-points', [UserPointsController::class, 'index']);
+
+    // Media uploads
+    Route::post('media/presigned-url', [MediaController::class, 'getPresignedUrl']);
+    Route::post('media/confirm-upload/{tempUploadId}', [MediaController::class, 'confirmUpload']);
+    Route::post('media/upload-video', [MediaController::class, 'uploadVideo']); // Legacy
+    Route::post('media/upload-image', [MediaController::class, 'uploadImage']);
+    Route::delete('media/temporary-uploads/{id}', [MediaController::class, 'deleteTemporaryUpload']);
 });
