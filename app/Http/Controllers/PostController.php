@@ -263,7 +263,8 @@ class PostController extends Controller
                         $media->save();
 
                         // Copy file to permanent location using CustomPathGenerator
-                        $permanentPath = $media->getPath() . $media->file_name;
+                        // Use getPathRelativeToRoot() which returns the path relative to storage root
+                        $permanentPath = $media->getPathRelativeToRoot();
                         \Storage::disk($disk)->copy($tempPath, $permanentPath);
 
                         // Delete temp file and record
@@ -316,8 +317,8 @@ class PostController extends Controller
                     $media->save();
 
                     // CustomPathGenerator will automatically use: posts/{postId}/videos/{mediaId}/
-                    // Copy file to the path that CustomPathGenerator expects
-                    $permanentPath = $media->getPath() . $tempUpload->file_name;
+                    // Use getPathRelativeToRoot() which returns the path relative to storage root
+                    $permanentPath = $media->getPathRelativeToRoot();
                     \Storage::disk($disk)->copy($tempPath, $permanentPath);
 
                     // Delete temp file and record
