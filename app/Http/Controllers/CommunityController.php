@@ -110,20 +110,44 @@ class CommunityController extends Controller
         // Add first image and first 4 images to each post
         $posts->getCollection()->transform(function ($post) {
             $firstMedia = $post->getFirstMedia('images');
-            $post->first_image = $firstMedia ? [
-                'url' => $firstMedia->getUrl(),
-                'thumb' => $firstMedia->hasGeneratedConversion('thumb')
-                    ? $firstMedia->getUrl('thumb')
-                    : $firstMedia->getUrl(),
-            ] : null;
+            if ($firstMedia) {
+                $isCloudStorage = $firstMedia->disk === 'wasabi' || $firstMedia->disk === 's3';
+
+                $url = $isCloudStorage
+                    ? \Storage::disk($firstMedia->disk)->temporaryUrl($firstMedia->getPath() . $firstMedia->file_name, now()->addHours(24))
+                    : $firstMedia->getUrl();
+
+                $thumbUrl = $firstMedia->hasGeneratedConversion('thumb')
+                    ? ($isCloudStorage
+                        ? \Storage::disk($firstMedia->disk)->temporaryUrl($firstMedia->getPath('thumb'), now()->addHours(24))
+                        : $firstMedia->getUrl('thumb'))
+                    : $url;
+
+                $post->first_image = [
+                    'url' => $url,
+                    'thumb' => $thumbUrl,
+                ];
+            } else {
+                $post->first_image = null;
+            }
 
             // Get first 4 images from media library
             $post->post_images = $post->getMedia('images')->take(4)->map(function ($media) {
+                $isCloudStorage = $media->disk === 'wasabi' || $media->disk === 's3';
+
+                $url = $isCloudStorage
+                    ? \Storage::disk($media->disk)->temporaryUrl($media->getPath() . $media->file_name, now()->addHours(24))
+                    : $media->getUrl();
+
+                $thumbUrl = $media->hasGeneratedConversion('thumb')
+                    ? ($isCloudStorage
+                        ? \Storage::disk($media->disk)->temporaryUrl($media->getPath('thumb'), now()->addHours(24))
+                        : $media->getUrl('thumb'))
+                    : $url;
+
                 return [
-                    'url' => $media->getUrl(),
-                    'thumb' => $media->hasGeneratedConversion('thumb')
-                        ? $media->getUrl('thumb')
-                        : $media->getUrl(),
+                    'url' => $url,
+                    'thumb' => $thumbUrl,
                 ];
             })->toArray();
 
