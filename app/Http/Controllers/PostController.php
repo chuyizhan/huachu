@@ -188,7 +188,7 @@ class PostController extends Controller
 
         $request->validate([
             'title' => 'required|string|max:255',
-            'content' => 'required|string',
+            'content' => 'nullable|string',
             'post_category_id' => 'required|exists:post_categories,id',
             'type' => 'required|in:discussion,tutorial,showcase,question',
             'excerpt' => 'nullable|string|max:500',
@@ -203,6 +203,16 @@ class PostController extends Controller
             'free_after' => 'nullable|date|after:now',
             'status' => 'required|in:draft,published',
         ]);
+
+        // Validate that either content or media exists
+        if (empty($request->content) &&
+            empty($request->image_temp_upload_ids) &&
+            !$request->hasFile('images') &&
+            empty($request->video_temp_upload_id)) {
+            return back()->withErrors([
+                'content' => '帖子必须包含文字内容、图片或视频'
+            ])->withInput();
+        }
 
         $post = new Post();
         $post->user_id = $user->id;
@@ -415,7 +425,7 @@ class PostController extends Controller
 
         $request->validate([
             'title' => 'required|string|max:255',
-            'content' => 'required|string',
+            'content' => 'nullable|string',
             'post_category_id' => 'required|exists:post_categories,id',
             'type' => 'required|in:discussion,tutorial,showcase,question',
             'excerpt' => 'nullable|string|max:500',
@@ -429,6 +439,26 @@ class PostController extends Controller
             'is_premium' => 'boolean',
             'status' => 'required|in:draft,published',
         ]);
+
+        // Calculate if post will have any media after this update
+        $hasExistingImages = $post->getMedia('images')->count() > 0;
+        $hasExistingVideos = $post->getMedia('videos')->count() > 0;
+        $willRemoveImages = $request->filled('remove_images') && count($request->remove_images) > 0;
+        $willRemoveVideos = $request->boolean('remove_video');
+        $hasNewImages = $request->hasFile('images') || $request->filled('image_temp_upload_ids');
+        $hasNewVideo = $request->filled('video_temp_upload_id') || $request->filled('video_media_id');
+
+        // Check if there will be any images left
+        $willHaveImages = ($hasExistingImages && !$willRemoveImages) || $hasNewImages;
+        // Check if there will be any videos left
+        $willHaveVideos = ($hasExistingVideos && !$willRemoveVideos) || $hasNewVideo;
+
+        // Validate that either content or media exists
+        if (empty($request->content) && !$willHaveImages && !$willHaveVideos) {
+            return back()->withErrors([
+                'content' => '帖子必须包含文字内容、图片或视频'
+            ])->withInput();
+        }
 
         $post->title = $request->title;
         $post->slug = Str::slug($request->title) . '-' . Str::random(6);

@@ -404,7 +404,7 @@ function publishPost() {
 
                                 <!-- Content -->
                                 <div>
-                                    <Label for="content" class="text-white">内容 *</Label>
+                                    <Label for="content" class="text-white">内容</Label>
                                     <textarea
                                         id="content"
                                         v-model="form.content"
