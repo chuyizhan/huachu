@@ -292,4 +292,5 @@ class Post extends Model implements HasMedia
             ->sharpen(10)
             ->performOnCollections('images');
     }
+
 }
