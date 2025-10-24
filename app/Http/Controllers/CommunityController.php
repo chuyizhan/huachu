@@ -127,6 +127,9 @@ class CommunityController extends Controller
                 ];
             })->toArray();
 
+            // Check if post has videos
+            $post->has_video = $post->getMedia('videos')->count() > 0;
+
             return $post;
         });
 

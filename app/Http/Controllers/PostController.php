@@ -83,9 +83,14 @@ class PostController extends Controller
         if ($canView) {
             // User has access - show videos
             $post->video_urls = $post->getMedia('videos')->map(function ($media) {
+                // Generate signed URL for Wasabi/S3 (valid for 24 hours)
+                $url = $media->disk === 'wasabi' || $media->disk === 's3'
+                    ? \Storage::disk($media->disk)->temporaryUrl($media->getPath(), now()->addHours(24))
+                    : $media->getUrl();
+
                 return [
                     'id' => $media->id,
-                    'url' => $media->getUrl(),
+                    'url' => $url,
                     'name' => $media->file_name,
                     'size' => $media->size,
                 ];
