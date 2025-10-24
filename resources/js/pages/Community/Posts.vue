@@ -380,8 +380,11 @@ const postTypes = [
                                             </div>
 
                                             <!-- Title -->
-                                            <h3 class="text-white font-medium text-base group-hover:text-[#ff6e02] transition-colors line-clamp-2 mb-2">
-                                                {{ post.title }}
+                                            <h3 class="text-white font-medium text-base group-hover:text-[#ff6e02] transition-colors line-clamp-2 mb-2 flex items-center gap-2">
+                                                <span>{{ post.title }}</span>
+                                                <span v-if="post.has_video" class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-red-500/20 text-red-400 rounded flex-shrink-0">
+                                                    视频
+                                                </span>
                                             </h3>
 
                                             <!-- Excerpt -->
