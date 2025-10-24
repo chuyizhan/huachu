@@ -114,7 +114,7 @@ class CommunityController extends Controller
                 $isCloudStorage = $firstMedia->disk === 'wasabi' || $firstMedia->disk === 's3';
 
                 $url = $isCloudStorage
-                    ? \Storage::disk($firstMedia->disk)->temporaryUrl($firstMedia->getPath() . $firstMedia->file_name, now()->addHours(24))
+                    ? \Storage::disk($firstMedia->disk)->temporaryUrl($firstMedia->getPathRelativeToRoot(), now()->addHours(24))
                     : $firstMedia->getUrl();
 
                 $thumbUrl = $firstMedia->hasGeneratedConversion('thumb')
@@ -136,7 +136,7 @@ class CommunityController extends Controller
                 $isCloudStorage = $media->disk === 'wasabi' || $media->disk === 's3';
 
                 $url = $isCloudStorage
-                    ? \Storage::disk($media->disk)->temporaryUrl($media->getPath() . $media->file_name, now()->addHours(24))
+                    ? \Storage::disk($media->disk)->temporaryUrl($media->getPathRelativeToRoot(), now()->addHours(24))
                     : $media->getUrl();
 
                 $thumbUrl = $media->hasGeneratedConversion('thumb')
