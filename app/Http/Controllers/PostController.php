@@ -250,8 +250,9 @@ class PostController extends Controller
                     $media->uuid = \Illuminate\Support\Str::uuid();
                     $media->save();
 
-                    // Now copy file to the path that MediaLibrary expects (media_id/filename)
-                    $permanentPath = $media->id . '/' . $tempUpload->file_name;
+                    // CustomPathGenerator will automatically use: posts/{postId}/videos/{mediaId}/
+                    // Copy file to the path that CustomPathGenerator expects
+                    $permanentPath = $media->getPath() . $tempUpload->file_name;
                     \Storage::disk($disk)->copy($tempPath, $permanentPath);
 
                     // Delete temp file and record
