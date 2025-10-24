@@ -9,6 +9,8 @@ use App\Http\Controllers\Api\CreatorProfileController;
 use App\Http\Controllers\Api\PlanController;
 use App\Http\Controllers\Api\UserPointsController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\MediaController;
+use App\Http\Controllers\Api\V1\MediaController as V1MediaController;
 
 // Auth routes
 Route::post('/auth/token', [AuthController::class, 'token']);
@@ -61,4 +63,14 @@ Route::prefix('v1')->middleware('auth:sanctum')->group(function () {
 
     // User Points
     Route::get('my-points', [UserPointsController::class, 'index']);
+
+    // Media uploads (V1 - presigned URL upload) - Note: Also available via web routes for Inertia
+    Route::post('media/presigned-url', [V1MediaController::class, 'getPresignedUrl']);
+    Route::post('media/confirm-upload/{id}', [V1MediaController::class, 'confirmUpload']);
+    Route::delete('media/temp-uploads/{id}', [V1MediaController::class, 'deleteTempUpload']);
+
+    // Media uploads (Legacy - direct upload)
+    Route::post('media/upload-video', [MediaController::class, 'uploadVideo']);
+    Route::post('media/upload-image', [MediaController::class, 'uploadImage']);
+    Route::delete('media/temporary-uploads/{id}', [MediaController::class, 'deleteTemporaryUpload']);
 });

@@ -14,6 +14,7 @@ use App\Http\Controllers\RechargeController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Api\V1\MediaController;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -40,6 +41,13 @@ Route::get('/favorites', [PostFavoriteController::class, 'index'])->middleware('
 
 // Profile route
 Route::get('/profile', [ProfileController::class, 'index'])->middleware('auth')->name('profile');
+
+// Media upload routes (for Inertia/web auth)
+Route::prefix('api/v1/media')->middleware('auth')->group(function () {
+    Route::post('/presigned-url', [MediaController::class, 'getPresignedUrl']);
+    Route::post('/confirm-upload/{id}', [MediaController::class, 'confirmUpload']);
+    Route::delete('/temp-uploads/{id}', [MediaController::class, 'deleteTempUpload']);
+});
 
 // Recharge routes
 Route::prefix('recharge')->name('recharge.')->middleware('auth')->group(function () {

@@ -58,7 +58,7 @@ const form = useForm({
     type: 'showcase',
     excerpt: '',
     images: [] as File[],
-    video: null as File | null,
+    video_temp_upload_id: null as number | null,
     videos: [] as string[],
     tags: [] as string[],
     is_premium: false,
@@ -72,6 +72,11 @@ const videoUrl = ref('');
 const pond = ref(null);
 const videoInput = ref<HTMLInputElement | null>(null);
 const videoPreview = ref<string | null>(null);
+const videoFileName = ref<string>('');
+const videoFileSize = ref<number>(0);
+const isUploadingVideo = ref(false);
+const videoUploadProgress = ref(0);
+const uploadError = ref<string | null>(null);
 
 const postTypes = [
     { value: 'discussion', label: '讨论', icon: '💬', description: '分享想法和观点' },
@@ -120,12 +125,12 @@ function removeVideo(index: number) {
     form.videos.splice(index, 1);
 }
 
-function handleVideoUpload(event: Event) {
+async function handleVideoUpload(event: Event) {
     const target = event.target as HTMLInputElement;
     const file = target.files?.[0];
 
     if (file) {
-        // Validate file size (max 100MB)
+        // Validate file size (max 1GB)
         if (file.size > 1024 * 1024 * 1024) {
             alert('视频文件太大！最大支持1GB');
             return;
@@ -137,18 +142,105 @@ function handleVideoUpload(event: Event) {
             return;
         }
 
-        form.video = file;
+        // Store file info for display
+        videoFileName.value = file.name;
+        videoFileSize.value = file.size;
 
         // Create preview URL
         if (videoPreview.value) {
             URL.revokeObjectURL(videoPreview.value);
         }
         videoPreview.value = URL.createObjectURL(file);
+
+        // Upload video immediately
+        await uploadVideoToServer(file);
+    }
+}
+
+async function uploadVideoToServer(file: File) {
+    isUploadingVideo.value = true;
+    uploadError.value = null;
+    videoUploadProgress.value = 0;
+
+    try {
+        // Step 1: Get presigned URL from backend
+        const presignedResponse = await fetch('/api/v1/media/presigned-url', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({
+                file_name: file.name,
+                file_type: file.type,
+                file_size: file.size,
+                type: 'video',
+            }),
+        });
+
+        if (!presignedResponse.ok) {
+            throw new Error('获取上传链接失败');
+        }
+
+        const { presigned_url, temp_upload_id, s3_path } = await presignedResponse.json();
+
+        // Step 2: Upload directly to S3 using presigned URL
+        const xhr = new XMLHttpRequest();
+
+        xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable) {
+                videoUploadProgress.value = Math.round((e.loaded / e.total) * 95); // Reserve 5% for confirmation
+            }
+        });
+
+        await new Promise((resolve, reject) => {
+            xhr.addEventListener('load', () => {
+                if (xhr.status === 200) {
+                    resolve(xhr.response);
+                } else {
+                    reject(new Error('S3上传失败'));
+                }
+            });
+
+            xhr.addEventListener('error', () => reject(new Error('网络错误')));
+            xhr.addEventListener('abort', () => reject(new Error('上传已取消')));
+
+            xhr.open('PUT', presigned_url);
+            xhr.setRequestHeader('Content-Type', file.type);
+            xhr.send(file);
+        });
+
+        videoUploadProgress.value = 95;
+
+        // Step 3: Confirm upload with backend
+        const confirmResponse = await fetch(`/api/v1/media/confirm-upload/${temp_upload_id}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify({ s3_path }),
+        });
+
+        if (!confirmResponse.ok) {
+            throw new Error('确认上传失败');
+        }
+
+        form.video_temp_upload_id = temp_upload_id;
+        videoUploadProgress.value = 100;
+    } catch (error) {
+        console.error('Video upload failed:', error);
+        uploadError.value = error instanceof Error ? error.message : '视频上传失败，请重试';
+        removeVideoFile();
+    } finally {
+        isUploadingVideo.value = false;
     }
 }
 
 function removeVideoFile() {
-    form.video = null;
+    form.video_temp_upload_id = null;
     if (videoPreview.value) {
         URL.revokeObjectURL(videoPreview.value);
         videoPreview.value = null;
@@ -156,6 +248,9 @@ function removeVideoFile() {
     if (videoInput.value) {
         videoInput.value.value = '';
     }
+    videoFileName.value = '';
+    videoFileSize.value = 0;
+    uploadError.value = null;
 }
 
 function saveDraft() {
@@ -330,6 +425,7 @@ function publishPost() {
                                                 class="w-full max-h-64 object-contain"
                                             ></video>
                                             <Button
+                                                v-if="!isUploadingVideo"
                                                 type="button"
                                                 size="sm"
                                                 variant="ghost"
@@ -339,8 +435,30 @@ function publishPost() {
                                                 <X class="h-4 w-4" />
                                             </Button>
                                         </div>
-                                        <p class="text-xs text-[#999999] mt-1">
-                                            {{ form.video?.name }} ({{ (form.video?.size ? (form.video.size / 1024 / 1024).toFixed(2) : 0) }}MB)
+
+                                        <!-- Upload Progress -->
+                                        <div v-if="isUploadingVideo" class="mt-2">
+                                            <div class="flex items-center justify-between text-xs text-[#999999] mb-1">
+                                                <span>上传中...</span>
+                                                <span>{{ videoUploadProgress }}%</span>
+                                            </div>
+                                            <div class="w-full bg-[#4B5563] rounded-full h-2">
+                                                <div
+                                                    class="bg-[#ff6e02] h-2 rounded-full transition-all duration-300"
+                                                    :style="{ width: `${videoUploadProgress}%` }"
+                                                ></div>
+                                            </div>
+                                        </div>
+
+                                        <!-- File Info -->
+                                        <p v-if="!isUploadingVideo && videoFileName" class="text-xs text-[#999999] mt-1">
+                                            {{ videoFileName }} ({{ (videoFileSize / 1024 / 1024).toFixed(2) }}MB)
+                                            <span v-if="form.video_temp_upload_id" class="text-green-400 ml-2">✓ 已上传</span>
+                                        </p>
+
+                                        <!-- Error Message -->
+                                        <p v-if="uploadError" class="text-xs text-red-400 mt-1">
+                                            {{ uploadError }}
                                         </p>
                                     </div>
 

@@ -168,7 +168,7 @@ class PostController extends Controller
             'type' => 'required|in:discussion,tutorial,showcase,question',
             'excerpt' => 'nullable|string|max:500',
             'images.*' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:5120',
-            'video' => 'nullable|file|mimes:mp4,webm,mov,avi|max:1048576', // 1GB max
+            'video_temp_upload_id' => 'nullable|exists:temp_media_uploads,id', // S3 uploaded video
             'videos' => 'nullable|array',
             'tags' => 'nullable|array',
             'is_premium' => 'boolean',
@@ -215,10 +215,45 @@ class PostController extends Controller
             }
         }
 
-        // Handle video upload
-        if ($request->hasFile('video')) {
-            $post->addMedia($request->file('video'))
-                ->toMediaCollection('videos');
+        // Handle S3 uploaded video (from temporary upload)
+        if ($request->video_temp_upload_id) {
+            $tempUpload = \App\Models\TempMediaUpload::where('id', $request->video_temp_upload_id)
+                ->where('status', 'confirmed')
+                ->first();
+
+            // Verify user owns this upload (if user_id is set)
+            if ($tempUpload && (!$tempUpload->user_id || $tempUpload->user_id === $user->id)) {
+                if ($tempUpload->s3_path) {
+                    $disk = $tempUpload->disk;
+                    $tempPath = $tempUpload->s3_path;
+
+                    // Create media record first to get the ID
+                    $media = new \Spatie\MediaLibrary\MediaCollections\Models\Media();
+                    $media->model_type = Post::class;
+                    $media->model_id = $post->id;
+                    $media->collection_name = 'videos';
+                    $media->name = pathinfo($tempUpload->file_name, PATHINFO_FILENAME);
+                    $media->file_name = $tempUpload->file_name;
+                    $media->disk = $disk;
+                    $media->conversions_disk = $disk;
+                    $media->size = $tempUpload->file_size;
+                    $media->mime_type = $tempUpload->file_type;
+                    $media->manipulations = [];
+                    $media->custom_properties = [];
+                    $media->generated_conversions = [];
+                    $media->responsive_images = [];
+                    $media->uuid = \Illuminate\Support\Str::uuid();
+                    $media->save();
+
+                    // Now copy file to the path that MediaLibrary expects (media_id/filename)
+                    $permanentPath = $media->id . '/' . $tempUpload->file_name;
+                    \Storage::disk($disk)->copy($tempPath, $permanentPath);
+
+                    // Delete temp file and record
+                    \Storage::disk($disk)->delete($tempPath);
+                    $tempUpload->delete();
+                }
+            }
         }
 
         // Award points if post is published and has minimum required images
@@ -314,7 +349,8 @@ class PostController extends Controller
             'excerpt' => 'nullable|string|max:500',
             'images.*' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:5120',
             'remove_images' => 'nullable|array',
-            'video' => 'nullable|file|mimes:mp4,webm,mov,avi|max:1048576', // 1GB max
+            'video_temp_upload_id' => 'nullable|exists:temporary_uploads,id', // S3 uploaded video
+            'video_media_id' => 'nullable|exists:media,id', // Legacy: Pre-uploaded video
             'remove_video' => 'nullable|boolean',
             'videos' => 'nullable|array',
             'tags' => 'nullable|array',
@@ -362,15 +398,56 @@ class PostController extends Controller
         // Handle video removal
         if ($request->boolean('remove_video')) {
             $post->clearMediaCollection('videos');
+            $post->videos = [];
+            $post->save();
         }
 
-        // Handle new video upload
-        if ($request->hasFile('video')) {
-            // Clear existing videos first (only one video allowed)
-            $post->clearMediaCollection('videos');
+        // Handle S3 uploaded video (from temporary upload)
+        if ($request->video_temp_upload_id) {
+            $tempUpload = \App\Models\TemporaryUpload::where('id', $request->video_temp_upload_id)
+                ->where('user_id', Auth::id())
+                ->where('confirmed', true)
+                ->first();
 
-            $post->addMedia($request->file('video'))
-                ->toMediaCollection('videos');
+            if ($tempUpload && $tempUpload->s3_path) {
+                // Clear existing videos first
+                $post->clearMediaCollection('videos');
+
+                // Store S3 video URL in videos array
+                $videoUrl = \Illuminate\Support\Facades\Storage::disk('s3')->url($tempUpload->s3_path);
+                $post->videos = [$videoUrl];
+                $post->save();
+
+                // Delete the temporary upload record
+                $tempUpload->delete();
+            }
+        }
+        // Legacy: Handle pre-uploaded video (attach to post via media library)
+        elseif ($request->video_media_id) {
+            $media = \Spatie\MediaLibrary\MediaCollections\Models\Media::find($request->video_media_id);
+
+            if ($media) {
+                // Verify the media belongs to a temporary upload by this user
+                $tempUpload = \App\Models\TemporaryUpload::where('user_id', Auth::id())
+                    ->whereHas('media', function ($query) use ($request) {
+                        $query->where('id', $request->video_media_id);
+                    })
+                    ->first();
+
+                if ($tempUpload) {
+                    // Clear existing videos first (only one video allowed)
+                    $post->clearMediaCollection('videos');
+
+                    // Transfer media from temporary upload to post
+                    $media->model_type = Post::class;
+                    $media->model_id = $post->id;
+                    $media->collection_name = 'videos';
+                    $media->save();
+
+                    // Delete the temporary upload record (media is now attached to post)
+                    $tempUpload->delete();
+                }
+            }
         }
 
         return redirect()->route('posts.show', $post->slug)
