@@ -12,7 +12,8 @@
       "Bash(curl:*)",
       "Bash(php -r:*)",
       "Bash(composer require:*)",
-      "Bash(php:*)"
+      "Bash(php:*)",
+      "Bash(aws s3api put-bucket-cors:*)"
     ],
     "deny": [],
     "ask": []

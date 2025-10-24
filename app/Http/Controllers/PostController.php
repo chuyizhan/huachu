@@ -168,8 +168,7 @@ class PostController extends Controller
             'type' => 'required|in:discussion,tutorial,showcase,question',
             'excerpt' => 'nullable|string|max:500',
             'images.*' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:5120',
-            'video_temp_upload_id' => 'nullable|exists:temporary_uploads,id', // S3 uploaded video
-            'video_media_id' => 'nullable|exists:media,id', // Legacy: Pre-uploaded video
+            'video_temp_upload_id' => 'nullable|exists:temp_media_uploads,id', // S3 uploaded video
             'videos' => 'nullable|array',
             'tags' => 'nullable|array',
             'is_premium' => 'boolean',
@@ -218,43 +217,29 @@ class PostController extends Controller
 
         // Handle S3 uploaded video (from temporary upload)
         if ($request->video_temp_upload_id) {
-            $tempUpload = \App\Models\TemporaryUpload::where('id', $request->video_temp_upload_id)
-                ->where('user_id', $user->id)
-                ->where('confirmed', true)
+            $tempUpload = \App\Models\TempMediaUpload::where('id', $request->video_temp_upload_id)
+                ->where('status', 'confirmed')
                 ->first();
 
-            if ($tempUpload && $tempUpload->s3_path) {
-                // Store S3 video URL in videos array
-                $videoUrl = \Illuminate\Support\Facades\Storage::disk('s3')->url($tempUpload->s3_path);
-                $videos = $post->videos ?? [];
-                $videos[] = $videoUrl;
-                $post->videos = $videos;
-                $post->save();
+            // Verify user owns this upload (if user_id is set)
+            if ($tempUpload && (!$tempUpload->user_id || $tempUpload->user_id === $user->id)) {
+                if ($tempUpload->s3_path) {
+                    // Move file from temp to permanent location
+                    $disk = $tempUpload->disk;
+                    $tempPath = $tempUpload->s3_path;
+                    $extension = pathinfo($tempUpload->file_name, PATHINFO_EXTENSION);
+                    $permanentPath = "posts/{$post->id}/videos/" . \Str::uuid() . '.' . $extension;
 
-                // Delete the temporary upload record
-                $tempUpload->delete();
-            }
-        }
-        // Legacy: Handle pre-uploaded video (attach to post via media library)
-        elseif ($request->video_media_id) {
-            $media = \Spatie\MediaLibrary\MediaCollections\Models\Media::find($request->video_media_id);
+                    // Copy from temp to permanent location
+                    \Storage::disk($disk)->copy($tempPath, $permanentPath);
 
-            if ($media) {
-                // Verify the media belongs to a temporary upload by this user
-                $tempUpload = \App\Models\TemporaryUpload::where('user_id', $user->id)
-                    ->whereHas('media', function ($query) use ($request) {
-                        $query->where('id', $request->video_media_id);
-                    })
-                    ->first();
+                    // Add video to Media Library
+                    $post->addMediaFromDisk($permanentPath, $disk)
+                        ->usingFileName(basename($permanentPath))
+                        ->toMediaCollection('videos', $disk);
 
-                if ($tempUpload) {
-                    // Transfer media from temporary upload to post
-                    $media->model_type = Post::class;
-                    $media->model_id = $post->id;
-                    $media->collection_name = 'videos';
-                    $media->save();
-
-                    // Delete the temporary upload record (media is now attached to post)
+                    // Delete temp file and record
+                    \Storage::disk($disk)->delete($tempPath);
                     $tempUpload->delete();
                 }
             }
