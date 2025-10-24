@@ -340,7 +340,7 @@ function publishPost() {
                                             </Button>
                                         </div>
                                         <p class="text-xs text-[#999999] mt-1">
-                                            {{ form.video?.name }} ({{ (form.video?.size ? (form.video.size / 1024 / 1024 / 1024).toFixed(2) : 0) }}GB)
+                                            {{ form.video?.name }} ({{ (form.video?.size ? (form.video.size / 1024 / 1024).toFixed(2) : 0) }}MB)
                                         </p>
                                     </div>
 
