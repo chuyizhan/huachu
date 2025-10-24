@@ -351,7 +351,7 @@ async function uploadImageToCloud(file: File, imageEntry: any) {
                 if (xhr.status === 200) {
                     resolve(xhr.response);
                 } else {
-                    reject(new Error('云端上传失败'));
+                    reject(new Error('上传失败'));
                 }
             });
 
@@ -606,7 +606,7 @@ function publishPost() {
                                             </div>
                                         </div>
 
-                                        <p class="text-xs text-[#999999] mt-2">支持 JPG, PNG, GIF, WebP，单张最大5MB。图片将直接上传到云端存储。</p>
+                                        <p class="text-xs text-[#999999] mt-2">支持 JPG, PNG, GIF, WebP，单张最大5MB。</p>
                                     </div>
 
                                     <!-- Local Upload (FilePond) -->

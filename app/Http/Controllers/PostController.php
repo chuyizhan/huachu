@@ -71,7 +71,7 @@ class PostController extends Controller
             $isCloudStorage = $media->disk === 'wasabi' || $media->disk === 's3';
 
             $url = $isCloudStorage
-                ? \Storage::disk($media->disk)->temporaryUrl($media->getPath() . $media->file_name, now()->addHours(24))
+                ? \Storage::disk($media->disk)->temporaryUrl($media->getPathRelativeToRoot(), now()->addHours(24))
                 : $media->getUrl();
 
             $thumbUrl = $media->hasGeneratedConversion('thumb')
@@ -100,7 +100,7 @@ class PostController extends Controller
             $post->video_urls = $post->getMedia('videos')->map(function ($media) {
                 // Generate signed URL for Wasabi/S3 (valid for 24 hours)
                 $url = $media->disk === 'wasabi' || $media->disk === 's3'
-                    ? \Storage::disk($media->disk)->temporaryUrl($media->getPath(), now()->addHours(24))
+                    ? \Storage::disk($media->disk)->temporaryUrl($media->getPathRelativeToRoot(), now()->addHours(24))
                     : $media->getUrl();
 
                 return [
@@ -263,7 +263,7 @@ class PostController extends Controller
                         $media->save();
 
                         // Copy file to permanent location using CustomPathGenerator
-                        $permanentPath = $media->getPath() . $tempUpload->file_name;
+                        $permanentPath = $media->getPath() . $media->file_name;
                         \Storage::disk($disk)->copy($tempPath, $permanentPath);
 
                         // Delete temp file and record
