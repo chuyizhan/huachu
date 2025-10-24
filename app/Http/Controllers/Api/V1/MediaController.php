@@ -65,12 +65,21 @@ class MediaController extends Controller
 
             $bucket = config("filesystems.disks.{$disk}.bucket");
 
-            $command = $s3Client->getCommand('PutObject', [
+            // Check if using Wasabi (Wasabi doesn't support ACL in presigned URLs)
+            $isWasabi = $disk === 'wasabi' || strpos(config("filesystems.disks.{$disk}.endpoint", ''), 'wasabi') !== false;
+
+            $commandParams = [
                 'Bucket' => $bucket,
                 'Key' => $path,
                 'ContentType' => $request->file_type,
-                'ACL' => 'public-read',
-            ]);
+            ];
+
+            // Only add ACL for S3, not Wasabi
+            if (!$isWasabi) {
+                $commandParams['ACL'] = 'public-read';
+            }
+
+            $command = $s3Client->getCommand('PutObject', $commandParams);
 
             $presignedRequest = $s3Client->createPresignedRequest($command, '+60 minutes');
             $presignedUrl = (string) $presignedRequest->getUri();
