@@ -168,7 +168,7 @@ class PostController extends Controller
             'type' => 'required|in:discussion,tutorial,showcase,question',
             'excerpt' => 'nullable|string|max:500',
             'images.*' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:5120',
-            'video' => 'nullable|file|mimes:mp4,webm,mov,avi|max:102400', // 100MB max
+            'video' => 'nullable|file|mimes:mp4,webm,mov,avi|max:1048576', // 1GB max
             'videos' => 'nullable|array',
             'tags' => 'nullable|array',
             'is_premium' => 'boolean',
@@ -314,7 +314,7 @@ class PostController extends Controller
             'excerpt' => 'nullable|string|max:500',
             'images.*' => 'nullable|image|mimes:jpeg,jpg,png,gif,webp|max:5120',
             'remove_images' => 'nullable|array',
-            'video' => 'nullable|file|mimes:mp4,webm,mov,avi|max:102400', // 100MB max
+            'video' => 'nullable|file|mimes:mp4,webm,mov,avi|max:1048576', // 1GB max
             'remove_video' => 'nullable|boolean',
             'videos' => 'nullable|array',
             'tags' => 'nullable|array',

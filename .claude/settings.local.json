@@ -11,7 +11,8 @@
       "WebFetch(domain:202.95.8.8)",
       "Bash(curl:*)",
       "Bash(php -r:*)",
-      "Bash(composer require:*)"
+      "Bash(composer require:*)",
+      "Bash(php:*)"
     ],
     "deny": [],
     "ask": []
