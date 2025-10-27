@@ -52,8 +52,8 @@ class HomeController extends Controller
             ->limit(8)
             ->get()
             ->map(function ($post) {
-                // Get first 4 images from media library
-                $post->post_images = $post->getMedia('images')->take(4)->map(function ($media) {
+                // Get first 3 images from media library
+                $post->post_images = $post->getMedia('images')->take(3)->map(function ($media) {
                     $isCloudStorage = $media->disk === 'wasabi' || $media->disk === 's3';
 
                     $url = $isCloudStorage
