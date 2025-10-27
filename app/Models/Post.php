@@ -24,6 +24,10 @@ class Post extends Model implements HasMedia
         'attachments',
         'type',
         'status',
+        'review_status',
+        'reviewed_by',
+        'reviewed_at',
+        'review_notes',
         'is_featured',
         'is_premium',
         'price',
@@ -48,6 +52,7 @@ class Post extends Model implements HasMedia
             'price' => 'decimal:2',
             'free_after' => 'datetime',
             'published_at' => 'datetime',
+            'reviewed_at' => 'datetime',
         ];
     }
 
@@ -57,6 +62,14 @@ class Post extends Model implements HasMedia
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the admin user who reviewed this post.
+     */
+    public function reviewer()
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
     }
 
     /**
@@ -188,6 +201,38 @@ class Post extends Model implements HasMedia
     public function scopeOfType($query, $type)
     {
         return $query->where('type', $type);
+    }
+
+    /**
+     * Scope for posts pending review.
+     */
+    public function scopePendingReview($query)
+    {
+        return $query->where('review_status', 'pending');
+    }
+
+    /**
+     * Scope for approved posts.
+     */
+    public function scopeApproved($query)
+    {
+        return $query->where('review_status', 'approved');
+    }
+
+    /**
+     * Scope for rejected posts.
+     */
+    public function scopeRejected($query)
+    {
+        return $query->where('review_status', 'rejected');
+    }
+
+    /**
+     * Scope for posts by review status.
+     */
+    public function scopeReviewStatus($query, $status)
+    {
+        return $query->where('review_status', $status);
     }
 
     /**

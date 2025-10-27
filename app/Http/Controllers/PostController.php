@@ -43,6 +43,9 @@ class PostController extends Controller
             'published' => $user->posts()->published()->count(),
             'drafts' => $user->posts()->where('status', 'draft')->count(),
             'premium' => $user->posts()->where('is_premium', true)->count(),
+            'pending_review' => $user->posts()->pendingReview()->count(),
+            'approved' => $user->posts()->approved()->count(),
+            'rejected' => $user->posts()->rejected()->count(),
         ];
 
         return Inertia::render('Posts/Index', [
@@ -53,20 +56,42 @@ class PostController extends Controller
 
     public function show($slug)
     {
+        $user = Auth::user();
+
         $post = Post::with(['user.creatorProfile', 'category', 'likedByUsers', 'media', 'comments'])
             ->where('slug', $slug)
             ->published()
             ->firstOrFail();
 
-        $user = Auth::user();
+        // Check review status - only approved posts are visible publicly
+        // Exception: Post author and admins can always view
+        if ($post->review_status !== 'approved') {
+            // Not approved - check if user has permission to view
+            $canViewUnderReview = false;
+
+            if ($user) {
+                // Author can view their own post
+                if ($user->id === $post->user_id) {
+                    $canViewUnderReview = true;
+                }
+                // Admin can view all posts
+                if ($user->is_admin) {
+                    $canViewUnderReview = true;
+                }
+            }
+
+            if (!$canViewUnderReview) {
+                abort(404);
+            }
+        }
 
         // Check if user can view the content
         $canView = $post->canBeViewedBy($user);
         $isLocked = $post->isLocked();
         $isPurchased = $user ? $post->isPurchasedBy($user) : false;
 
-        // Always show images regardless of access
-        $post->image_urls = $post->getMedia('images')->take(3)->map(function ($media) {
+        // Always show all images regardless of access
+        $post->image_urls = $post->getMedia('images')->map(function ($media) {
             // Generate signed URL for Wasabi/S3 (valid for 24 hours), use regular URL for local storage
             $isCloudStorage = $media->disk === 'wasabi' || $media->disk === 's3';
 
@@ -210,7 +235,7 @@ class PostController extends Controller
             !$request->hasFile('images') &&
             empty($request->video_temp_upload_id)) {
             return back()->withErrors([
-                'content' => '帖子必须包含文字内容、图片或视频'
+                'content' => '帖子至少要有文字内容，图片或者视频任意一种。'
             ])->withInput();
         }
 
@@ -235,6 +260,11 @@ class PostController extends Controller
 
         if ($post->status === 'published') {
             $post->published_at = now();
+            // Set review status to pending for new published posts
+            $post->review_status = 'pending';
+        } else {
+            // Drafts don't need review
+            $post->review_status = 'approved';
         }
 
         $post->save();
@@ -456,7 +486,7 @@ class PostController extends Controller
         // Validate that either content or media exists
         if (empty($request->content) && !$willHaveImages && !$willHaveVideos) {
             return back()->withErrors([
-                'content' => '帖子必须包含文字内容、图片或视频'
+                'content' => '帖子至少要有文字内容，图片或者视频任意一种。'
             ])->withInput();
         }
 
@@ -471,8 +501,14 @@ class PostController extends Controller
         $post->is_premium = $request->boolean('is_premium');
         $post->status = $request->status;
 
+        // Handle status change from draft to published
         if ($request->status === 'published' && !$post->published_at) {
             $post->published_at = now();
+            // Reset review status to pending when publishing
+            $post->review_status = 'pending';
+            $post->reviewed_by = null;
+            $post->reviewed_at = null;
+            $post->review_notes = null;
         }
 
         $post->save();
