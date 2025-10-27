@@ -1,27 +1,16 @@
 <script setup lang="ts">
 import WebLayout from '@/layouts/WebLayout.vue';
+import PostCard from '@/components/PostCard.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { Link, router } from '@inertiajs/vue3';
 import { ref, watch } from 'vue';
 import {
     Search,
-    Filter,
-    Eye,
-    Heart,
-    MessageSquare,
-    Calendar,
-    ChefHat,
     Tag,
     Grid,
-    List,
-    TrendingUp,
-    Clock,
-    Star,
-    Users
+    TrendingUp
 } from 'lucide-vue-next';
 
 interface Creator {
@@ -109,27 +98,6 @@ const props = defineProps<Props>();
 
 const searchTerm = ref(props.filters.search || '');
 const selectedType = ref(props.filters.type || '');
-
-const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase();
-};
-
-const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('zh-CN', {
-        month: 'short',
-        day: 'numeric'
-    });
-};
-
-const getPostTypeText = (type: string) => {
-    const typeMap = {
-        'tutorial': '教程',
-        'discussion': '讨论',
-        'showcase': '展示',
-        'question': '问答'
-    };
-    return typeMap[type as keyof typeof typeMap] || type;
-};
 
 const handleSearch = () => {
     const params: any = {};
@@ -336,123 +304,12 @@ const postTypes = [
                 <div :class="selectedCategory ? 'lg:col-span-4' : 'lg:col-span-3'">
                     <!-- Posts List -->
                     <div v-if="posts.data.length > 0" class="space-y-4">
-                        <Link
+                        <PostCard
                             v-for="post in posts.data"
                             :key="post.id"
-                            :href="`/posts/${post.slug}`"
-                            class="block group"
-                        >
-                            <Card class="bg-[#374151] border-0 hover:bg-[#1f2937] transition-colors">
-                                <CardContent class="p-4">
-                                    <div class="flex items-start gap-4">
-                                        <!-- Post Icon/Image -->
-                                        <div class="w-16 h-12 bg-[#1f2937] rounded-lg flex-shrink-0 overflow-hidden">
-                                            <img v-if="post.first_image" :src="post.first_image.thumb" :alt="post.title" class="w-full h-full object-cover" />
-                                            <div v-else-if="post.category.icon_image" class="w-full h-full">
-                                                <img :src="`/storage/${post.category.icon_image}`" :alt="post.category.name" class="w-full h-full object-cover" />
-                                            </div>
-                                            <div v-else class="w-full h-full flex items-center justify-center">
-                                                <span class="text-lg">{{ post.category.icon || '📝' }}</span>
-                                            </div>
-                                        </div>
-
-                                        <!-- Post Content -->
-                                        <div class="flex-1 min-w-0">
-                                            <!-- Header -->
-                                            <div class="flex items-start justify-between mb-2">
-                                                <div class="flex items-center gap-2 mb-1">
-                                                    <Badge
-                                                        class="text-white text-xs px-2 py-1"
-                                                        :style="{ backgroundColor: post.category.color }"
-                                                    >
-                                                        {{ post.category.name }}
-                                                    </Badge>
-                                                    <Badge variant="outline" class="text-[#999999] border-[#999999] text-xs">
-                                                        {{ getPostTypeText(post.type) }}
-                                                    </Badge>
-                                                    <Badge v-if="post.is_featured" class="bg-[#ff6e02] text-white text-xs">
-                                                        精选
-                                                    </Badge>
-                                                    <Badge v-if="post.is_premium" class="bg-yellow-500 text-white text-xs">
-                                                        ⭐ VIP
-                                                    </Badge>
-                                                </div>
-                                            </div>
-
-                                            <!-- Title -->
-                                            <h3 class="text-white font-medium text-base group-hover:text-[#ff6e02] transition-colors line-clamp-2 mb-2 flex items-center gap-2">
-                                                <span>{{ post.title }}</span>
-                                                <span v-if="post.has_video" class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-red-500/20 text-red-400 rounded flex-shrink-0">
-                                                    视频
-                                                </span>
-                                            </h3>
-
-                                            <!-- Excerpt -->
-                                            <p class="text-[#999999] text-sm line-clamp-2 mb-3">
-                                                {{ post.excerpt }}
-                                            </p>
-
-                                            <!-- Post Images (First 3) -->
-                                            <div v-if="post.post_images && post.post_images.length > 0" class="grid grid-cols-3 gap-2 mb-3">
-                                                <div
-                                                    v-for="(image, index) in post.post_images.slice(0, 3)"
-                                                    :key="index"
-                                                    class="relative overflow-hidden rounded-lg aspect-square"
-                                                >
-                                                    <img
-                                                        :src="image.thumb || image.url"
-                                                        class="w-full h-full object-cover"
-                                                        :alt="`${post.title} - Image ${index + 1}`"
-                                                    />
-                                                </div>
-                                            </div>
-
-                                            <!-- Meta -->
-                                            <div class="flex items-center justify-between">
-                                                <div class="flex items-center gap-3">
-                                                    <!-- Author -->
-                                                    <div class="flex items-center gap-2">
-                                                        <img
-                                                            :src="post.user.avatar ? `/storage/${post.user.avatar}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(post.user.creator_profile?.display_name || post.user.name)}&size=32&background=ff6e02&color=fff`"
-                                                            class="w-6 h-6 rounded-full object-cover"
-                                                            :alt="post.user.name"
-                                                            @error="(e) => e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(post.user.name)}&size=32&background=ff6e02&color=fff`"
-                                                        />
-                                                        <span class="text-xs text-[#999999]">
-                                                            {{ post.user.creator_profile?.display_name || post.user.name }}
-                                                        </span>
-                                                        <ChefHat v-if="post.user.creator_profile?.verification_status === 'verified'"
-                                                                class="w-3 h-3 text-[#ff6e02]" />
-                                                    </div>
-
-                                                    <!-- Date -->
-                                                    <div class="flex items-center gap-1 text-xs text-[#999999]">
-                                                        <Calendar class="w-3 h-3" />
-                                                        {{ formatDate(post.published_at) }}
-                                                    </div>
-                                                </div>
-
-                                                <!-- Stats -->
-                                                <div class="flex items-center gap-4 text-xs text-[#999999]">
-                                                    <span class="flex items-center gap-1">
-                                                        <Eye class="w-3 h-3" />
-                                                        {{ post.view_count }}
-                                                    </span>
-                                                    <span class="flex items-center gap-1">
-                                                        <Heart class="w-3 h-3" />
-                                                        {{ post.like_count }}
-                                                    </span>
-                                                    <span class="flex items-center gap-1">
-                                                        <MessageSquare class="w-3 h-3" />
-                                                        {{ post.comment_count }}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </Link>
+                            :post="post"
+                            variant="list"
+                        />
                     </div>
 
                     <!-- Empty State -->
