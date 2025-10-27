@@ -34,6 +34,14 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'admin']
     Route::resource('credit-transactions', App\Http\Controllers\Admin\CreditTransactionController::class)->only(['index', 'create', 'store', 'destroy']);
     Route::get('platform-transactions', [App\Http\Controllers\Admin\PlatformTransactionController::class, 'index'])->name('platform-transactions.index');
     Route::get('orders', [App\Http\Controllers\Admin\OrderController::class, 'index'])->name('orders.index');
+
+    // Post Review Routes
+    Route::get('post-reviews', [App\Http\Controllers\Admin\PostReviewController::class, 'index'])->name('post-reviews.index');
+    Route::get('post-reviews/{id}', [App\Http\Controllers\Admin\PostReviewController::class, 'show'])->name('post-reviews.show');
+    Route::post('post-reviews/{id}/approve', [App\Http\Controllers\Admin\PostReviewController::class, 'approve'])->name('post-reviews.approve');
+    Route::post('post-reviews/{id}/reject', [App\Http\Controllers\Admin\PostReviewController::class, 'reject'])->name('post-reviews.reject');
+    Route::post('post-reviews/{id}/reset', [App\Http\Controllers\Admin\PostReviewController::class, 'resetReview'])->name('post-reviews.reset');
+    Route::post('post-reviews/batch-approve', [App\Http\Controllers\Admin\PostReviewController::class, 'batchApprove'])->name('post-reviews.batch-approve');
 });
 
 // User favorites

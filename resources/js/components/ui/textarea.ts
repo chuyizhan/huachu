@@ -17,3 +17,4 @@ const textareaVariants = cva(
 export interface TextareaProps extends VariantProps<typeof textareaVariants> {}
 
 export { textareaVariants }
+export { Textarea } from './textarea/index'

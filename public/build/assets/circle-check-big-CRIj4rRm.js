@@ -1,0 +1,10 @@
+<<<<<<<< HEAD:public/build/assets/circle-check-big-ut8LsCXp.js
+import{c}from"./createLucideIcon-BpICDY6J.js";/**
+========
+import{c}from"./createLucideIcon-BbWFJ-dr.js";/**
+>>>>>>>> main:public/build/assets/circle-check-big-CRIj4rRm.js
+ * @license lucide-vue-next v0.468.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */const t=c("CircleCheckBigIcon",[["path",{d:"M21.801 10A10 10 0 1 1 17 3.335",key:"yps3ct"}],["path",{d:"m9 11 3 3L22 4",key:"1pflzl"}]]);export{t as C};

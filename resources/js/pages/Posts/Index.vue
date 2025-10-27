@@ -13,6 +13,8 @@ interface Post {
     excerpt?: string;
     type: 'discussion' | 'tutorial' | 'showcase' | 'question';
     status: 'draft' | 'published' | 'archived';
+    review_status: 'pending' | 'approved' | 'rejected';
+    review_notes?: string;
     is_premium: boolean;
     view_count: number;
     like_count: number;
@@ -35,6 +37,9 @@ interface Stats {
     published: number;
     drafts: number;
     premium: number;
+    pending_review: number;
+    approved: number;
+    rejected: number;
 }
 
 interface Props {
@@ -66,6 +71,18 @@ const statusLabels = {
     draft: '草稿',
     published: '已发布',
     archived: '已归档'
+};
+
+const reviewStatusLabels = {
+    pending: '审核中',
+    approved: '已批准',
+    rejected: '已拒绝'
+};
+
+const reviewStatusColors = {
+    pending: 'bg-yellow-500',
+    approved: 'bg-green-500',
+    rejected: 'bg-red-500'
 };
 
 function formatDate(dateString: string) {
@@ -209,6 +226,13 @@ function formatDate(dateString: string) {
                                             >
                                                 {{ statusLabels[post.status] }}
                                             </Badge>
+                                            <!-- Review Status Badge -->
+                                            <Badge
+                                                v-if="post.status === 'published'"
+                                                :class="reviewStatusColors[post.review_status]"
+                                            >
+                                                {{ reviewStatusLabels[post.review_status] }}
+                                            </Badge>
                                             <Badge
                                                 v-if="post.is_premium"
                                                 class="bg-purple-500/20 text-purple-500 border-purple-500/30"
@@ -219,6 +243,16 @@ function formatDate(dateString: string) {
                                                 <div class="w-3 h-3 rounded-full bg-[#ff6e02]"></div>
                                                 <span class="text-sm text-[#999999]">{{ post.category.name }}</span>
                                             </div>
+                                        </div>
+
+                                        <!-- Review Notes (if rejected) -->
+                                        <div
+                                            v-if="post.review_status === 'rejected' && post.review_notes"
+                                            class="mb-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg"
+                                        >
+                                            <p class="text-sm text-red-400">
+                                                <strong>拒绝原因:</strong> {{ post.review_notes }}
+                                            </p>
                                         </div>
 
                                         <!-- Post Title and Content -->
