@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Link } from '@inertiajs/vue3';
-import { Eye, Heart, MessageSquare, Crown } from 'lucide-vue-next';
+import { Eye, Heart, MessageSquare, Crown, Calendar, ChefHat } from 'lucide-vue-next';
 
 interface Post {
     id: number;
@@ -14,30 +14,46 @@ interface Post {
     user: {
         id: number;
         name: string;
+        avatar?: string;
         creator_profile?: {
+            id: number;
             display_name: string;
             specialty: string;
-            verification_status: string;
+            verification_status?: string;
         };
     };
     category: {
         id: number;
         name: string;
         color: string;
+        icon?: string;
+        icon_image?: string | null;
     };
-    type: string;
+    type?: string;
     view_count: number;
     like_count: number;
-    is_premium: boolean;
+    comment_count?: number;
+    is_premium?: boolean;
+    is_featured?: boolean;
+    has_video?: boolean;
     published_at: string;
+    first_image?: {
+        url: string;
+        thumb: string;
+    } | null;
+    post_images?: Array<{
+        url: string;
+        thumb: string;
+    }>;
 }
 
 interface Props {
     post: Post;
-    variant?: 'default' | 'compact' | 'featured';
+    variant?: 'default' | 'compact' | 'featured' | 'home' | 'list';
     showAuthor?: boolean;
     showStats?: boolean;
     showReadMore?: boolean;
+    showImages?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -45,6 +61,7 @@ const props = withDefaults(defineProps<Props>(), {
     showAuthor: true,
     showStats: true,
     showReadMore: true,
+    showImages: true,
 });
 
 const getInitials = (name: string) => {
@@ -68,9 +85,206 @@ const formatDate = (dateString: string) => {
         year: 'numeric',
     });
 };
+
+const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diff = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (diff < 60) return '刚刚';
+    if (diff < 3600) return `${Math.floor(diff / 60)}分钟前`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)}小时前`;
+    if (diff < 604800) return `${Math.floor(diff / 86400)}天前`;
+
+    return date.toLocaleDateString('zh-CN');
+};
+
+const getPostTypeText = (type: string) => {
+    const typeMap = {
+        'tutorial': '教程',
+        'discussion': '讨论',
+        'showcase': '展示',
+        'question': '问答'
+    };
+    return typeMap[type as keyof typeof typeMap] || type;
+};
 </script>
 
 <template>
+    <!-- Home Variant - Clean and Modern -->
+    <Link
+        v-if="variant === 'home'"
+        :href="`/posts/${post.slug}`"
+        class="block rounded-lg shadow hover:shadow-md transition-shadow px-2"
+    >
+        <!-- Post Title -->
+        <h3 class="text-base lg:text-lg font-semibold text-foreground mb-3 hover:text-[#ff6e02] transition-colors line-clamp-2 flex items-center gap-2">
+            <span>{{ post.title }}</span>
+            <span v-if="post.has_video" class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-red-500/20 text-red-400 rounded">
+                视频
+            </span>
+        </h3>
+
+        <!-- Post Content -->
+        <p class="font24 color999 line-clamp-3 u-m-b-15">
+            {{ post.excerpt }}
+        </p>
+
+        <!-- Post Images (First 3) -->
+        <div v-if="showImages && post.post_images && post.post_images.length > 0" class="grid grid-cols-3 gap-2 mb-4">
+            <div
+                v-for="(image, index) in post.post_images.slice(0, 3)"
+                :key="index"
+                class="relative overflow-hidden rounded-lg aspect-square"
+            >
+                <img
+                    :src="image.thumb || image.url"
+                    class="w-full h-full object-cover"
+                    :alt="`${post.title} - Image ${index + 1}`"
+                />
+            </div>
+        </div>
+
+        <!-- Post Footer -->
+        <div class="flex items-center justify-between text-sm">
+            <div class="flex items-center gap-4">
+                <!-- Avatar -->
+                <div class="flex items-center gap-2">
+                    <img
+                        :src="post.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.user.creator_profile?.display_name || post.user.name)}&size=32&background=ff6e02&color=fff`"
+                        class="w-8 h-8 rounded-full object-cover"
+                        :alt="post.user.name"
+                        @error="(e) => e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(post.user.name)}&size=32&background=ff6e02&color=fff`"
+                    />
+                    <span class="text-foreground">
+                        {{ post.user.creator_profile?.display_name || post.user.name }}
+                    </span>
+                </div>
+
+                <!-- Time -->
+                <span class="text-muted-foreground">
+                    {{ formatTime(post.published_at) }}
+                </span>
+            </div>
+
+            <!-- Stats -->
+            <div class="flex items-center gap-4 text-muted-foreground">
+                <span class="flex items-center gap-1">
+                    <Eye class="h-4 w-4" />
+                    {{ post.view_count }}
+                </span>
+                <span class="flex items-center gap-1 hover:text-[#ff6e02] transition-colors">
+                    <Heart class="h-4 w-4" />
+                    {{ post.like_count }}
+                </span>
+            </div>
+        </div>
+    </Link>
+
+    <!-- List Variant - Twitter-like Layout for Posts Page -->
+    <Link
+        v-else-if="variant === 'list'"
+        :href="`/posts/${post.slug}`"
+        class="block group"
+    >
+        <Card class="bg-[#374151] border-0 hover:bg-[#1f2937] transition-colors">
+            <CardContent class="p-4">
+                <div class="flex gap-3">
+                    <!-- Author Avatar (Left) -->
+                    <div class="flex-shrink-0">
+                        <img
+                            :src="post.user.avatar ? `/storage/${post.user.avatar}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(post.user.creator_profile?.display_name || post.user.name)}&size=48&background=ff6e02&color=fff`"
+                            class="w-12 h-12 rounded-full object-cover"
+                            :alt="post.user.name"
+                            @error="(e) => e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(post.user.name)}&size=48&background=ff6e02&color=fff`"
+                        />
+                    </div>
+
+                    <!-- Post Content (Right) -->
+                    <div class="flex-1 min-w-0">
+                        <!-- Author Info & Meta -->
+                        <div class="flex items-center justify-between mb-2">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <div class="flex items-center gap-1">
+                                    <span class="text-white font-medium text-sm">
+                                        {{ post.user.creator_profile?.display_name || post.user.name }}
+                                    </span>
+                                    <ChefHat v-if="post.user.creator_profile?.verification_status === 'verified'"
+                                            class="w-3 h-3 text-[#ff6e02]" />
+                                </div>
+                                <span class="text-[#999999] text-xs">·</span>
+                                <span class="text-[#999999] text-xs">{{ formatTime(post.published_at) }}</span>
+                            </div>
+                        </div>
+
+                        <!-- Badges -->
+                        <div class="flex items-center gap-2 mb-2 flex-wrap">
+                            <Badge
+                                class="text-white text-xs px-2 py-0.5"
+                                :style="{ backgroundColor: post.category.color }"
+                            >
+                                {{ post.category.name }}
+                            </Badge>
+                            <Badge v-if="post.type" variant="outline" class="text-[#999999] border-[#999999] text-xs px-2 py-0.5">
+                                {{ getPostTypeText(post.type) }}
+                            </Badge>
+                            <Badge v-if="post.is_featured" class="bg-[#ff6e02] text-white text-xs px-2 py-0.5">
+                                精选
+                            </Badge>
+                            <Badge v-if="post.is_premium" class="bg-yellow-500 text-white text-xs px-2 py-0.5">
+                                ⭐ VIP
+                            </Badge>
+                            <span v-if="post.has_video" class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-red-500/20 text-red-400 rounded">
+                                视频
+                            </span>
+                        </div>
+
+                        <!-- Title -->
+                        <h3 class="text-white font-medium text-base group-hover:text-[#ff6e02] transition-colors line-clamp-2 mb-2">
+                            {{ post.title }}
+                        </h3>
+
+                        <!-- Excerpt -->
+                        <p class="text-[#999999] text-sm line-clamp-2 mb-3">
+                            {{ post.excerpt }}
+                        </p>
+
+                        <!-- Post Images (First 3) -->
+                        <div v-if="showImages && post.post_images && post.post_images.length > 0" class="grid grid-cols-3 gap-2 mb-3 max-w-md">
+                            <div
+                                v-for="(image, index) in post.post_images.slice(0, 3)"
+                                :key="index"
+                                class="relative overflow-hidden rounded-lg aspect-square"
+                            >
+                                <img
+                                    :src="image.thumb || image.url"
+                                    class="w-full h-full object-cover"
+                                    :alt="`${post.title} - Image ${index + 1}`"
+                                />
+                            </div>
+                        </div>
+
+                        <!-- Stats -->
+                        <div v-if="showStats" class="flex items-center gap-6 text-xs text-[#999999]">
+                            <span class="flex items-center gap-1 hover:text-[#ff6e02] transition-colors cursor-pointer">
+                                <MessageSquare class="w-4 h-4" />
+                                {{ post.comment_count || 0 }}
+                            </span>
+                            <span class="flex items-center gap-1 hover:text-[#ff6e02] transition-colors cursor-pointer">
+                                <Heart class="w-4 h-4" />
+                                {{ post.like_count }}
+                            </span>
+                            <span class="flex items-center gap-1">
+                                <Eye class="w-4 h-4" />
+                                {{ post.view_count }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+    </Link>
+
     <!-- Featured Variant -->
     <div v-if="variant === 'featured'" class="listclass hover:shadow-lg transition-all duration-200">
         <div class="pb-3">
