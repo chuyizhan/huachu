@@ -235,7 +235,7 @@ class PostController extends Controller
             !$request->hasFile('images') &&
             empty($request->video_temp_upload_id)) {
             return back()->withErrors([
-                'content' => '帖子必须包含文字内容、图片或视频'
+                'content' => '帖子至少要有文字内容，图片或者视频任意一种。'
             ])->withInput();
         }
 
@@ -486,7 +486,7 @@ class PostController extends Controller
         // Validate that either content or media exists
         if (empty($request->content) && !$willHaveImages && !$willHaveVideos) {
             return back()->withErrors([
-                'content' => '帖子必须包含文字内容、图片或视频'
+                'content' => '帖子至少要有文字内容，图片或者视频任意一种。'
             ])->withInput();
         }
 

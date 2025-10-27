@@ -7,8 +7,9 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import InputError from '@/components/InputError.vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
-import { PlusCircle, FileText, Image, Video, Tag, Save, Send, X } from 'lucide-vue-next';
+import { PlusCircle, FileText, Image, Video, Tag, Save, Send, X, AlertCircle } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 // FilePond imports
 import vueFilePond from 'vue-filepond';
@@ -114,6 +115,8 @@ const videoUploadProgress = ref(0);
 const uploadError = ref<string | null>(null);
 const existingImages = ref<MediaImage[]>(props.post.existing_images || []);
 const existingVideo = ref<MediaVideo | null>(props.post.existing_videos?.[0] || null);
+const showErrorDialog = ref(false);
+const errorMessage = ref('');
 
 const postTypes = [
     { value: 'discussion', label: '讨论', icon: '💬', description: '分享想法和观点' },
@@ -304,6 +307,37 @@ function removeExistingVideo() {
     }
 }
 
+function validateContent() {
+    // Check if post has content, images, or video
+    const hasContent = form.content && form.content.trim().length > 0;
+
+    // Check existing images (not marked for removal)
+    const hasExistingImages = existingImages.value.length > 0 &&
+        !existingImages.value.every(img => form.remove_images?.includes(img.id));
+
+    // Check for cloud-uploaded images
+    const hasCloudImages = uploadedImages.value.length > 0 || form.image_temp_upload_ids.length > 0;
+
+    // Check for FilePond images (direct upload)
+    let hasFilePondImages = false;
+    if (pond.value) {
+        // @ts-ignore - FilePond types
+        const files = pond.value.getFiles();
+        hasFilePondImages = files.length > 0;
+    }
+
+    const hasNewImages = hasCloudImages || hasFilePondImages;
+    const hasExistingVideo = existingVideo.value !== null && !form.remove_video;
+    const hasNewVideo = form.video_temp_upload_id !== null;
+
+    if (!hasContent && !hasExistingImages && !hasNewImages && !hasExistingVideo && !hasNewVideo) {
+        errorMessage.value = '帖子至少要有文字内容，图片或者视频任意一种。';
+        showErrorDialog.value = true;
+        return false;
+    }
+    return true;
+}
+
 function saveDraft() {
     form.status = 'draft';
     form.post(`/posts/${props.post.id}`, {
@@ -319,6 +353,10 @@ function saveDraft() {
 }
 
 function publishPost() {
+    if (!validateContent()) {
+        return;
+    }
+
     form.status = 'published';
     form.post(`/posts/${props.post.id}`, {
         forceFormData: true,
@@ -763,5 +801,28 @@ function publishPost() {
                 </div>
             </div>
         </div>
+
+        <!-- Error Dialog -->
+        <Dialog v-model:open="showErrorDialog">
+            <DialogContent class="bg-[#1c1c1c] border-[#4B5563] text-white">
+                <DialogHeader>
+                    <DialogTitle class="flex items-center gap-2 text-red-400">
+                        <AlertCircle class="h-5 w-5" />
+                        错误
+                    </DialogTitle>
+                    <DialogDescription class="text-[#999999]">
+                        {{ errorMessage }}
+                    </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                    <Button
+                        @click="showErrorDialog = false"
+                        class="bg-[#ff6e02] hover:bg-[#e55a00] text-white"
+                    >
+                        确定
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     </WebLayout>
 </template>

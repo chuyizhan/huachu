@@ -7,8 +7,9 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import InputError from '@/components/InputError.vue';
 import { Head, useForm, usePage } from '@inertiajs/vue3';
-import { PlusCircle, FileText, Image, Video, Tag, Save, Send, X } from 'lucide-vue-next';
+import { PlusCircle, FileText, Image, Video, Tag, Save, Send, X, AlertCircle } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 // FilePond imports
 import vueFilePond from 'vue-filepond';
@@ -74,6 +75,8 @@ const videoUrl = ref('');
 const pond = ref(null);
 const videoInput = ref<HTMLInputElement | null>(null);
 const videoPreview = ref<string | null>(null);
+const showErrorDialog = ref(false);
+const errorMessage = ref('');
 const videoFileName = ref<string>('');
 const videoFileSize = ref<number>(0);
 const isUploadingVideo = ref(false);
@@ -411,6 +414,32 @@ function removeImage(index: number) {
     uploadedImages.value.splice(index, 1);
 }
 
+function validateContent() {
+    // Check if post has content, images, or video
+    const hasContent = form.content && form.content.trim().length > 0;
+
+    // Check for cloud-uploaded images
+    const hasCloudImages = uploadedImages.value.length > 0 || form.image_temp_upload_ids.length > 0;
+
+    // Check for FilePond images (direct upload)
+    let hasFilePondImages = false;
+    if (pond.value) {
+        // @ts-ignore - FilePond types
+        const files = pond.value.getFiles();
+        hasFilePondImages = files.length > 0;
+    }
+
+    const hasImages = hasCloudImages || hasFilePondImages;
+    const hasVideo = form.video_temp_upload_id !== null;
+
+    if (!hasContent && !hasImages && !hasVideo) {
+        errorMessage.value = '帖子至少要有文字内容，图片或者视频任意一种。';
+        showErrorDialog.value = true;
+        return false;
+    }
+    return true;
+}
+
 function saveDraft() {
     form.status = 'draft';
     form.post('/posts', {
@@ -421,6 +450,10 @@ function saveDraft() {
 }
 
 function publishPost() {
+    if (!validateContent()) {
+        return;
+    }
+
     form.status = 'published';
     form.post('/posts', {
         onSuccess: () => {
@@ -873,5 +906,28 @@ function publishPost() {
                 </div>
             </div>
         </div>
+
+        <!-- Error Dialog -->
+        <Dialog v-model:open="showErrorDialog">
+            <DialogContent class="bg-[#1c1c1c] border-[#4B5563] text-white">
+                <DialogHeader>
+                    <DialogTitle class="flex items-center gap-2 text-red-400">
+                        <AlertCircle class="h-5 w-5" />
+                        错误
+                    </DialogTitle>
+                    <DialogDescription class="text-[#999999]">
+                        {{ errorMessage }}
+                    </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                    <Button
+                        @click="showErrorDialog = false"
+                        class="bg-[#ff6e02] hover:bg-[#e55a00] text-white"
+                    >
+                        确定
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     </WebLayout>
 </template>
