@@ -13,9 +13,10 @@ class HomeController extends Controller
 {
     public function index()
     {
-        // Get featured posts (recipes)
+        // Get featured posts (recipes) - only approved
         $featuredPosts = Post::with(['user.creatorProfile', 'category', 'media'])
             ->published()
+            ->approved()
             ->featured()
             ->latest('published_at')
             ->limit(6)

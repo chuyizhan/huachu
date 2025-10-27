@@ -13,9 +13,10 @@ class CommunityController extends Controller
 {
     public function index(Request $request)
     {
-        // Get featured posts
+        // Get featured posts (only approved)
         $featuredPosts = Post::with(['user', 'category', 'media'])
             ->published()
+            ->approved()
             ->featured()
             ->take(6)
             ->get()
@@ -30,9 +31,10 @@ class CommunityController extends Controller
                 return $post;
             });
 
-        // Get recent posts
+        // Get recent posts (only approved)
         $recentPosts = Post::with(['user', 'category', 'media'])
             ->published()
+            ->approved()
             ->latest('published_at')
             ->take(12)
             ->get()

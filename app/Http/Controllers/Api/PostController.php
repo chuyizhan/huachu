@@ -14,6 +14,7 @@ class PostController extends Controller
     {
         $query = Post::with(['user', 'category'])
             ->published()
+            ->approved()
             ->orderBy('published_at', 'desc');
 
         // Filter by category
@@ -93,8 +94,31 @@ class PostController extends Controller
 
     public function show($id)
     {
+        $user = Auth::user();
+
         $post = Post::with(['user', 'category', 'likedByUsers'])
             ->findOrFail($id);
+
+        // Check review status - only approved posts are visible publicly
+        // Exception: Post author and admins can always view
+        if ($post->review_status !== 'approved') {
+            $canViewUnderReview = false;
+
+            if ($user) {
+                // Author can view their own post
+                if ($user->id === $post->user_id) {
+                    $canViewUnderReview = true;
+                }
+                // Admin can view all posts
+                if ($user->is_admin) {
+                    $canViewUnderReview = true;
+                }
+            }
+
+            if (!$canViewUnderReview) {
+                return response()->json(['message' => 'Post not found'], 404);
+            }
+        }
 
         // Increment view count only once per session
         $sessionKey = 'post_viewed_' . $post->id;
