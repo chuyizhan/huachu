@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { Head, router } from '@inertiajs/vue3';
-import AdminLayout from '@/layouts/AdminLayout.vue';
+import AppLayout from '@/layouts/AppLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -126,7 +126,7 @@ function formatFileSize(bytes: number) {
 <template>
     <Head :title="`审核: ${post.title}`" />
 
-    <AdminLayout>
+    <AppLayout>
         <div class="space-y-6">
             <!-- Header -->
             <div class="flex items-center justify-between">
@@ -375,5 +375,5 @@ function formatFileSize(bytes: number) {
                 </div>
             </div>
         </div>
-    </AdminLayout>
+    </AppLayout>
 </template>

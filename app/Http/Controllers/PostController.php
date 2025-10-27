@@ -90,8 +90,8 @@ class PostController extends Controller
         $isLocked = $post->isLocked();
         $isPurchased = $user ? $post->isPurchasedBy($user) : false;
 
-        // Always show images regardless of access
-        $post->image_urls = $post->getMedia('images')->take(3)->map(function ($media) {
+        // Always show all images regardless of access
+        $post->image_urls = $post->getMedia('images')->map(function ($media) {
             // Generate signed URL for Wasabi/S3 (valid for 24 hours), use regular URL for local storage
             $isCloudStorage = $media->disk === 'wasabi' || $media->disk === 's3';
 
