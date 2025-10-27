@@ -247,10 +247,10 @@ const formatTime = (dateString: string) => {
                             {{ post.excerpt }}
                         </p>
 
-                        <!-- Post Images (First 4) -->
-                        <div v-if="post.post_images && post.post_images.length > 0" class="grid grid-cols-4 gap-2 mb-4">
+                        <!-- Post Images (First 3) -->
+                        <div v-if="post.post_images && post.post_images.length > 0" class="grid grid-cols-3 gap-2 mb-4">
                             <div
-                                v-for="(image, index) in post.post_images.slice(0, 4)"
+                                v-for="(image, index) in post.post_images.slice(0, 3)"
                                 :key="index"
                                 class="relative overflow-hidden rounded-lg aspect-square"
                             >
