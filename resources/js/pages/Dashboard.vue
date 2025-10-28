@@ -4,7 +4,7 @@ import { dashboard } from '@/routes';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link } from '@inertiajs/vue3';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, FolderTree, FileText, Coins, DollarSign, ShieldAlert, Package, TrendingUp, ShoppingCart, Wallet } from 'lucide-vue-next';
+import { Users, FolderTree, FileText, Coins, DollarSign, ShieldAlert, Package, TrendingUp, ShoppingCart, Wallet, FileCheck } from 'lucide-vue-next';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -25,6 +25,27 @@ const breadcrumbs: BreadcrumbItem[] = [
             </div>
 
             <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <Link href="/admin/post-reviews" class="block">
+                    <Card class="bg-[#374151] border-[#4B5563] hover:border-[#ff6e02] transition-colors cursor-pointer h-full">
+                        <CardHeader>
+                            <div class="flex items-center gap-3 mb-2">
+                                <div class="p-3 bg-[#ff6e02] rounded-lg">
+                                    <FileCheck class="w-6 h-6 text-white" />
+                                </div>
+                                <CardTitle class="text-white text-xl">帖子审核</CardTitle>
+                            </div>
+                            <CardDescription class="text-[#999999]">
+                                管理所有帖子审核，查看帖子审核信息，编辑帖子审核设置
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <div class="text-[#ff6e02] text-sm font-medium">
+                                点击进入 →
+                            </div>
+                        </CardContent>
+                    </Card>
+                </Link>
+
                 <!-- User Management Card -->
                 <Link href="/admin/users" class="block">
                     <Card class="bg-[#374151] border-[#4B5563] hover:border-[#ff6e02] transition-colors cursor-pointer h-full">

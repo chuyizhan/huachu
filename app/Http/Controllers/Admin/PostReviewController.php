@@ -4,8 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Post;
+use App\Notifications\PostReviewStatusChanged;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 use Inertia\Inertia;
 
 class PostReviewController extends Controller
@@ -115,13 +117,16 @@ class PostReviewController extends Controller
      */
     public function approve(Request $request, $id)
     {
-        $post = Post::findOrFail($id);
+        $post = Post::with(['user', 'category'])->findOrFail($id);
 
         $post->review_status = 'approved';
         $post->reviewed_by = Auth::id();
         $post->reviewed_at = now();
         $post->review_notes = $request->input('notes');
         $post->save();
+
+        // Send Telegram notification
+        $this->sendTelegramNotification($post, 'approved', Auth::user(), $request->input('notes'));
 
         return redirect()->back()->with('success', '帖子已批准');
     }
@@ -135,13 +140,16 @@ class PostReviewController extends Controller
             'notes' => 'required|string|max:1000',
         ]);
 
-        $post = Post::findOrFail($id);
+        $post = Post::with(['user', 'category'])->findOrFail($id);
 
         $post->review_status = 'rejected';
         $post->reviewed_by = Auth::id();
         $post->reviewed_at = now();
         $post->review_notes = $request->input('notes');
         $post->save();
+
+        // Send Telegram notification
+        $this->sendTelegramNotification($post, 'rejected', Auth::user(), $request->input('notes'));
 
         return redirect()->back()->with('success', '帖子已拒绝');
     }
@@ -156,11 +164,19 @@ class PostReviewController extends Controller
             'post_ids.*' => 'exists:posts,id',
         ]);
 
+        $posts = Post::with(['user', 'category'])->whereIn('id', $request->post_ids)->get();
+
         Post::whereIn('id', $request->post_ids)->update([
             'review_status' => 'approved',
             'reviewed_by' => Auth::id(),
             'reviewed_at' => now(),
         ]);
+
+        // Send Telegram notification for each approved post
+        foreach ($posts as $post) {
+            $post->review_status = 'approved'; // Update the model instance
+            $this->sendTelegramNotification($post, 'approved', Auth::user());
+        }
 
         return redirect()->back()->with('success', '已批准 ' . count($request->post_ids) . ' 个帖子');
     }
@@ -170,7 +186,7 @@ class PostReviewController extends Controller
      */
     public function resetReview($id)
     {
-        $post = Post::findOrFail($id);
+        $post = Post::with(['user', 'category'])->findOrFail($id);
 
         $post->review_status = 'pending';
         $post->reviewed_by = null;
@@ -178,6 +194,28 @@ class PostReviewController extends Controller
         $post->review_notes = null;
         $post->save();
 
+        // Send Telegram notification
+        $this->sendTelegramNotification($post, 'reset', Auth::user());
+
         return redirect()->back()->with('success', '审核状态已重置');
+    }
+
+    /**
+     * Send Telegram notification for post review status change
+     */
+    protected function sendTelegramNotification($post, $action, $reviewer, $notes = null)
+    {
+        // Only send notification if Telegram is configured
+        if (!config('services.telegram-bot-api.token') || !config('services.telegram-bot-api.chat_id')) {
+            return;
+        }
+
+        try {
+            Notification::route('telegram', config('services.telegram-bot-api.chat_id'))
+                ->notify(new PostReviewStatusChanged($post, $action, $reviewer, $notes));
+        } catch (\Exception $e) {
+            // Log error but don't fail the request
+            \Log::error('Failed to send Telegram notification: ' . $e->getMessage());
+        }
     }
 }
