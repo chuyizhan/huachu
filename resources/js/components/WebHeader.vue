@@ -39,7 +39,7 @@ const user = computed(() => auth.value?.user);
 <template>
     <!-- Header -->
     <header class="bg-[#1c1c1c] border-b border-[#374151]">
-        <nav class="max-w-[1000px] mx-auto" aria-label="Global">
+        <nav class="max-w-7xl mx-auto" aria-label="Global">
             <!-- Mobile Layout - UniApp Style -->
             <div class="lg:hidden flex items-center justify-between u-p-20">
                 <!-- Logo -->
@@ -111,6 +111,15 @@ const user = computed(() => auth.value?.user);
 
                 <!-- Desktop Actions -->
                 <div class="flex lg:flex-1 lg:justify-end lg:items-center lg:gap-3">
+                    <!-- Admin Dashboard Button -->
+                    <Link
+                        v-if="user && user.is_admin"
+                        href="/dashboard"
+                        class="bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700 transition-colors flex items-center gap-2"
+                    >
+                        管理后台
+                    </Link>
+
                     <!-- Create Post Button -->
                     <Link
                         v-if="user"
