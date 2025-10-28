@@ -164,7 +164,7 @@ const getPeriodText = (days: number) => {
                         </div>
 
                         <div v-if="plan.description" class="u-m-b-15">
-                            <p class="font24 colorz">{{ plan.description }}</p>
+                            <p class="text-sm lg:text-md colorz">{{ plan.description }}</p>
                         </div>
 
                         <div v-if="plan.features && plan.features.length > 0" class="space-y-2">
