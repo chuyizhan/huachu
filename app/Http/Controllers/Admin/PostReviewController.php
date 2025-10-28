@@ -17,14 +17,32 @@ class PostReviewController extends Controller
     {
         $status = $request->input('status', 'pending');
 
-        $posts = Post::with(['user', 'category', 'reviewer'])
+        $posts = Post::with(['user', 'category', 'reviewer', 'media'])
             ->reviewStatus($status)
             ->latest('created_at')
             ->paginate(20);
 
         // Add media info to posts
         $posts->getCollection()->transform(function ($post) {
-            $post->first_image = $post->getFirstMediaUrl('images', 'thumb');
+            $firstMedia = $post->getFirstMedia('images');
+            if ($firstMedia) {
+                $isCloudStorage = $firstMedia->disk === 'wasabi' || $firstMedia->disk === 's3';
+
+                $url = $isCloudStorage
+                    ? \Storage::disk($firstMedia->disk)->temporaryUrl($firstMedia->getPathRelativeToRoot(), now()->addHours(24))
+                    : $firstMedia->getUrl();
+
+                $thumbUrl = $firstMedia->hasGeneratedConversion('thumb')
+                    ? ($isCloudStorage
+                        ? \Storage::disk($firstMedia->disk)->temporaryUrl($firstMedia->getPath('thumb'), now()->addHours(24))
+                        : $firstMedia->getUrl('thumb'))
+                    : $url;
+
+                $post->first_image = $thumbUrl;
+            } else {
+                $post->first_image = null;
+            }
+
             $post->images_count = $post->getMedia('images')->count();
             $post->videos_count = $post->getMedia('videos')->count();
             return $post;
@@ -48,24 +66,40 @@ class PostReviewController extends Controller
      */
     public function show($id)
     {
-        $post = Post::with(['user.creatorProfile', 'category', 'reviewer'])
+        $post = Post::with(['user.creatorProfile', 'category', 'reviewer', 'media'])
             ->findOrFail($id);
 
-        // Add all media
+        // Add all media with cloud storage support
         $post->image_urls = $post->getMedia('images')->map(function ($media) {
+            $isCloudStorage = $media->disk === 'wasabi' || $media->disk === 's3';
+
+            $url = $isCloudStorage
+                ? \Storage::disk($media->disk)->temporaryUrl($media->getPathRelativeToRoot(), now()->addHours(24))
+                : $media->getUrl();
+
+            $thumbUrl = $media->hasGeneratedConversion('thumb')
+                ? ($isCloudStorage
+                    ? \Storage::disk($media->disk)->temporaryUrl($media->getPath('thumb'), now()->addHours(24))
+                    : $media->getUrl('thumb'))
+                : $url;
+
             return [
                 'id' => $media->id,
-                'url' => $media->getUrl(),
-                'thumb' => $media->hasGeneratedConversion('thumb')
-                    ? $media->getUrl('thumb')
-                    : $media->getUrl(),
+                'url' => $url,
+                'thumb' => $thumbUrl,
             ];
         });
 
         $post->video_urls = $post->getMedia('videos')->map(function ($media) {
+            $isCloudStorage = $media->disk === 'wasabi' || $media->disk === 's3';
+
+            $url = $isCloudStorage
+                ? \Storage::disk($media->disk)->temporaryUrl($media->getPathRelativeToRoot(), now()->addHours(24))
+                : $media->getUrl();
+
             return [
                 'id' => $media->id,
-                'url' => $media->getUrl(),
+                'url' => $url,
                 'name' => $media->file_name,
                 'size' => $media->size,
             ];

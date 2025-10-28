@@ -12,7 +12,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { CheckCircle, XCircle, Clock, Eye } from 'lucide-vue-next';
+import { CheckCircle, XCircle, Clock, Eye, RotateCcw } from 'lucide-vue-next';
 
 interface Post {
     id: number;
@@ -80,6 +80,7 @@ function approvePost(postId: number) {
             preserveScroll: true,
             onSuccess: () => {
                 selectedPosts.value = selectedPosts.value.filter(id => id !== postId);
+                router.reload({ only: ['posts', 'stats'] });
             },
         });
     }
@@ -92,6 +93,7 @@ function rejectPost(postId: number) {
             preserveScroll: true,
             onSuccess: () => {
                 selectedPosts.value = selectedPosts.value.filter(id => id !== postId);
+                router.reload({ only: ['posts', 'stats'] });
             },
         });
     }
@@ -110,6 +112,18 @@ function batchApprove() {
             preserveScroll: true,
             onSuccess: () => {
                 selectedPosts.value = [];
+                router.reload({ only: ['posts', 'stats'] });
+            },
+        });
+    }
+}
+
+function resetReview(postId: number) {
+    if (confirm('确认重置审核状态为待审核？')) {
+        router.post(`/admin/post-reviews/${postId}/reset`, {}, {
+            preserveScroll: true,
+            onSuccess: () => {
+                router.reload({ only: ['posts', 'stats'] });
             },
         });
     }
@@ -357,6 +371,15 @@ function formatDate(date?: string) {
                                                     class="bg-red-600 hover:bg-red-700 text-white"
                                                 >
                                                     <XCircle class="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                    v-if="post.review_status === 'rejected' || post.review_status === 'approved'"
+                                                    size="sm"
+                                                    @click="resetReview(post.id)"
+                                                    class="bg-orange-600 hover:bg-orange-700 text-white"
+                                                    title="重置为待审核"
+                                                >
+                                                    <RotateCcw class="h-4 w-4" />
                                                 </Button>
                                             </div>
                                         </TableCell>

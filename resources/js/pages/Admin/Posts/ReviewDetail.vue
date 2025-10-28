@@ -63,15 +63,17 @@ const rejectNotes = ref('');
 const approveNotes = ref('');
 
 function goBack() {
-    router.get(route('admin.post-reviews.index'));
+    router.get('/admin/post-reviews');
 }
 
 function approvePost() {
     if (confirm('确认批准这个帖子？')) {
-        router.post(route('admin.post-reviews.approve', props.post.id), {
+        router.post(`/admin/post-reviews/${props.post.id}/approve`, {
             notes: approveNotes.value || null,
         }, {
-            onSuccess: () => goBack(),
+            onSuccess: () => {
+                router.get('/admin/post-reviews', { status: 'approved' });
+            },
         });
     }
 }
@@ -83,18 +85,22 @@ function rejectPost() {
     }
 
     if (confirm('确认拒绝这个帖子？')) {
-        router.post(route('admin.post-reviews.reject', props.post.id), {
+        router.post(`/admin/post-reviews/${props.post.id}/reject`, {
             notes: rejectNotes.value,
         }, {
-            onSuccess: () => goBack(),
+            onSuccess: () => {
+                router.get('/admin/post-reviews', { status: 'rejected' });
+            },
         });
     }
 }
 
 function resetReview() {
     if (confirm('确认重置审核状态？')) {
-        router.post(route('admin.post-reviews.reset', props.post.id), {}, {
-            preserveScroll: true,
+        router.post(`/admin/post-reviews/${props.post.id}/reset`, {}, {
+            onSuccess: () => {
+                router.get('/admin/post-reviews', { status: 'pending' });
+            },
         });
     }
 }
@@ -135,7 +141,7 @@ function formatFileSize(bytes: number) {
                         variant="outline"
                         size="sm"
                         @click="goBack"
-                        class="border-[#2a2a2a] text-white hover:bg-[#2a2a2a]"
+                        class="border-gray-500 text-gray-800 hover:bg-gray-100"
                     >
                         <ArrowLeft class="h-4 w-4 mr-2" />
                         返回列表
