@@ -351,13 +351,17 @@ const closeImageModal = () => {
                 </div>
 
                 <!-- Video Player -->
-                <div v-if="post.video_urls && post.video_urls.length > 0 && canViewContent" class="mb-0">
+                <div v-if="post.video_urls && post.video_urls.length > 0 && canViewContent" class="mb-0 bg-black">
                     <video
                         :src="post.video_urls[0].url"
+                        :poster="post.image_urls && post.image_urls.length > 0 ? post.image_urls[0].url : ''"
                         controls
-                        class="w-full h-[350px] object-cover"
+                        controlslist="nodownload"
                         preload="metadata"
+                        class="w-full max-h-[500px] object-contain"
+                        style="outline: none;"
                     >
+                        <source :src="post.video_urls[0].url" type="video/mp4" />
                         您的浏览器不支持视频播放
                     </video>
                 </div>

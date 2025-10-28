@@ -51,7 +51,9 @@ class CommunityController extends Controller
 
         // Get categories with post counts
         $categories = PostCategory::active()
-            ->withCount('posts')
+            ->withCount(['posts' => function($query) {
+                $query->published()->approved();
+            }])
             ->orderBy('sort_order')
             ->get();
 
@@ -81,6 +83,7 @@ class CommunityController extends Controller
     {
         $query = Post::with(['user.creatorProfile', 'category', 'media'])
             ->published()
+            ->approved()
             ->orderBy('published_at', 'desc');
 
         // Filter by category

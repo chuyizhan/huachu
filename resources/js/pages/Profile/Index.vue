@@ -234,29 +234,18 @@ const getStatusColor = (status: string) => {
             <!-- Menu Items -->
             <div class="u-m-25">
                 <div class="listclass space-y-0">
-                    <!-- VIP -->
-                    <Link href="/plan-subscriptions/create" class="flex items-center justify-between u-p-25 border-b border-[#374151]">
+                    <!-- 1. Recharge -->
+                    <Link href="/recharge" class="flex items-center justify-between u-p-25 border-b border-[#374151]">
                         <div class="flex items-center">
-                            <Crown class="w-7 h-7 text-white" />
-                            <span class="font28 colorfff u-p-l-15">VIP会员</span>
+                            <CreditCard class="w-7 h-7 text-white" />
+                            <span class="font28 colorfff u-p-l-15">充值</span>
                         </div>
                         <div class="flex items-center">
                             <ChevronRight class="w-5 h-5 text-[#999999]" />
                         </div>
                     </Link>
 
-                    <!-- Creator Application -->
-                    <Link href="/creators/apply" class="flex items-center justify-between u-p-25 border-b border-[#374151]">
-                        <div class="flex items-center">
-                            <Award class="w-7 h-7 text-white" />
-                            <span class="font28 colorfff u-p-l-15">申请认证</span>
-                        </div>
-                        <div class="flex items-center">
-                            <ChevronRight class="w-5 h-5 text-[#999999]" />
-                        </div>
-                    </Link>
-
-                    <!-- My Credits -->
+                    <!-- 2. My Credits -->
                     <Link href="/recharge" class="flex items-center justify-between u-p-25 border-b border-[#374151]">
                         <div class="flex items-center">
                             <Coins class="w-7 h-7 text-white" />
@@ -268,19 +257,29 @@ const getStatusColor = (status: string) => {
                         </div>
                     </Link>
 
-                    <!-- My Points -->
-                    <Link href="/points/rules" class="flex items-center justify-between u-p-25 border-b border-[#374151]">
+                    <!-- 3. VIP -->
+                    <Link href="/plan-subscriptions/create" class="flex items-center justify-between u-p-25 border-b border-[#374151]">
                         <div class="flex items-center">
-                            <Star class="w-7 h-7 text-white" />
-                            <span class="font28 colorfff u-p-l-15">我的积分</span>
+                            <Crown class="w-7 h-7 text-white" />
+                            <span class="font28 colorfff u-p-l-15">VIP会员</span>
                         </div>
                         <div class="flex items-center">
-                            <span class="colorz font32 u-p-r-20">{{ user.points }}</span>
                             <ChevronRight class="w-5 h-5 text-[#999999]" />
                         </div>
                     </Link>
 
-                    <!-- My Posts -->
+                    <!-- 4. Creator Application -->
+                    <Link href="/creators/apply" class="flex items-center justify-between u-p-25 border-b border-[#374151]">
+                        <div class="flex items-center">
+                            <Award class="w-7 h-7 text-white" />
+                            <span class="font28 colorfff u-p-l-15">申请认证</span>
+                        </div>
+                        <div class="flex items-center">
+                            <ChevronRight class="w-5 h-5 text-[#999999]" />
+                        </div>
+                    </Link>
+
+                    <!-- 5. My Posts -->
                     <Link href="/posts" class="flex items-center justify-between u-p-25 border-b border-[#374151]">
                         <div class="flex items-center">
                             <FileText class="w-7 h-7 text-white" />
@@ -292,7 +291,30 @@ const getStatusColor = (status: string) => {
                         </div>
                     </Link>
 
-                    <!-- My Favorites -->
+                    <!-- 6. My Points -->
+                    <Link href="/points/rules" class="flex items-center justify-between u-p-25 border-b border-[#374151]">
+                        <div class="flex items-center">
+                            <Star class="w-7 h-7 text-white" />
+                            <span class="font28 colorfff u-p-l-15">我的积分</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="colorz font32 u-p-r-20">{{ user.points }}</span>
+                            <ChevronRight class="w-5 h-5 text-[#999999]" />
+                        </div>
+                    </Link>
+
+                    <!-- 7. My Plan Subscriptions -->
+                    <Link href="/plan-subscriptions" class="flex items-center justify-between u-p-25 border-b border-[#374151]">
+                        <div class="flex items-center">
+                            <Users class="w-7 h-7 text-white" />
+                            <span class="font28 colorfff u-p-l-15">我的会员订阅</span>
+                        </div>
+                        <div class="flex items-center">
+                            <ChevronRight class="w-5 h-5 text-[#999999]" />
+                        </div>
+                    </Link>
+
+                    <!-- 8. My Favorites -->
                     <Link href="/favorites" class="flex items-center justify-between u-p-25 border-b border-[#374151]">
                         <div class="flex items-center">
                             <Heart class="w-7 h-7 text-white" />
@@ -304,29 +326,7 @@ const getStatusColor = (status: string) => {
                         </div>
                     </Link>
 
-                    <!-- My Plan Subscriptions -->
-                    <Link href="/plan-subscriptions" class="flex items-center justify-between u-p-25 border-b border-[#374151]">
-                        <div class="flex items-center">
-                            <Users class="w-7 h-7 text-white" />
-                            <span class="font28 colorfff u-p-l-15">我的会员订阅</span>
-                        </div>
-                        <div class="flex items-center">
-                            <ChevronRight class="w-5 h-5 text-[#999999]" />
-                        </div>
-                    </Link>
-
-                    <!-- Feedback -->
-                    <Link href="/feedback" class="flex items-center justify-between u-p-25 border-b border-[#374151]">
-                        <div class="flex items-center">
-                            <MessageSquare class="w-7 h-7 text-white" />
-                            <span class="font28 colorfff u-p-l-15">问题反馈</span>
-                        </div>
-                        <div class="flex items-center">
-                            <ChevronRight class="w-5 h-5 text-[#999999]" />
-                        </div>
-                    </Link>
-
-                    <!-- Points Rules -->
+                    <!-- 9. Points Rules -->
                     <Link href="/points/rules" class="flex items-center justify-between u-p-25 border-b border-[#374151]">
                         <div class="flex items-center">
                             <Gift class="w-7 h-7 text-white" />
@@ -337,11 +337,11 @@ const getStatusColor = (status: string) => {
                         </div>
                     </Link>
 
-                    <!-- Recharge -->
-                    <Link href="/recharge" class="flex items-center justify-between u-p-25">
+                    <!-- 10. Feedback -->
+                    <Link href="/feedback" class="flex items-center justify-between u-p-25">
                         <div class="flex items-center">
-                            <CreditCard class="w-7 h-7 text-white" />
-                            <span class="font28 colorfff u-p-l-15">充值</span>
+                            <MessageSquare class="w-7 h-7 text-white" />
+                            <span class="font28 colorfff u-p-l-15">问题反馈</span>
                         </div>
                         <div class="flex items-center">
                             <ChevronRight class="w-5 h-5 text-[#999999]" />
