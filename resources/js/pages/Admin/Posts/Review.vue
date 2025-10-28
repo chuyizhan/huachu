@@ -64,19 +64,19 @@ const page = usePage();
 const selectedPosts = ref<number[]>([]);
 
 function changeStatus(status: string) {
-    router.get(route('admin.post-reviews.index'), { status }, {
+    router.get('/admin/post-reviews', { status }, {
         preserveState: true,
         preserveScroll: true,
     });
 }
 
 function viewPost(postId: number) {
-    router.get(route('admin.post-reviews.show', postId));
+    router.get(`/admin/post-reviews/${postId}`);
 }
 
 function approvePost(postId: number) {
     if (confirm('确认批准这个帖子？')) {
-        router.post(route('admin.post-reviews.approve', postId), {}, {
+        router.post(`/admin/post-reviews/${postId}/approve`, {}, {
             preserveScroll: true,
             onSuccess: () => {
                 selectedPosts.value = selectedPosts.value.filter(id => id !== postId);
@@ -88,7 +88,7 @@ function approvePost(postId: number) {
 function rejectPost(postId: number) {
     const notes = prompt('请输入拒绝原因：');
     if (notes) {
-        router.post(route('admin.post-reviews.reject', postId), { notes }, {
+        router.post(`/admin/post-reviews/${postId}/reject`, { notes }, {
             preserveScroll: true,
             onSuccess: () => {
                 selectedPosts.value = selectedPosts.value.filter(id => id !== postId);
@@ -104,7 +104,7 @@ function batchApprove() {
     }
 
     if (confirm(`确认批准 ${selectedPosts.value.length} 个帖子？`)) {
-        router.post(route('admin.post-reviews.batch-approve'), {
+        router.post('/admin/post-reviews/batch-approve', {
             post_ids: selectedPosts.value,
         }, {
             preserveScroll: true,
@@ -377,7 +377,7 @@ function formatDate(date?: string) {
                                 :key="page"
                                 size="sm"
                                 :variant="page === posts.current_page ? 'default' : 'outline'"
-                                @click="router.get(route('admin.post-reviews.index'), { status: currentStatus, page })"
+                                @click="router.get('/admin/post-reviews', { status: currentStatus, page })"
                             >
                                 {{ page }}
                             </Button>
