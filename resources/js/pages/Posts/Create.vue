@@ -305,8 +305,11 @@ async function handleImageSelect(event: Event) {
             };
             uploadedImages.value.push(imageEntry);
 
-            // Upload the image
-            await uploadImageToCloud(file, imageEntry);
+            // Get the index of the newly added image
+            const imageIndex = uploadedImages.value.length - 1;
+
+            // Upload the image, passing the index
+            await uploadImageToCloud(file, imageIndex);
         }
 
         // Clear the input
@@ -316,7 +319,7 @@ async function handleImageSelect(event: Event) {
     }
 }
 
-async function uploadImageToCloud(file: File, imageEntry: any) {
+async function uploadImageToCloud(file: File, imageIndex: number) {
     try {
         // Step 1: Get presigned URL
         const presignedResponse = await fetch('/api/v1/media/presigned-url', {
@@ -345,7 +348,8 @@ async function uploadImageToCloud(file: File, imageEntry: any) {
 
         xhr.upload.addEventListener('progress', (e) => {
             if (e.lengthComputable) {
-                imageEntry.progress = Math.round((e.loaded / e.total) * 95);
+                // Update the array element directly for reactivity
+                uploadedImages.value[imageIndex].progress = Math.round((e.loaded / e.total) * 95);
             }
         });
 
@@ -366,7 +370,7 @@ async function uploadImageToCloud(file: File, imageEntry: any) {
             xhr.send(file);
         });
 
-        imageEntry.progress = 95;
+        uploadedImages.value[imageIndex].progress = 95;
 
         // Step 3: Confirm upload
         const confirmResponse = await fetch(`/api/v1/media/confirm-upload/${temp_upload_id}`, {
@@ -383,18 +387,19 @@ async function uploadImageToCloud(file: File, imageEntry: any) {
             throw new Error('确认上传失败');
         }
 
-        // Success!
-        imageEntry.tempUploadId = temp_upload_id;
-        imageEntry.progress = 100;
-        imageEntry.uploading = false;
+        // Success! Update the array element directly
+        uploadedImages.value[imageIndex].tempUploadId = temp_upload_id;
+        uploadedImages.value[imageIndex].progress = 100;
+        uploadedImages.value[imageIndex].uploading = false;
 
         // Add to form data
         form.image_temp_upload_ids.push(temp_upload_id);
 
     } catch (error) {
         console.error('Image upload failed:', error);
-        imageEntry.error = error instanceof Error ? error.message : '上传失败';
-        imageEntry.uploading = false;
+        // Update the array element directly
+        uploadedImages.value[imageIndex].error = error instanceof Error ? error.message : '上传失败';
+        uploadedImages.value[imageIndex].uploading = false;
     }
 }
 
