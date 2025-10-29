@@ -3,7 +3,7 @@ import WebLayout from '@/layouts/WebLayout.vue';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, router } from '@inertiajs/vue3';
 import { PlusCircle, Eye, Heart, MessageSquare, Calendar, Edit, Trash2 } from 'lucide-vue-next';
 
 interface Post {
@@ -92,6 +92,21 @@ function formatDate(dateString: string) {
         day: 'numeric'
     });
 }
+
+function deletePost(postId: number, postTitle: string) {
+    if (confirm(`确认删除帖子 "${postTitle}"？\n\n此操作无法撤销。`)) {
+        router.delete(`/posts/${postId}`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                // Success handled by Inertia
+            },
+            onError: (errors) => {
+                console.error('Failed to delete post:', errors);
+                alert('删除失败，请重试');
+            }
+        });
+    }
+}
 </script>
 
 <template>
@@ -99,7 +114,7 @@ function formatDate(dateString: string) {
         <Head title="我的帖子" />
 
         <div class="min-h-screen py-8">
-            <div class="max-w-6xl mx-auto px-4">
+            <div class="max-w-6xl mx-auto px-2">
                 <!-- Header -->
                 <div class="flex items-center justify-between mb-8">
                     <div>
@@ -195,9 +210,106 @@ function formatDate(dateString: string) {
                             <div
                                 v-for="post in posts.data"
                                 :key="post.id"
-                                class="border border-[#4B5563] rounded-lg p-6 hover:border-[#6B7280] transition-colors"
+                                class="border border-[#4B5563] rounded-lg p-4 md:p-6 hover:border-[#6B7280] transition-colors"
                             >
-                                <div class="flex items-start justify-between gap-4">
+                                <!-- Mobile Layout -->
+                                <div class="md:hidden">
+                                    <!-- Header with Actions -->
+                                    <div class="flex items-start justify-between mb-3">
+                                        <div class="flex items-center gap-2 flex-wrap flex-1 min-w-0">
+                                            <Badge class="bg-[#ff6e02]/20 text-[#ff6e02] border-[#ff6e02]/30 text-xs">
+                                                {{ postTypeLabels[post.type] }}
+                                            </Badge>
+                                            <Badge
+                                                :class="{
+                                                    'bg-green-500/20 text-green-500 border-green-500/30': post.status === 'published',
+                                                    'bg-yellow-500/20 text-yellow-500 border-yellow-500/30': post.status === 'draft',
+                                                    'bg-gray-500/20 text-gray-500 border-gray-500/30': post.status === 'archived'
+                                                }"
+                                                class="text-xs"
+                                            >
+                                                {{ statusLabels[post.status] }}
+                                            </Badge>
+                                            <Badge
+                                                v-if="post.status === 'published'"
+                                                :class="reviewStatusColors[post.review_status]"
+                                                class="text-xs"
+                                            >
+                                                {{ reviewStatusLabels[post.review_status] }}
+                                            </Badge>
+                                        </div>
+                                        <div class="flex items-center gap-1 flex-shrink-0 ml-2">
+                                            <Link :href="`/posts/${post.id}/edit`">
+                                                <Button variant="ghost" size="sm" class="text-[#999999] hover:text-white hover:bg-[#4B5563] h-8 w-8 p-0">
+                                                    <Edit class="h-4 w-4" />
+                                                </Button>
+                                            </Link>
+                                            <Button
+                                                variant="ghost"
+                                                size="sm"
+                                                class="text-red-400 hover:text-red-300 hover:bg-red-900/20 h-8 w-8 p-0"
+                                                @click="deletePost(post.id, post.title)"
+                                            >
+                                                <Trash2 class="h-4 w-4" />
+                                            </Button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Review Notes (if rejected) -->
+                                    <div
+                                        v-if="post.review_status === 'rejected' && post.review_notes"
+                                        class="mb-3 p-2 bg-red-500/10 border border-red-500/30 rounded-lg"
+                                    >
+                                        <p class="text-xs text-red-400">
+                                            <strong>拒绝原因:</strong> {{ post.review_notes }}
+                                        </p>
+                                    </div>
+
+                                    <!-- Image and Title -->
+                                    <Link :href="`/posts/${post.slug}`" class="block mb-3">
+                                        <div class="flex gap-3">
+                                            <div v-if="post.first_image" class="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border border-[#4B5563]">
+                                                <img :src="post.first_image.thumb" :alt="post.title" class="w-full h-full object-cover" />
+                                            </div>
+                                            <div v-else class="flex-shrink-0 w-20 h-20 rounded-lg bg-[#1f2937] border border-[#4B5563] flex items-center justify-center">
+                                                <span class="text-3xl">{{ postTypeIcons[post.type] }}</span>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <h3 class="text-base font-semibold text-white line-clamp-2 mb-1">
+                                                    {{ post.title }}
+                                                </h3>
+                                                <div class="flex items-center gap-1 text-xs text-[#999999]">
+                                                    <div class="w-2 h-2 rounded-full bg-[#ff6e02]"></div>
+                                                    <span>{{ post.category.name }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </Link>
+
+                                    <!-- Excerpt -->
+                                    <p v-if="post.excerpt" class="text-sm text-[#999999] mb-3 line-clamp-2">
+                                        {{ post.excerpt }}
+                                    </p>
+
+                                    <!-- Stats -->
+                                    <div class="flex items-center gap-4 text-xs text-[#999999]">
+                                        <div class="flex items-center gap-1">
+                                            <Eye class="h-3 w-3" />
+                                            {{ post.view_count }}
+                                        </div>
+                                        <div class="flex items-center gap-1">
+                                            <Heart class="h-3 w-3" />
+                                            {{ post.like_count }}
+                                        </div>
+                                        <div class="flex items-center gap-1">
+                                            <MessageSquare class="h-3 w-3" />
+                                            {{ post.comment_count }}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Desktop Layout -->
+                                <div class="hidden md:flex items-start justify-between gap-4">
                                     <!-- Post Image / Icon -->
                                     <div class="flex-shrink-0">
                                         <Link :href="`/posts/${post.slug}`">
@@ -294,7 +406,12 @@ function formatDate(dateString: string) {
                                                 <Edit class="h-4 w-4" />
                                             </Button>
                                         </Link>
-                                        <Button variant="ghost" size="sm" class="text-red-400 hover:text-red-300 hover:bg-red-900/20">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            class="text-red-400 hover:text-red-300 hover:bg-red-900/20"
+                                            @click="deletePost(post.id, post.title)"
+                                        >
                                             <Trash2 class="h-4 w-4" />
                                         </Button>
                                     </div>

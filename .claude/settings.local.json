@@ -15,7 +15,8 @@
       "Bash(php:*)",
       "Bash(aws s3api put-bucket-cors:*)",
       "Bash(npm install:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []
