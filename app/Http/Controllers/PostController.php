@@ -260,8 +260,15 @@ class PostController extends Controller
 
         if ($post->status === 'published') {
             $post->published_at = now();
-            // Set review status to pending for new published posts
-            $post->review_status = 'pending';
+            // Auto-approve if admin, otherwise set to pending for review
+            if ($user->is_admin) {
+                $post->review_status = 'approved';
+                $post->reviewed_by = $user->id;
+                $post->reviewed_at = now();
+                $post->review_notes = 'Auto-approved (Admin post)';
+            } else {
+                $post->review_status = 'pending';
+            }
         } else {
             // Drafts don't need review
             $post->review_status = 'approved';
@@ -504,11 +511,19 @@ class PostController extends Controller
         // Handle status change from draft to published
         if ($request->status === 'published' && !$post->published_at) {
             $post->published_at = now();
-            // Reset review status to pending when publishing
-            $post->review_status = 'pending';
-            $post->reviewed_by = null;
-            $post->reviewed_at = null;
-            $post->review_notes = null;
+            // Auto-approve if admin, otherwise reset to pending for review
+            $user = Auth::user();
+            if ($user->is_admin) {
+                $post->review_status = 'approved';
+                $post->reviewed_by = $user->id;
+                $post->reviewed_at = now();
+                $post->review_notes = 'Auto-approved (Admin post)';
+            } else {
+                $post->review_status = 'pending';
+                $post->reviewed_by = null;
+                $post->reviewed_at = null;
+                $post->review_notes = null;
+            }
         }
 
         $post->save();
