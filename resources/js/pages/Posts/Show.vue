@@ -10,6 +10,9 @@ import axios from 'axios';
 import Comments from '@/components/Comments.vue';
 import { Carousel, Slide, Pagination } from 'vue3-carousel';
 import 'vue3-carousel/dist/carousel.css';
+// @ts-ignore - vue3-video-play doesn't have types
+import videoPlay from 'vue3-video-play/lib/video-play/main.vue';
+import 'vue3-video-play/dist/style.css';
 import {
     Heart,
     Eye,
@@ -127,6 +130,22 @@ const userCreditsRef = ref(props.userCredits);
 // Image modal state
 const showImageModal = ref(false);
 const currentImage = ref('');
+
+// Video player options
+const videoOptions = computed(() => {
+    if (!props.post.video_urls || props.post.video_urls.length === 0) {
+        return null;
+    }
+
+    return {
+        src: props.post.video_urls[0].url,
+        poster: props.post.image_urls && props.post.image_urls.length > 0 ? props.post.image_urls[0].url : '',
+        type: 'video/mp4',
+        autoplay: false,
+        controlsList: 'nodownload',
+        preload: 'metadata',
+    };
+});
 
 // Check if user is authenticated
 const isAuthenticated = computed(() => page.props.auth?.user);
@@ -351,19 +370,17 @@ const closeImageModal = () => {
                 </div>
 
                 <!-- Video Player -->
-                <div v-if="post.video_urls && post.video_urls.length > 0 && canViewContent" class="mb-0 bg-black">
-                    <video
-                        :src="post.video_urls[0].url"
-                        :poster="post.image_urls && post.image_urls.length > 0 ? post.image_urls[0].url : ''"
-                        controls
+                <div v-if="videoOptions && canViewContent" class="mb-0">
+                    <video-play
+                        :src="videoOptions.src"
+                        :poster="videoOptions.poster"
+                        :type="videoOptions.type"
+                        :autoplay="videoOptions.autoplay"
+                        :control="true"
+                        :preload="videoOptions.preload"
                         controlslist="nodownload"
-                        preload="metadata"
-                        class="w-full max-h-[500px] object-contain"
-                        style="outline: none;"
-                    >
-                        <source :src="post.video_urls[0].url" type="video/mp4" />
-                        您的浏览器不支持视频播放
-                    </video>
+                        class="video-player-custom"
+                    />
                 </div>
 
                 <!-- Title and Meta -->
@@ -588,5 +605,23 @@ const closeImageModal = () => {
 
 :deep(.carousel__pagination-button--active) {
     background-color: #ff6e02;
+}
+
+/* Video player custom styling */
+.video-player-custom {
+    width: 100%;
+    max-height: 500px;
+    background-color: #000;
+}
+
+:deep(.video-player-custom video) {
+    width: 100%;
+    max-height: 500px;
+    object-fit: contain;
+}
+
+/* Override vue3-video-play default styles */
+:deep(.d-player-video) {
+    max-height: 500px;
 }
 </style>
