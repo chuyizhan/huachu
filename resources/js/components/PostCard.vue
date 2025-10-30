@@ -115,7 +115,7 @@ const getPostTypeText = (type: string) => {
     <Link
         v-if="variant === 'home'"
         :href="`/posts/${post.slug}`"
-        class="block hover:bg-accent/50 transition-colors px-4 py-3 border-b border-border"
+        class="block hover:bg-accent/50 transition-colors px-4 py-3  border-gray-500 border-b"
     >
         <div class="flex gap-3">
             <!-- Author Avatar (Left) -->
@@ -149,18 +149,11 @@ const getPostTypeText = (type: string) => {
                     {{ post.title }}
                 </h3>
 
-                <!-- Post Excerpt -->
-                <p class="text-sm text-muted-foreground line-clamp-2 mb-3">
-                    {{ post.excerpt }}
-                </p>
+               
 
                 <!-- Post Images (Max 3 in one row) -->
-                <div v-if="showImages && post.post_images && post.post_images.length > 0" class="grid gap-1 mb-3 rounded-sm overflow-hidden "
-                     :class="{
-                         'grid-cols-1': post.post_images.length === 1,
-                         'grid-cols-2': post.post_images.length === 2,
-                         'grid-cols-3': post.post_images.length >= 3
-                     }">
+                <div v-if="showImages && post.post_images && post.post_images.length > 0" class="grid grid-cols-3 gap-1 mb-3 rounded-sm overflow-hidden "
+                     >
                     <div
                         v-for="(image, index) in post.post_images.slice(0, 3)"
                         :key="index"
@@ -257,7 +250,7 @@ const getPostTypeText = (type: string) => {
 
                         <!-- Title -->
                         <h3 class="text-white font-medium text-base group-hover:text-[#ff6e02] transition-colors line-clamp-2 mb-2">
-                            {{ post.title }}
+                            {{ post.title }} 
                         </h3>
 
                         <!-- Excerpt -->
@@ -409,7 +402,7 @@ const getPostTypeText = (type: string) => {
     </div>
 
     <!-- Default Variant - UniApp Style -->
-    <div v-else class="listclass hover:shadow-lg transition-all duration-200">
+    <!-- <div v-else class="listclass hover:shadow-lg transition-all duration-200">
         <div class="flex-y">
             <div class="flex-x items-center gap-2 u-m-b-15">
                 <Badge :style="{ backgroundColor: post.category.color }" class="text-white text-xs rounded-40">
@@ -423,7 +416,7 @@ const getPostTypeText = (type: string) => {
 
             <h3 class="font32 colorfff line-clamp-2 u-m-b-10">
                 <Link :href="`/posts/${post.slug}`" class="hover:text-primary">
-                    {{ post.title }}
+                    {{ post.title }} xx
                 </Link>
             </h3>
 
@@ -431,7 +424,7 @@ const getPostTypeText = (type: string) => {
                 {{ post.excerpt }}
             </p>
 
-            <!-- Author Info -->
+           
             <div v-if="showAuthor" class="flex-x-center gap-2 u-m-b-15">
                 <Avatar class="h-6 w-6">
                     <AvatarFallback class="text-xs bg-[#ff6e02] text-white">
@@ -446,7 +439,7 @@ const getPostTypeText = (type: string) => {
                 </Badge>
             </div>
 
-            <!-- Stats -->
+        
             <div class="flex-x-center justify-between">
                 <div v-if="showStats" class="flex-x-center gap-4 font24 color999">
                     <div class="flex-x-center gap-1">
@@ -463,5 +456,5 @@ const getPostTypeText = (type: string) => {
                 </span>
             </div>
         </div>
-    </div>
+    </div> -->
 </template>

@@ -214,7 +214,7 @@ const bannerSlides = [
                 </div>
 
                 <!-- Posts List -->
-                <div class="space-y-4">
+                <div class="">
                     <PostCard
                         v-for="post in recentPosts"
                         :key="post.id"
