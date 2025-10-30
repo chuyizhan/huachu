@@ -16,20 +16,39 @@ interface Post {
     review_status: 'pending' | 'approved' | 'rejected';
     review_notes?: string;
     is_premium: boolean;
+    is_featured?: boolean;
+    has_video?: boolean;
     view_count: number;
     like_count: number;
     comment_count: number;
     published_at?: string;
     created_at: string;
+    user: {
+        id: number;
+        name: string;
+        avatar?: string;
+        creator_profile?: {
+            id: number;
+            display_name: string;
+            specialty: string;
+            verification_status?: string;
+        };
+    };
     category: {
         id: number;
         name: string;
-        color?: string;
+        color: string;
+        icon?: string;
+        icon_image?: string | null;
     };
     first_image?: {
         url: string;
         thumb: string;
     } | null;
+    post_images?: Array<{
+        url: string;
+        thumb: string;
+    }>;
 }
 
 interface Stats {
@@ -51,20 +70,24 @@ interface Props {
     stats: Stats;
 }
 
-defineProps<Props>();
+const props = defineProps<Props>();
+
+// Helper function to get post images
+const getPostImages = (post: Post) => {
+    if (post.post_images && post.post_images.length > 0) {
+        return post.post_images;
+    }
+    if (post.first_image) {
+        return [post.first_image];
+    }
+    return [];
+};
 
 const postTypeLabels = {
     discussion: '讨论',
     tutorial: '教程',
     showcase: '展示',
     question: '问题'
-};
-
-const postTypeIcons = {
-    discussion: '💬',
-    tutorial: '📖',
-    showcase: '🎨',
-    question: '❓'
 };
 
 const statusLabels = {
@@ -84,14 +107,6 @@ const reviewStatusColors = {
     approved: 'bg-green-500',
     rejected: 'bg-red-500'
 };
-
-function formatDate(dateString: string) {
-    return new Date(dateString).toLocaleDateString('zh-CN', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-    });
-}
 
 function deletePost(postId: number, postTitle: string) {
     if (confirm(`确认删除帖子 "${postTitle}"？\n\n此操作无法撤销。`)) {
@@ -206,201 +221,49 @@ function deletePost(postId: number, postTitle: string) {
                             </Link>
                         </div>
 
-                        <div v-else class="space-y-4">
+                        <div v-else class="divide-y divide-[#4B5563]">
                             <div
                                 v-for="post in posts.data"
                                 :key="post.id"
-                                class="border border-[#4B5563] rounded-lg p-4 md:p-6 hover:border-[#6B7280] transition-colors"
+                                class="relative py-4 first:pt-0 hover:bg-[#1f2937]/30 transition-colors px-4"
                             >
-                                <!-- Mobile Layout -->
-                                <div class="md:hidden">
-                                    <!-- Header with Actions -->
-                                    <div class="flex items-start justify-between mb-3">
-                                        <div class="flex items-center gap-2 flex-wrap flex-1 min-w-0">
-                                            <Badge class="bg-[#ff6e02]/20 text-[#ff6e02] border-[#ff6e02]/30 text-xs">
-                                                {{ postTypeLabels[post.type] }}
-                                            </Badge>
-                                            <Badge
-                                                :class="{
-                                                    'bg-green-500/20 text-green-500 border-green-500/30': post.status === 'published',
-                                                    'bg-yellow-500/20 text-yellow-500 border-yellow-500/30': post.status === 'draft',
-                                                    'bg-gray-500/20 text-gray-500 border-gray-500/30': post.status === 'archived'
-                                                }"
-                                                class="text-xs"
-                                            >
-                                                {{ statusLabels[post.status] }}
-                                            </Badge>
-                                            <Badge
-                                                v-if="post.status === 'published'"
-                                                :class="reviewStatusColors[post.review_status]"
-                                                class="text-xs"
-                                            >
-                                                {{ reviewStatusLabels[post.review_status] }}
-                                            </Badge>
-                                        </div>
-                                        <div class="flex items-center gap-1 flex-shrink-0 ml-2">
-                                            <Link :href="`/posts/${post.id}/edit`">
-                                                <Button variant="ghost" size="sm" class="text-[#999999] hover:text-white hover:bg-[#4B5563] h-8 w-8 p-0">
-                                                    <Edit class="h-4 w-4" />
-                                                </Button>
-                                            </Link>
-                                            <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                class="text-red-400 hover:text-red-300 hover:bg-red-900/20 h-8 w-8 p-0"
-                                                @click="deletePost(post.id, post.title)"
-                                            >
-                                                <Trash2 class="h-4 w-4" />
-                                            </Button>
-                                        </div>
-                                    </div>
-
-                                    <!-- Review Notes (if rejected) -->
-                                    <div
-                                        v-if="post.review_status === 'rejected' && post.review_notes"
-                                        class="mb-3 p-2 bg-red-500/10 border border-red-500/30 rounded-lg"
-                                    >
-                                        <p class="text-xs text-red-400">
-                                            <strong>拒绝原因:</strong> {{ post.review_notes }}
-                                        </p>
-                                    </div>
-
-                                    <!-- Image and Title -->
-                                    <Link :href="`/posts/${post.slug}`" class="block mb-3">
-                                        <div class="flex gap-3">
-                                            <div v-if="post.first_image" class="flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border border-[#4B5563]">
-                                                <img :src="post.first_image.thumb" :alt="post.title" class="w-full h-full object-cover" />
-                                            </div>
-                                            <div v-else class="flex-shrink-0 w-20 h-20 rounded-lg bg-[#1f2937] border border-[#4B5563] flex items-center justify-center">
-                                                <span class="text-3xl">{{ postTypeIcons[post.type] }}</span>
-                                            </div>
-                                            <div class="flex-1 min-w-0">
-                                                <h3 class="text-base font-semibold text-white line-clamp-2 mb-1">
-                                                    {{ post.title }}
-                                                </h3>
-                                                <div class="flex items-center gap-1 text-xs text-[#999999]">
-                                                    <div class="w-2 h-2 rounded-full bg-[#ff6e02]"></div>
-                                                    <span>{{ post.category.name }}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </Link>
-
-                                    <!-- Excerpt -->
-                                    <p v-if="post.excerpt" class="text-sm text-[#999999] mb-3 line-clamp-2">
-                                        {{ post.excerpt }}
-                                    </p>
-
-                                    <!-- Stats -->
-                                    <div class="flex items-center gap-4 text-xs text-[#999999]">
-                                        <div class="flex items-center gap-1">
-                                            <Eye class="h-3 w-3" />
-                                            {{ post.view_count }}
-                                        </div>
-                                        <div class="flex items-center gap-1">
-                                            <Heart class="h-3 w-3" />
-                                            {{ post.like_count }}
-                                        </div>
-                                        <div class="flex items-center gap-1">
-                                            <MessageSquare class="h-3 w-3" />
-                                            {{ post.comment_count }}
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Desktop Layout -->
-                                <div class="hidden md:flex items-start justify-between gap-4">
-                                    <!-- Post Image / Icon -->
-                                    <div class="flex-shrink-0">
-                                        <Link :href="`/posts/${post.slug}`">
-                                            <div v-if="post.first_image" class="w-24 h-24 rounded-lg overflow-hidden border border-[#4B5563] hover:border-[#ff6e02] transition-colors">
-                                                <img :src="post.first_image.thumb" :alt="post.title" class="w-full h-full object-cover" />
-                                            </div>
-                                            <div v-else class="w-24 h-24 rounded-lg bg-[#1f2937] border border-[#4B5563] flex items-center justify-center hover:border-[#ff6e02] transition-colors">
-                                                <span class="text-4xl">{{ postTypeIcons[post.type] }}</span>
-                                            </div>
-                                        </Link>
-                                    </div>
-
-                                    <!-- Post Content -->
-                                    <div class="flex-1 min-w-0">
-                                        <!-- Post Header -->
-                                        <div class="flex items-center gap-3 mb-3 flex-wrap">
-                                            <Badge class="bg-[#ff6e02]/20 text-[#ff6e02] border-[#ff6e02]/30">
-                                                {{ postTypeLabels[post.type] }}
-                                            </Badge>
-                                            <Badge
-                                                :class="{
-                                                    'bg-green-500/20 text-green-500 border-green-500/30': post.status === 'published',
-                                                    'bg-yellow-500/20 text-yellow-500 border-yellow-500/30': post.status === 'draft',
-                                                    'bg-gray-500/20 text-gray-500 border-gray-500/30': post.status === 'archived'
-                                                }"
-                                            >
-                                                {{ statusLabels[post.status] }}
-                                            </Badge>
-                                            <!-- Review Status Badge -->
-                                            <Badge
-                                                v-if="post.status === 'published'"
-                                                :class="reviewStatusColors[post.review_status]"
-                                            >
-                                                {{ reviewStatusLabels[post.review_status] }}
-                                            </Badge>
-                                            <Badge
-                                                v-if="post.is_premium"
-                                                class="bg-purple-500/20 text-purple-500 border-purple-500/30"
-                                            >
-                                                VIP
-                                            </Badge>
-                                            <div class="flex items-center gap-2">
-                                                <div class="w-3 h-3 rounded-full bg-[#ff6e02]"></div>
-                                                <span class="text-sm text-[#999999]">{{ post.category.name }}</span>
-                                            </div>
-                                        </div>
-
-                                        <!-- Review Notes (if rejected) -->
-                                        <div
-                                            v-if="post.review_status === 'rejected' && post.review_notes"
-                                            class="mb-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg"
+                                <!-- Status Badges and Actions -->
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <Badge class="bg-[#ff6e02]/20 text-[#ff6e02] border-[#ff6e02]/30 text-xs">
+                                            {{ postTypeLabels[post.type] }}
+                                        </Badge>
+                                        <Badge
+                                            :class="{
+                                                'bg-green-500/20 text-green-500 border-green-500/30': post.status === 'published',
+                                                'bg-yellow-500/20 text-yellow-500 border-yellow-500/30': post.status === 'draft',
+                                                'bg-gray-500/20 text-gray-500 border-gray-500/30': post.status === 'archived'
+                                            }"
+                                            class="text-xs"
                                         >
-                                            <p class="text-sm text-red-400">
-                                                <strong>拒绝原因:</strong> {{ post.review_notes }}
-                                            </p>
-                                        </div>
-
-                                        <!-- Post Title and Content -->
-                                        <Link :href="`/posts/${post.slug}`">
-                                            <h3 class="text-xl font-semibold text-white hover:text-[#ff6e02] transition-colors mb-2">
-                                                {{ post.title }}
-                                            </h3>
-                                        </Link>
-
-                                        <p v-if="post.excerpt" class="text-[#999999] mb-4 line-clamp-2">
-                                            {{ post.excerpt }}
-                                        </p>
-
-                                        <!-- Post Stats -->
-                                        <div class="flex items-center gap-6 text-sm text-[#999999]">
-                                            <div class="flex items-center gap-1">
-                                                <Eye class="h-4 w-4" />
-                                                {{ post.view_count }}
-                                            </div>
-                                            <div class="flex items-center gap-1">
-                                                <Heart class="h-4 w-4" />
-                                                {{ post.like_count }}
-                                            </div>
-                                            <div class="flex items-center gap-1">
-                                                <MessageSquare class="h-4 w-4" />
-                                                {{ post.comment_count }}
-                                            </div>
-                                            <div class="flex items-center gap-1">
-                                                <Calendar class="h-4 w-4" />
-                                                {{ formatDate(post.published_at || post.created_at) }}
-                                            </div>
+                                            {{ statusLabels[post.status] }}
+                                        </Badge>
+                                        <Badge
+                                            v-if="post.status === 'published'"
+                                            :class="reviewStatusColors[post.review_status]"
+                                            class="text-xs text-white"
+                                        >
+                                            {{ reviewStatusLabels[post.review_status] }}
+                                        </Badge>
+                                        <Badge
+                                            v-if="post.is_premium"
+                                            class="bg-purple-500/20 text-purple-500 border-purple-500/30 text-xs"
+                                        >
+                                            VIP
+                                        </Badge>
+                                        <div class="flex items-center gap-1.5">
+                                            <div class="w-2 h-2 rounded-full" :style="{ backgroundColor: post.category.color }"></div>
+                                            <span class="text-xs text-[#999999]">{{ post.category.name }}</span>
                                         </div>
                                     </div>
 
-                                    <!-- Actions -->
-                                    <div class="flex items-center gap-2 flex-shrink-0">
+                                    <!-- Management Actions -->
+                                    <div class="flex items-center gap-1">
                                         <Link :href="`/posts/${post.id}/edit`">
                                             <Button variant="ghost" size="sm" class="text-[#999999] hover:text-white hover:bg-[#4B5563]">
                                                 <Edit class="h-4 w-4" />
@@ -414,6 +277,95 @@ function deletePost(postId: number, postTitle: string) {
                                         >
                                             <Trash2 class="h-4 w-4" />
                                         </Button>
+                                    </div>
+                                </div>
+
+                                <!-- Review Notes (if rejected) -->
+                                <div
+                                    v-if="post.review_status === 'rejected' && post.review_notes"
+                                    class="mb-3 p-3 bg-red-500/10 border border-red-500/30 rounded-lg"
+                                >
+                                    <p class="text-sm text-red-400">
+                                        <strong>拒绝原因:</strong> {{ post.review_notes }}
+                                    </p>
+                                </div>
+
+                                <!-- Post Content -->
+                                <Link :href="`/posts/${post.slug}`" class="block">
+                                    <!-- Title -->
+                                    <h3 class="text-lg font-semibold text-white hover:text-[#ff6e02] transition-colors mb-2 line-clamp-2">
+                                        {{ post.title }}
+                                    </h3>
+
+                                    <!-- Excerpt -->
+                                    <p v-if="post.excerpt" class="text-sm text-[#999999] mb-3 line-clamp-2">
+                                        {{ post.excerpt }}
+                                    </p>
+
+                                    <!-- Post Images (First 3) -->
+                                    <div v-if="getPostImages(post).length > 0" class="mb-3">
+                                        <!-- Single Image -->
+                                        <div v-if="getPostImages(post).length === 1" class="max-w-lg">
+                                            <div class="relative overflow-hidden rounded-lg border border-[#4B5563]" style="aspect-ratio: 16/9;">
+                                                <img
+                                                    :src="getPostImages(post)[0].thumb || getPostImages(post)[0].url"
+                                                    class="w-full h-full object-cover"
+                                                    :alt="`${post.title} - Image 1`"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <!-- Two Images -->
+                                        <div v-else-if="getPostImages(post).length === 2" class="grid grid-cols-2 gap-2 max-w-xl">
+                                            <div
+                                                v-for="(image, index) in getPostImages(post)"
+                                                :key="index"
+                                                class="relative overflow-hidden rounded-lg border border-[#4B5563]"
+                                                style="aspect-ratio: 1/1;"
+                                            >
+                                                <img
+                                                    :src="image.thumb || image.url"
+                                                    class="w-full h-full object-cover"
+                                                    :alt="`${post.title} - Image ${index + 1}`"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <!-- Three or More Images -->
+                                        <div v-else class="grid grid-cols-3 gap-2 max-w-2xl">
+                                            <div
+                                                v-for="(image, index) in getPostImages(post).slice(0, 3)"
+                                                :key="index"
+                                                class="relative overflow-hidden rounded-lg border border-[#4B5563]"
+                                                style="aspect-ratio: 1/1;"
+                                            >
+                                                <img
+                                                    :src="image.thumb || image.url"
+                                                    class="w-full h-full object-cover"
+                                                    :alt="`${post.title} - Image ${index + 1}`"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </Link>
+
+                                <!-- Stats -->
+                                <div class="flex items-center gap-6 text-sm text-[#999999] mt-3">
+                                    <div class="flex items-center gap-1.5">
+                                        <Eye class="h-4 w-4" />
+                                        <span>{{ post.view_count }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <Heart class="h-4 w-4" />
+                                        <span>{{ post.like_count }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5">
+                                        <MessageSquare class="h-4 w-4" />
+                                        <span>{{ post.comment_count }}</span>
+                                    </div>
+                                    <div class="flex items-center gap-1.5 ml-auto">
+                                        <Calendar class="h-4 w-4" />
+                                        <span>{{ new Date(post.published_at || post.created_at).toLocaleDateString('zh-CN') }}</span>
                                     </div>
                                 </div>
                             </div>

@@ -26,16 +26,55 @@ class PostController extends Controller
             ->latest()
             ->paginate(10);
 
-        // Add first image to each post
-        $posts->getCollection()->transform(function ($post) {
+        // Transform posts to include image data
+        $posts->through(function ($post) {
+            // Add first image
             $firstMedia = $post->getFirstMedia('images');
-            $post->first_image = $firstMedia ? [
-                'url' => $firstMedia->getUrl(),
-                'thumb' => $firstMedia->hasGeneratedConversion('thumb')
-                    ? $firstMedia->getUrl('thumb')
-                    : $firstMedia->getUrl(),
-            ] : null;
-            return $post;
+            $firstImage = null;
+
+            if ($firstMedia) {
+                $isCloudStorage = $firstMedia->disk === 'wasabi' || $firstMedia->disk === 's3';
+
+                $url = $isCloudStorage
+                    ? \Storage::disk($firstMedia->disk)->temporaryUrl($firstMedia->getPathRelativeToRoot(), now()->addHours(24))
+                    : $firstMedia->getUrl();
+
+                $thumbUrl = $firstMedia->hasGeneratedConversion('thumb')
+                    ? ($isCloudStorage
+                        ? \Storage::disk($firstMedia->disk)->temporaryUrl($firstMedia->getPath('thumb'), now()->addHours(24))
+                        : $firstMedia->getUrl('thumb'))
+                    : $url;
+
+                $firstImage = [
+                    'url' => $url,
+                    'thumb' => $thumbUrl,
+                ];
+            }
+
+            // Add all images (up to first 3 for display)
+            $postImages = $post->getMedia('images')->take(3)->map(function ($media) {
+                $isCloudStorage = $media->disk === 'wasabi' || $media->disk === 's3';
+
+                $url = $isCloudStorage
+                    ? \Storage::disk($media->disk)->temporaryUrl($media->getPathRelativeToRoot(), now()->addHours(24))
+                    : $media->getUrl();
+
+                $thumbUrl = $media->hasGeneratedConversion('thumb')
+                    ? ($isCloudStorage
+                        ? \Storage::disk($media->disk)->temporaryUrl($media->getPath('thumb'), now()->addHours(24))
+                        : $media->getUrl('thumb'))
+                    : $url;
+
+                return [
+                    'url' => $url,
+                    'thumb' => $thumbUrl,
+                ];
+            })->values()->toArray();
+
+            return array_merge($post->toArray(), [
+                'first_image' => $firstImage,
+                'post_images' => $postImages,
+            ]);
         });
 
         $stats = [
