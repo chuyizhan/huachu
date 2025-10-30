@@ -33,7 +33,7 @@ interface Creator {
 
 interface Props {
     creator: Creator;
-    variant?: 'default' | 'compact' | 'featured';
+    variant?: 'default' | 'compact' | 'featured' | 'home';
     showSocials?: boolean;
     showStats?: boolean;
 }
@@ -78,6 +78,25 @@ const getSocialIcon = (platform: string) => {
 </script>
 
 <template>
+    <!-- Home Variant - Simple horizontal scroll card -->
+    <Link
+        v-if="variant === 'home'"
+        :href="`/creators/${creator.id}`"
+        class="flex flex-col items-center group"
+    >
+        <div class="mb-2">
+            <img
+                :src="creator.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(creator.display_name)}&size=96&background=ff6e02&color=fff`"
+                class=" h-32 rounded-md object-cover group-hover:opacity-90 transition-opacity"
+                :alt="creator.display_name"
+                @error="(e) => e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(creator.display_name)}&size=96&background=ff6e02&color=fff`"
+            />
+        </div>
+        <p class="text-sm text-center text-foreground font-medium truncate w-full group-hover:text-[#ff6e02] transition-colors">
+            {{ creator.display_name }}
+        </p>
+    </Link>
+
     <!-- Featured Variant -->
     <div v-if="variant === 'featured'" class="listclass hover:shadow-lg transition-all duration-200">
         <div class="text-center pb-3">
@@ -197,7 +216,7 @@ const getSocialIcon = (platform: string) => {
     </div>
 
     <!-- Default Variant - UniApp Style -->
-    <div v-else class="listclass hover:shadow-lg transition-all duration-200">
+    <div v-else-if="variant === 'default'" class="listclass hover:shadow-lg transition-all duration-200">
         <div class="flex-y text-center">
             <div class="flex-xy-center u-m-b-20">
                 <Avatar class="h-16 w-16">

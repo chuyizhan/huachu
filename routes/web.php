@@ -103,6 +103,7 @@ Route::prefix('posts')->name('posts.')->group(function () {
 
 // Creator routes
 Route::prefix('creators')->name('creator.')->group(function () {
+    Route::get('/', [CreatorController::class, 'index'])->name('index');
     Route::get('/{id}', [CreatorController::class, 'show'])->name('show');
 
     Route::middleware('auth')->group(function () {

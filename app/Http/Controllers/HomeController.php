@@ -85,7 +85,7 @@ class HomeController extends Controller
             ->where('verification_status', 'verified')
             ->where('is_featured', true)
             ->orderBy('rating', 'desc')
-            ->limit(6)
+            ->limit(4)
             ->get();
 
         // Get popular categories (cuisines)

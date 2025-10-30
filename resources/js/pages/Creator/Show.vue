@@ -163,7 +163,7 @@ const toggleFollow = async () => {
             <div class="max-w-6xl mx-auto px-4">
                 <!-- Header -->
                 <div class="flex items-center mb-8">
-                    <Link href="/community/creators" class="mr-4">
+                    <Link href="/creators" class="mr-4">
                         <Button variant="ghost" size="sm" class="text-white hover:text-[#ff6e02]">
                             <ArrowLeft class="h-4 w-4 mr-2" />
                             返回创作者

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import { SelectContent, SelectPortal, SelectViewport, type SelectContentEmits, type SelectContentProps } from 'reka-ui';
 import { cn } from '@/lib/utils';
 
