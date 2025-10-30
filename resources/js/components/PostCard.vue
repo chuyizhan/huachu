@@ -111,72 +111,88 @@ const getPostTypeText = (type: string) => {
 </script>
 
 <template>
-    <!-- Home Variant - Clean and Modern -->
+    <!-- Home Variant - X-like Layout -->
     <Link
         v-if="variant === 'home'"
         :href="`/posts/${post.slug}`"
-        class="block rounded-lg shadow hover:shadow-md transition-shadow px-2"
+        class="block hover:bg-accent/50 transition-colors px-4 py-3 border-b border-border"
     >
-        <!-- Post Title -->
-        <h3 class="text-base lg:text-lg font-semibold text-foreground mb-3 hover:text-[#ff6e02] transition-colors line-clamp-2 flex items-center gap-2">
-            <span>{{ post.title }}</span>
-            <span v-if="post.has_video" class="inline-flex items-center px-2 py-0.5 text-xs font-medium bg-red-500/20 text-red-400 rounded">
-                视频
-            </span>
-        </h3>
-
-        <!-- Post Content -->
-        <p class="font24 color999 line-clamp-3 u-m-b-15">
-            {{ post.excerpt }}
-        </p>
-
-        <!-- Post Images (First 3) -->
-        <div v-if="showImages && post.post_images && post.post_images.length > 0" class="grid grid-cols-3 gap-2 mb-4">
-            <div
-                v-for="(image, index) in post.post_images.slice(0, 3)"
-                :key="index"
-                class="relative overflow-hidden rounded-lg aspect-square"
-            >
+        <div class="flex gap-3">
+            <!-- Author Avatar (Left) -->
+            <div class="flex-shrink-0">
                 <img
-                    :src="image.thumb || image.url"
-                    class="w-full h-full object-cover"
-                    :alt="`${post.title} - Image ${index + 1}`"
+                    :src="post.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.user.creator_profile?.display_name || post.user.name)}&size=48&background=ff6e02&color=fff`"
+                    class="w-10 h-10 rounded-full object-cover"
+                    :alt="post.user.name"
+                    @error="(e) => e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(post.user.name)}&size=48&background=ff6e02&color=fff`"
                 />
             </div>
-        </div>
 
-        <!-- Post Footer -->
-        <div class="flex items-center justify-between text-sm">
-            <div class="flex items-center gap-4">
-                <!-- Avatar -->
-                <div class="flex items-center gap-2">
-                    <img
-                        :src="post.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.user.creator_profile?.display_name || post.user.name)}&size=32&background=ff6e02&color=fff`"
-                        class="w-8 h-8 rounded-full object-cover"
-                        :alt="post.user.name"
-                        @error="(e) => e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(post.user.name)}&size=32&background=ff6e02&color=fff`"
-                    />
-                    <span class="text-foreground">
+            <!-- Post Content (Right) -->
+            <div class="flex-1 min-w-0">
+                <!-- Author Info & Time -->
+                <div class="flex items-center gap-2 mb-1">
+                    <span class="font-semibold text-foreground text-sm">
                         {{ post.user.creator_profile?.display_name || post.user.name }}
+                    </span>
+                    <span class="text-muted-foreground text-xs">·</span>
+                    <span class="text-muted-foreground text-xs">
+                        {{ formatTime(post.published_at) }}
+                    </span>
+                    <span v-if="post.has_video" class="inline-flex items-center px-1.5 py-0.5 text-xs font-medium bg-red-500/20 text-red-400 rounded">
+                        视频
                     </span>
                 </div>
 
-                <!-- Time -->
-                <span class="text-muted-foreground">
-                    {{ formatTime(post.published_at) }}
-                </span>
-            </div>
+                <!-- Post Title -->
+                <h3 class="text-base font-semibold text-foreground mb-2 hover:text-[#ff6e02] transition-colors line-clamp-2">
+                    {{ post.title }}
+                </h3>
 
-            <!-- Stats -->
-            <div class="flex items-center gap-4 text-muted-foreground">
-                <span class="flex items-center gap-1">
-                    <Eye class="h-4 w-4" />
-                    {{ post.view_count }}
-                </span>
-                <span class="flex items-center gap-1 hover:text-[#ff6e02] transition-colors">
-                    <Heart class="h-4 w-4" />
-                    {{ post.like_count }}
-                </span>
+                <!-- Post Excerpt -->
+                <p class="text-sm text-muted-foreground line-clamp-2 mb-3">
+                    {{ post.excerpt }}
+                </p>
+
+                <!-- Post Images (Max 3 in one row) -->
+                <div v-if="showImages && post.post_images && post.post_images.length > 0" class="grid gap-1 mb-3 rounded-sm overflow-hidden "
+                     :class="{
+                         'grid-cols-1': post.post_images.length === 1,
+                         'grid-cols-2': post.post_images.length === 2,
+                         'grid-cols-3': post.post_images.length >= 3
+                     }">
+                    <div
+                        v-for="(image, index) in post.post_images.slice(0, 3)"
+                        :key="index"
+                        class="relative overflow-hidden"
+                        :class="{
+                            'aspect-video': post.post_images.length === 1,
+                            'aspect-square': post.post_images.length >= 2
+                        }"
+                    >
+                        <img
+                            :src="image.thumb || image.url"
+                            class="w-full h-full object-cover"
+                            :alt="`${post.title} - Image ${index + 1}`"
+                        />
+                    </div>
+                </div>
+
+                <!-- Stats -->
+                <div class="flex items-center gap-6 text-sm text-muted-foreground">
+                    <span class="flex items-center gap-1.5 hover:text-[#ff6e02] transition-colors cursor-pointer">
+                        <MessageSquare class="h-4 w-4" />
+                        <span>{{ post.comment_count || 0 }}</span>
+                    </span>
+                    <span class="flex items-center gap-1.5 hover:text-[#ff6e02] transition-colors cursor-pointer">
+                        <Heart class="h-4 w-4" />
+                        <span>{{ post.like_count }}</span>
+                    </span>
+                    <span class="flex items-center gap-1.5">
+                        <Eye class="h-4 w-4" />
+                        <span>{{ post.view_count }}</span>
+                    </span>
+                </div>
             </div>
         </div>
     </Link>
@@ -187,11 +203,11 @@ const getPostTypeText = (type: string) => {
         :href="`/posts/${post.slug}`"
         class="block group"
     >
-        <Card class="bg-[#374151] border-0 hover:bg-[#1f2937] transition-colors">
-            <CardContent class="p-4">
+        <Card class="bg-transparent border-0 shadow-none">
+            <CardContent class="p-2 px-2">
                 <div class="flex gap-3">
                     <!-- Author Avatar (Left) -->
-                    <div class="flex-shrink-0">
+                    <div v-if="showAuthor && post.user" class="flex-shrink-0">
                         <img
                             :src="post.user.avatar ? `/storage/${post.user.avatar}` : `https://ui-avatars.com/api/?name=${encodeURIComponent(post.user.creator_profile?.display_name || post.user.name)}&size=48&background=ff6e02&color=fff`"
                             class="w-12 h-12 rounded-full object-cover"
@@ -203,7 +219,7 @@ const getPostTypeText = (type: string) => {
                     <!-- Post Content (Right) -->
                     <div class="flex-1 min-w-0">
                         <!-- Author Info & Meta -->
-                        <div class="flex items-center justify-between mb-2">
+                        <div v-if="showAuthor && post.user" class="flex items-center justify-between mb-2">
                             <div class="flex items-center gap-2 flex-wrap">
                                 <div class="flex items-center gap-1">
                                     <span class="text-white font-medium text-sm">
