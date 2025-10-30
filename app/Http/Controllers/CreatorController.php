@@ -14,7 +14,32 @@ class CreatorController extends Controller
 {
     public function __construct()
     {
-        $this->middleware('auth')->except(['show']);
+        $this->middleware('auth')->except(['show', 'index']);
+    }
+
+    public function index(Request $request)
+    {
+        $query = \App\Models\User::with(['creatorProfile'])
+            ->where('is_creator', true)
+            ->latest();
+
+        $creators = $query->paginate(12);
+
+        // Transform creators to add stats
+        $creators->getCollection()->transform(function ($creator) {
+            $creator->posts_count = $creator->posts()->published()->count();
+            $creator->likes_received = $creator->posts()->sum('like_count');
+            $creator->display_name = $creator->creatorProfile->display_name ?? $creator->name;
+            $creator->specialty = $creator->creatorProfile->specialty ?? null;
+            $creator->bio = $creator->creatorProfile->bio ?? null;
+            $creator->verification_status = $creator->creatorProfile->verification_status ?? 'none';
+
+            return $creator;
+        });
+
+        return Inertia::render('Creators/Index', [
+            'creators' => $creators,
+        ]);
     }
 
     public function show($id)

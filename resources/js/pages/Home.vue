@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import WebLayout from '@/layouts/WebLayout.vue';
 import PostCard from '@/components/PostCard.vue';
+import CreatorCard from '@/components/CreatorCard.vue';
 import { Button } from '@/components/ui/button';
 import { Link } from '@inertiajs/vue3';
 import { ArrowRight, Star, TrendingUp } from 'lucide-vue-next';
@@ -161,7 +162,7 @@ const bannerSlides = [
         </section>
 
         <!-- Recommended Creators Section -->
-        <section class="py-12 bg-background">
+        <section class="py-2 bg-background">
             <div class="max-w-[1000px] mx-auto px-4">
                 <!-- Section Title -->
                 <div class="flex items-center justify-between mb-6">
@@ -169,31 +170,21 @@ const bannerSlides = [
                         <Star class="h-6 w-6 text-[#ff6e02]" fill="#ff6e02" />
                         推荐博主
                     </h2>
-                    <Link href="/community/creators" class="text-[#ff6e02] hover:underline flex items-center gap-1 text-sm">
+                    <Link href="/creators" class="text-[#ff6e02] hover:underline flex items-center gap-1 text-sm">
                         更多
                         <ArrowRight class="h-4 w-4" />
                     </Link>
                 </div>
 
                 <!-- Creators Horizontal Scroll -->
-                <div class="flex gap-6 overflow-x-auto pb-4 scrollbar-hide">
-                    <Link
+                <div class="flex gap-3 overflow-x-auto pb-4 scrollbar-hide">
+                    <div
                         v-for="creator in featuredCreators"
                         :key="creator.id"
-                        :href="`/creators/${creator.id}`"
-                        class="flex-shrink-0 w-24 group"
+                        class="flex-shrink-0 w-24"
                     >
-                        <div class="bg-white rounded-lg shadow hover:shadow-md transition-shadow p-3">
-                            <img
-                                :src="creator.user.avatar || `https://ui-avatars.com/api/?name=${creator.display_name}&size=130`"
-                                class="w-full h-18 object-cover rounded-lg mb-3"
-                                :alt="creator.display_name"
-                            />
-                            <p class="text-sm text-center text-foreground font-medium truncate">
-                                {{ creator.display_name }}
-                            </p>
-                        </div>
-                    </Link>
+                        <CreatorCard :creator="creator" variant="home" />
+                    </div>
                 </div>
             </div>
         </section>
