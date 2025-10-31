@@ -10,9 +10,6 @@ import axios from 'axios';
 import Comments from '@/components/Comments.vue';
 import { Carousel, Slide, Pagination } from 'vue3-carousel';
 import 'vue3-carousel/dist/carousel.css';
-// @ts-ignore - vue3-video-play doesn't have types
-import videoPlay from 'vue3-video-play/lib/video-play/main.vue';
-import 'vue3-video-play/dist/style.css';
 import {
     Heart,
     Eye,
@@ -138,12 +135,29 @@ const videoOptions = computed(() => {
     }
 
     return {
-        src: props.post.video_urls[0].url,
-        poster: props.post.image_urls && props.post.image_urls.length > 0 ? props.post.image_urls[0].url : '',
-        type: 'video/mp4',
-        autoplay: false,
-        controlsList: 'nodownload',
+        autoplay: true,
+        loop: true,
+       
+        controls: true,
         preload: 'metadata',
+        fluid: true,
+        responsive: true,
+        poster: props.post.image_urls && props.post.image_urls.length > 0 ? props.post.image_urls[0].url : '',
+        sources: [
+            {
+                src: props.post.video_urls[0].url,
+                type: 'video/mp4'
+            }
+        ],
+        controlBar: {
+            volumePanel: {
+                inline: true
+            },
+            remainingTimeDisplay: {
+                inline: false
+            }
+        },
+        playsinline: true
     };
 });
 
@@ -370,17 +384,8 @@ const closeImageModal = () => {
                 </div>
 
                 <!-- Video Player -->
-                <div v-if="videoOptions && canViewContent" class="mb-0">
-                    <video-play
-                        :src="videoOptions.src"
-                        :poster="videoOptions.poster"
-                        :type="videoOptions.type"
-                        :autoplay="videoOptions.autoplay"
-                        :control="true"
-                        :preload="videoOptions.preload"
-                        controlslist="nodownload"
-                        class="video-player-custom"
-                    />
+                <div v-if="videoOptions && canViewContent" class="mb-0 video-player-wrapper">
+                    <VideoPlayer :options="videoOptions" />
                 </div>
 
                 <!-- Title and Meta -->
@@ -608,50 +613,39 @@ const closeImageModal = () => {
 }
 
 /* Video player custom styling - responsive */
-.video-player-custom {
+.video-player-wrapper {
     width: 100%;
     max-width: 100%;
-    max-height: 80vh;
     background-color: #000;
 }
 
-:deep(.video-player-custom video) {
+:deep(.video-js) {
     width: 100% !important;
     height: auto !important;
-    max-width: 100%;
     max-height: 80vh;
+}
+
+:deep(.video-js .vjs-tech) {
     object-fit: contain !important;
 }
 
-/* Override vue3-video-play default styles */
-:deep(.d-player-video) {
-    width: 100% !important;
-    height: auto !important;
-    max-height: 80vh;
-    object-fit: contain !important;
+/* Video.js theme customization */
+:deep(.video-js .vjs-big-play-button) {
+    border-color: #ff6e02;
+    background-color: rgba(255, 110, 2, 0.8);
 }
 
-:deep(.d-player-wrap) {
-    width: 100% !important;
-    height: auto !important;
-    max-height: 80vh;
+:deep(.video-js .vjs-big-play-button:hover) {
+    background-color: rgba(255, 110, 2, 1);
 }
 
-/* Ensure video maintains aspect ratio and is contained */
-:deep(.d-player-video-main) {
-    width: 100% !important;
-    height: auto !important;
+:deep(.video-js .vjs-control-bar) {
+    background-color: rgba(0, 0, 0, 0.7);
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-    .video-player-custom {
-        max-height: 60vh;
-    }
-
-    :deep(.video-player-custom video),
-    :deep(.d-player-video),
-    :deep(.d-player-wrap) {
+    :deep(.video-js) {
         max-height: 60vh;
     }
 }
