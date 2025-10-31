@@ -607,21 +607,52 @@ const closeImageModal = () => {
     background-color: #ff6e02;
 }
 
-/* Video player custom styling */
+/* Video player custom styling - responsive */
 .video-player-custom {
     width: 100%;
-    max-height: 500px;
+    max-width: 100%;
+    max-height: 80vh;
     background-color: #000;
 }
 
 :deep(.video-player-custom video) {
-    width: 100%;
-    max-height: 500px;
-    object-fit: contain;
+    width: 100% !important;
+    height: auto !important;
+    max-width: 100%;
+    max-height: 80vh;
+    object-fit: contain !important;
 }
 
 /* Override vue3-video-play default styles */
 :deep(.d-player-video) {
-    max-height: 500px;
+    width: 100% !important;
+    height: auto !important;
+    max-height: 80vh;
+    object-fit: contain !important;
+}
+
+:deep(.d-player-wrap) {
+    width: 100% !important;
+    height: auto !important;
+    max-height: 80vh;
+}
+
+/* Ensure video maintains aspect ratio and is contained */
+:deep(.d-player-video-main) {
+    width: 100% !important;
+    height: auto !important;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .video-player-custom {
+        max-height: 60vh;
+    }
+
+    :deep(.video-player-custom video),
+    :deep(.d-player-video),
+    :deep(.d-player-wrap) {
+        max-height: 60vh;
+    }
 }
 </style>
