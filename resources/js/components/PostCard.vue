@@ -111,68 +111,74 @@ const getPostTypeText = (type: string) => {
 </script>
 
 <template>
-    <!-- Home Variant - X-like Layout -->
+    <!-- Home Variant - Card Layout -->
     <Link
         v-if="variant === 'home'"
         :href="`/posts/${post.slug}`"
-        class="block hover:bg-accent/50 transition-colors px-4 py-3  border-gray-500 border-b"
+        class="block"
     >
-        <div class="flex gap-3">
-            <!-- Author Avatar (Left) -->
-            <div class="flex-shrink-0">
-                <img
-                    :src="post.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.user.creator_profile?.display_name || post.user.name)}&size=48&background=ff6e02&color=fff`"
-                    class="w-10 h-10 rounded-full object-cover"
-                    :alt="post.user.name"
-                    @error="(e) => e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(post.user.name)}&size=48&background=ff6e02&color=fff`"
-                />
-            </div>
-
-            <!-- Post Content (Right) -->
-            <div class="flex-1 min-w-0">
-                <!-- Author Info & Time -->
-                <div class="flex items-center gap-2 mb-1">
-                    <span class="font-semibold text-foreground text-sm">
-                        {{ post.user.creator_profile?.display_name || post.user.name }}
-                    </span>
-                    <span class="text-muted-foreground text-xs">·</span>
-                    <span class="text-muted-foreground text-xs">
-                        {{ formatTime(post.published_at) }}
-                    </span>
-                    <span v-if="post.has_video" class="inline-flex items-center px-1.5 py-0.5 text-xs font-medium bg-red-500/20 text-red-400 rounded">
-                        视频
-                    </span>
-                </div>
-
-                <!-- Post Title -->
-                <h3 class="text-base font-semibold text-foreground mb-2 hover:text-[#ff6e02] transition-colors line-clamp-2">
-                    {{ post.title }}
-                </h3>
-
-               
-
-                <!-- Post Images (Max 3 in one row) -->
-                <div v-if="showImages && post.post_images && post.post_images.length > 0" class="grid grid-cols-3 gap-1 mb-3 rounded-sm overflow-hidden "
-                     >
-                    <div
-                        v-for="(image, index) in post.post_images.slice(0, 3)"
-                        :key="index"
-                        class="relative overflow-hidden"
-                        :class="{
-                            'aspect-video': post.post_images.length === 1,
-                            'aspect-square': post.post_images.length >= 2
-                        }"
-                    >
-                        <img
-                            :src="image.thumb || image.url"
-                            class="w-full h-full object-cover"
-                            :alt="`${post.title} - Image ${index + 1}`"
-                        />
+        <Card class="bg-transparent border-0 shadow-none overflow-hidden">
+            <CardContent class="p-4">
+                <!-- Author Section (Top) -->
+                <div class="flex items-start gap-3 mb-4">
+                    <!-- Avatar -->
+                    <img
+                        :src="post.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.user.creator_profile?.display_name || post.user.name)}&size=48&background=ff6e02&color=fff`"
+                        class="w-12 h-12 rounded-full object-cover flex-shrink-0"
+                        :alt="post.user.name"
+                        @error="(e) => e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(post.user.name)}&size=48&background=ff6e02&color=fff`"
+                    />
+                    <!-- Author Info -->
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="font-semibold text-white text-sm">
+                                {{ post.user.creator_profile?.display_name || post.user.name }}
+                            </span>
+                            <ChefHat v-if="post.user.creator_profile?.verification_status === 'verified'"
+                                    class="w-4 h-4 text-[#ff6e02]" />
+                            <span v-if="post.has_video" class="inline-flex items-center px-1.5 py-0.5 text-xs font-medium bg-red-500/20 text-red-400 rounded">
+                                视频
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs text-[#999999] mt-0.5">
+                            <span v-if="post.user.creator_profile?.specialty">
+                                {{ post.user.creator_profile.specialty }}
+                            </span>
+                            <span v-if="post.user.creator_profile?.specialty">·</span>
+                            <span>{{ formatTime(post.published_at) }}</span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Stats -->
-                <div class="flex items-center gap-6 text-sm text-muted-foreground">
+                <!-- Post Title (Middle) -->
+                <h3 class="text-lg font-semibold text-white mb-3 hover:text-[#ff6e02] transition-colors line-clamp-2">
+                    {{ post.title }}
+                </h3>
+
+                <!-- Post Images Grid (Max 3) -->
+                <div v-if="showImages && post.post_images && post.post_images.length > 0" class="mb-4 rounded-lg overflow-hidden">
+                    <div class="grid gap-1 grid-cols-3">
+                        <div
+                            v-for="(image, index) in post.post_images.slice(0, 3)"
+                            :key="index"
+                            class="relative overflow-hidden bg-[#1c1c1c] aspect-square"
+                        >
+                            <img
+                                :src="image.thumb || image.url"
+                                class="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                                :alt="`${post.title} - Image ${index + 1}`"
+                            />
+                            <!-- More indicator -->
+                            <div v-if="index === 2 && post.post_images.length > 3"
+                                 class="absolute inset-0 bg-black/60 flex items-center justify-center">
+                                <span class="text-white text-lg font-semibold">+{{ post.post_images.length - 3 }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats (Bottom) -->
+                <div class="flex items-center gap-6 text-sm text-[#999999] pt-3 border-t border-[#4B5563]">
                     <span class="flex items-center gap-1.5 hover:text-[#ff6e02] transition-colors cursor-pointer">
                         <MessageSquare class="h-4 w-4" />
                         <span>{{ post.comment_count || 0 }}</span>
@@ -186,8 +192,8 @@ const getPostTypeText = (type: string) => {
                         <span>{{ post.view_count }}</span>
                     </span>
                 </div>
-            </div>
-        </div>
+            </CardContent>
+        </Card>
     </Link>
 
     <!-- List Variant - Twitter-like Layout for Posts Page -->
