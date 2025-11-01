@@ -344,10 +344,26 @@ const formatDate = (dateString: string) => {
                                             {{ user.id }}
                                         </td>
                                         <td class="px-6 py-4">
-                                            <div class="flex flex-col gap-1">
-                                                <div class="font-medium">{{ user.name }}</div>
-                                                <div class="text-xs text-gray-500 dark:text-gray-400">@{{ user.login_name }}</div>
-                                                <div class="text-xs text-gray-500 dark:text-gray-400">{{ user.email }}</div>
+                                            <div class="flex items-center gap-3">
+                                                <!-- Avatar -->
+                                                <img
+                                                    v-if="user.avatar"
+                                                    :src="user.avatar.startsWith('http') ? user.avatar : `/storage/${user.avatar}`"
+                                                    :alt="user.name"
+                                                    class="w-10 h-10 rounded-full object-cover"
+                                                />
+                                                <div
+                                                    v-else
+                                                    class="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-gray-600 dark:text-gray-300 font-semibold"
+                                                >
+                                                    {{ user.name.charAt(0).toUpperCase() }}
+                                                </div>
+                                                <!-- User Info -->
+                                                <div class="flex flex-col gap-1">
+                                                    <div class="font-medium">{{ user.name }}</div>
+                                                    <div class="text-xs text-gray-500 dark:text-gray-400">@{{ user.login_name }}</div>
+                                                    <div class="text-xs text-gray-500 dark:text-gray-400">{{ user.email }}</div>
+                                                </div>
                                             </div>
                                         </td>
                                         <td class="px-6 py-4">

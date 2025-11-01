@@ -22,6 +22,7 @@ interface Creator {
     email: string;
     is_creator: boolean;
     is_top_creator: boolean;
+    avatar: string | null;
     creator_profile: CreatorProfile | null;
     created_at: string;
 }
@@ -320,15 +321,31 @@ const formatDate = (dateString: string) => {
                                 {{ creator.id }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex flex-col">
-                                    <div class="text-sm font-medium text-gray-900 dark:text-white">
-                                        {{ creator.creator_profile?.display_name || creator.name }}
+                                <div class="flex items-center gap-3">
+                                    <!-- Avatar -->
+                                    <img
+                                        v-if="creator.avatar"
+                                        :src="creator.avatar.startsWith('http') ? creator.avatar : `/storage/${creator.avatar}`"
+                                        :alt="creator.name"
+                                        class="w-10 h-10 rounded-full object-cover"
+                                    />
+                                    <div
+                                        v-else
+                                        class="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-gray-600 dark:text-gray-300 font-semibold"
+                                    >
+                                        {{ (creator.creator_profile?.display_name || creator.name).charAt(0).toUpperCase() }}
                                     </div>
-                                    <div class="text-sm text-gray-500 dark:text-gray-400">
-                                        {{ creator.email }}
-                                    </div>
-                                    <div v-if="creator.creator_profile?.specialty" class="text-xs text-gray-400">
-                                        {{ creator.creator_profile.specialty }}
+                                    <!-- Creator Info -->
+                                    <div class="flex flex-col">
+                                        <div class="text-sm font-medium text-gray-900 dark:text-white">
+                                            {{ creator.creator_profile?.display_name || creator.name }}
+                                        </div>
+                                        <div class="text-sm text-gray-500 dark:text-gray-400">
+                                            {{ creator.email }}
+                                        </div>
+                                        <div v-if="creator.creator_profile?.specialty" class="text-xs text-gray-400">
+                                            {{ creator.creator_profile.specialty }}
+                                        </div>
                                     </div>
                                 </div>
                             </td>

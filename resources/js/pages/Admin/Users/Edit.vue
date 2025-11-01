@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import Textarea from '@/components/ui/Textarea.vue'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ArrowLeft, RefreshCw } from 'lucide-vue-next'
+import { ArrowLeft, RefreshCw, Upload, X } from 'lucide-vue-next'
 import { ref } from 'vue'
 
 interface User {
@@ -22,6 +22,7 @@ interface User {
     status: number
     credits: number
     balance: number
+    avatar: string | null
 }
 
 interface Props {
@@ -29,6 +30,9 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+const avatarPreview = ref<string | null>(props.user.avatar ? `/storage/${props.user.avatar}` : null)
+const avatarFile = ref<File | null>(null)
 
 const form = useForm({
     name: props.user.name,
@@ -43,11 +47,57 @@ const form = useForm({
     status: props.user.status,
     credits: props.user.credits,
     balance: props.user.balance,
+    avatar: null as File | null,
+    remove_avatar: false,
 })
 
+const handleAvatarChange = (event: Event) => {
+    const target = event.target as HTMLInputElement
+    const file = target.files?.[0]
+
+    if (file) {
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            alert('请选择图片文件')
+            return
+        }
+
+        // Validate file size (max 2MB)
+        if (file.size > 2 * 1024 * 1024) {
+            alert('图片大小不能超过 2MB')
+            return
+        }
+
+        avatarFile.value = file
+        form.avatar = file
+        form.remove_avatar = false
+
+        // Create preview
+        const reader = new FileReader()
+        reader.onload = (e) => {
+            avatarPreview.value = e.target?.result as string
+        }
+        reader.readAsDataURL(file)
+    }
+}
+
+const removeAvatar = () => {
+    if (confirm('确定要删除头像吗？')) {
+        avatarPreview.value = null
+        avatarFile.value = null
+        form.avatar = null
+        form.remove_avatar = true
+    }
+}
+
 const submit = () => {
-    form.put(`/admin/users/${props.user.id}`, {
+    // Add _method to the form data itself
+    form.transform((data) => ({
+        ...data,
+        _method: 'PUT'
+    })).post(`/admin/users/${props.user.id}`, {
         preserveScroll: true,
+        forceFormData: true,
         onSuccess: () => {
             // Success message will be shown via Laravel flash message
         },
@@ -109,6 +159,64 @@ const consolidateBalances = () => {
                                     <!-- Basic Info Section -->
                                     <div class="space-y-4">
                                         <h3 class="text-lg font-medium">基本信息</h3>
+
+                                        <!-- Avatar Upload -->
+                                        <div class="space-y-2">
+                                            <Label>头像</Label>
+                                            <div class="flex items-start gap-4">
+                                                <!-- Avatar Preview -->
+                                                <div class="relative">
+                                                    <div
+                                                        v-if="avatarPreview"
+                                                        class="w-24 h-24 rounded-full overflow-hidden border-2 border-gray-300 dark:border-gray-600"
+                                                    >
+                                                        <img
+                                                            :src="avatarPreview"
+                                                            alt="Avatar preview"
+                                                            class="w-full h-full object-cover"
+                                                        />
+                                                    </div>
+                                                    <div
+                                                        v-else
+                                                        class="w-24 h-24 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center border-2 border-gray-300 dark:border-gray-600"
+                                                    >
+                                                        <Upload class="h-8 w-8 text-gray-400" />
+                                                    </div>
+                                                    <button
+                                                        v-if="avatarPreview"
+                                                        type="button"
+                                                        @click="removeAvatar"
+                                                        class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                                                    >
+                                                        <X class="h-4 w-4" />
+                                                    </button>
+                                                </div>
+
+                                                <!-- Upload Button -->
+                                                <div class="flex-1">
+                                                    <input
+                                                        type="file"
+                                                        id="avatar"
+                                                        accept="image/*"
+                                                        @change="handleAvatarChange"
+                                                        class="hidden"
+                                                    />
+                                                    <label
+                                                        for="avatar"
+                                                        class="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer"
+                                                    >
+                                                        <Upload class="h-4 w-4 mr-2" />
+                                                        选择图片
+                                                    </label>
+                                                    <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                                                        支持 JPG, PNG, GIF 格式，最大 2MB
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <p v-if="form.errors.avatar" class="text-sm text-red-500">
+                                                {{ form.errors.avatar }}
+                                            </p>
+                                        </div>
 
                                         <!-- Name -->
                                         <div class="space-y-2">
