@@ -120,6 +120,8 @@ class UserController extends Controller
             'status' => 'required|integer|in:1,2,3',
             'credits' => 'required|numeric|min:0',
             'balance' => 'required|numeric|min:0',
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'remove_avatar' => 'nullable|boolean',
         ]);
 
         // Debug: Log validated data
@@ -130,8 +132,29 @@ class UserController extends Controller
         $validated['is_verified'] = $request->boolean('is_verified');
         $validated['is_top_creator'] = $request->boolean('is_top_creator');
 
+        // Handle avatar upload
+        if ($request->hasFile('avatar')) {
+            // Delete old avatar if exists
+            if ($user->avatar) {
+                \Storage::disk('public')->delete($user->avatar);
+            }
+
+            // Store new avatar
+            $avatarPath = $request->file('avatar')->store('avatars', 'public');
+            $validated['avatar'] = $avatarPath;
+        }
+
+        // Handle avatar removal
+        if ($request->boolean('remove_avatar')) {
+            if ($user->avatar) {
+                \Storage::disk('public')->delete($user->avatar);
+            }
+            $validated['avatar'] = null;
+        }
+
         // Always remove password_confirmation from validated data (not a model field)
         unset($validated['password_confirmation']);
+        unset($validated['remove_avatar']);
 
         // Handle password update separately
         $updatePassword = false;
