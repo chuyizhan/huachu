@@ -87,14 +87,30 @@ class CreatorController extends Controller
      */
     public function show(string $id)
     {
-        $user = User::with('creatorProfile')->findOrFail($id);
+        $user = User::with([
+            'creatorProfile',
+            'posts' => function ($query) {
+                $query->latest()->take(10);
+            },
+            'followers',
+        ])->findOrFail($id);
 
         if (!$user->is_creator) {
             abort(404, 'Creator not found');
         }
 
+        // Get statistics
+        $stats = [
+            'total_posts' => $user->posts()->count(),
+            'total_views' => $user->posts()->sum('view_count'),
+            'total_likes' => $user->posts()->sum('like_count'),
+            'total_followers' => $user->creatorProfile?->follower_count ?? 0,
+            'total_revenue' => $user->platformTransactions()->sum('amount'),
+        ];
+
         return Inertia::render('Admin/Creators/Show', [
             'creator' => $user,
+            'stats' => $stats,
         ]);
     }
 

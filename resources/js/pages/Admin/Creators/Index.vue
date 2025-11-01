@@ -63,15 +63,17 @@ const sortDirection = ref(props.filters.sort_direction || 'desc');
 const perPage = ref(props.filters.per_page || '20');
 
 const applyFilters = () => {
-    router.get('/admin/creators', {
-        search: search.value,
-        verification_status: verificationStatus.value,
-        is_featured: isFeatured.value,
-        is_top_creator: isTopCreator.value,
-        sort_by: sortBy.value,
-        sort_direction: sortDirection.value,
-        per_page: perPage.value,
-    }, {
+    const params: Record<string, any> = {};
+
+    if (search.value) params.search = search.value;
+    if (verificationStatus.value) params.verification_status = verificationStatus.value;
+    if (isFeatured.value !== '') params.is_featured = isFeatured.value;
+    if (isTopCreator.value !== '') params.is_top_creator = isTopCreator.value;
+    if (sortBy.value) params.sort_by = sortBy.value;
+    if (sortDirection.value) params.sort_direction = sortDirection.value;
+    if (perPage.value) params.per_page = perPage.value;
+
+    router.get('/admin/creators', params, {
         preserveState: true,
         preserveScroll: true,
     });
@@ -181,6 +183,7 @@ const formatDate = (dateString: string) => {
                         </label>
                         <select
                             v-model="verificationStatus"
+                            @change="applyFilters"
                             class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         >
                             <option value="">全部</option>
@@ -197,6 +200,7 @@ const formatDate = (dateString: string) => {
                         </label>
                         <select
                             v-model="isFeatured"
+                            @change="applyFilters"
                             class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         >
                             <option value="">全部</option>
@@ -212,6 +216,7 @@ const formatDate = (dateString: string) => {
                         </label>
                         <select
                             v-model="isTopCreator"
+                            @change="applyFilters"
                             class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         >
                             <option value="">全部</option>
@@ -227,6 +232,7 @@ const formatDate = (dateString: string) => {
                         </label>
                         <select
                             v-model="perPage"
+                            @change="applyFilters"
                             class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
                         >
                             <option value="10">10</option>
