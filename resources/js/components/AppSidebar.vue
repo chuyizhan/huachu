@@ -14,7 +14,7 @@ import {
 import { dashboard } from '@/routes';
 import { type NavItem } from '@/types';
 import { Link, usePage } from '@inertiajs/vue3';
-import { BookOpen, Folder, LayoutGrid, Users, MessageSquare, Crown, Trophy, PlusCircle, Shield, FolderTree, FileText, Coins, DollarSign, Package, TrendingUp, ShoppingCart, Wallet, FileCheck } from 'lucide-vue-next';
+import { BookOpen, Folder, LayoutGrid, Users, MessageSquare, Crown, Trophy, PlusCircle, Shield, FolderTree, FileText, Coins, DollarSign, Package, TrendingUp, ShoppingCart, Wallet, FileCheck, ChefHat } from 'lucide-vue-next';
 import AppLogo from './AppLogo.vue';
 import { computed } from 'vue';
 
@@ -37,6 +37,11 @@ const mainNavItems: NavItem[] = [
         title: '用户管理',
         href: '/admin/users',
         icon: Shield,
+    },
+    {
+        title: '创作者管理',
+        href: '/admin/creators',
+        icon: ChefHat,
     },
     {
         title: '分类管理',

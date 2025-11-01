@@ -35,6 +35,12 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'admin']
     Route::get('platform-transactions', [App\Http\Controllers\Admin\PlatformTransactionController::class, 'index'])->name('platform-transactions.index');
     Route::get('orders', [App\Http\Controllers\Admin\OrderController::class, 'index'])->name('orders.index');
 
+    // Creators Management Routes
+    Route::resource('creators', App\Http\Controllers\Admin\CreatorController::class)->only(['index', 'show', 'update', 'destroy']);
+    Route::post('creators/{id}/verify', [App\Http\Controllers\Admin\CreatorController::class, 'verify'])->name('creators.verify');
+    Route::post('creators/{id}/reject', [App\Http\Controllers\Admin\CreatorController::class, 'reject'])->name('creators.reject');
+    Route::post('creators/{id}/toggle-featured', [App\Http\Controllers\Admin\CreatorController::class, 'toggleFeatured'])->name('creators.toggle-featured');
+
     // Post Review Routes
     Route::get('post-reviews', [App\Http\Controllers\Admin\PostReviewController::class, 'index'])->name('post-reviews.index');
     Route::get('post-reviews/{id}', [App\Http\Controllers\Admin\PostReviewController::class, 'show'])->name('post-reviews.show');
