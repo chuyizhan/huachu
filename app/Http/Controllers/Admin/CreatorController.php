@@ -137,6 +137,7 @@ class CreatorController extends Controller
             'profile.verification_status' => 'sometimes|in:pending,verified,rejected',
             'profile.verification_notes' => 'nullable|string',
             'profile.is_featured' => 'sometimes|boolean',
+            'profile.platform_commission_rate' => 'sometimes|numeric|min:0|max:100',
         ]);
 
         // Update user fields

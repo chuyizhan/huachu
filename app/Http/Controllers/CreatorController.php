@@ -7,6 +7,8 @@ use Inertia\Inertia;
 use App\Models\CreatorProfile;
 use App\Models\Post;
 use App\Models\Follow;
+use App\Models\CreatorSubscriptionPlan;
+use App\Models\UserSubscription;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -75,11 +77,35 @@ class CreatorController extends Controller
             $isFollowing = Follow::isFollowing(Auth::id(), $id);
         }
 
+        // Get subscription plans
+        $subscriptionPlans = CreatorSubscriptionPlan::where('creator_id', $creator->user_id)
+            ->where('is_active', true)
+            ->ordered()
+            ->get();
+
+        // Check if user has active subscription
+        $hasActiveSubscription = false;
+        $activeSubscription = null;
+        if (Auth::check()) {
+            $activeSubscription = UserSubscription::where('subscriber_id', Auth::id())
+                ->where('creator_id', $creator->user_id)
+                ->active()
+                ->first();
+            $hasActiveSubscription = $activeSubscription !== null;
+        }
+
+        // Get user's current credits
+        $userCredits = Auth::check() ? Auth::user()->credits : 0;
+
         return Inertia::render('Creator/Show', [
             'creator' => $creator,
             'posts' => $posts,
             'isFollowing' => $isFollowing,
             'canFollow' => $canFollow,
+            'subscriptionPlans' => $subscriptionPlans,
+            'hasActiveSubscription' => $hasActiveSubscription,
+            'activeSubscription' => $activeSubscription,
+            'userCredits' => $userCredits,
         ]);
     }
 

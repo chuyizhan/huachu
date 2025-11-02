@@ -155,11 +155,19 @@ class User extends Authenticatable
     }
 
     /**
-     * Get all subscriptions by this user.
+     * Get all subscriptions by this user (as subscriber).
      */
     public function subscriptions()
     {
         return $this->hasMany(UserSubscription::class, 'subscriber_id');
+    }
+
+    /**
+     * Get all subscriptions received by this user (as creator).
+     */
+    public function receivedSubscriptions()
+    {
+        return $this->hasMany(UserSubscription::class, 'creator_id');
     }
 
     /**

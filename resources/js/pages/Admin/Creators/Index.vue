@@ -14,6 +14,8 @@ interface CreatorProfile {
     follower_count: number;
     rating: number;
     review_count: number;
+    total_earnings: number;
+    total_platform_share: number;
 }
 
 interface Creator {
@@ -144,6 +146,14 @@ const getStatusBadgeClass = (status: string) => {
 
 const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('zh-CN');
+};
+
+const formatCurrency = (amount: number | undefined) => {
+    if (amount === undefined || amount === null) return '¥0.00';
+    return new Intl.NumberFormat('zh-CN', {
+        style: 'currency',
+        currency: 'CNY'
+    }).format(amount);
 };
 </script>
 
@@ -299,6 +309,12 @@ const formatDate = (dateString: string) => {
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                                 标签
                             </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                创作者收益
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                                平台分成
+                            </th>
                             <th
                                 @click="toggleSort('created_at')"
                                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600"
@@ -355,6 +371,12 @@ const formatDate = (dateString: string) => {
                                         精选
                                     </span>
                                 </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600 dark:text-green-400">
+                                {{ formatCurrency(creator.creator_profile?.total_earnings) }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 dark:text-blue-400">
+                                {{ formatCurrency(creator.creator_profile?.total_platform_share) }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 {{ formatDate(creator.created_at) }}

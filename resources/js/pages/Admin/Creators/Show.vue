@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Check, X, Star, StarOff, Trash2, Eye, Heart, FileText, Users, DollarSign } from 'lucide-vue-next';
+import { ArrowLeft, Check, X, Star, StarOff, Trash2, Eye, Heart, FileText, Users, DollarSign, Plus, Edit as EditIcon } from 'lucide-vue-next';
+import axios from 'axios';
 
 interface CreatorProfile {
     id: number;
@@ -26,6 +27,18 @@ interface CreatorProfile {
     follower_count: number;
     rating: number;
     review_count: number;
+    platform_commission_rate: number;
+}
+
+interface SubscriptionPlan {
+    id: number;
+    creator_id: number;
+    name: string;
+    description: string | null;
+    duration_days: number;
+    price: number;
+    is_active: boolean;
+    sort_order: number;
 }
 
 interface Creator {
@@ -55,6 +68,17 @@ const props = defineProps<Props>();
 
 const editMode = ref(false);
 const verificationNotes = ref('');
+const subscriptionPlans = ref<SubscriptionPlan[]>([]);
+const showPlanForm = ref(false);
+const editingPlan = ref<SubscriptionPlan | null>(null);
+
+const planForm = ref({
+    name: '',
+    description: '',
+    duration_days: 30,
+    price: 0,
+    sort_order: 0,
+});
 
 const form = useForm({
     is_top_creator: props.creator.is_top_creator,
@@ -69,8 +93,21 @@ const form = useForm({
         verification_status: props.creator.creator_profile?.verification_status || 'pending',
         verification_notes: props.creator.creator_profile?.verification_notes || '',
         is_featured: props.creator.creator_profile?.is_featured || false,
+        platform_commission_rate: props.creator.creator_profile?.platform_commission_rate || 30.00,
     }
 });
+
+// Load subscription plans on mount
+const loadSubscriptionPlans = async () => {
+    try {
+        const response = await axios.get(`/admin/creators/${props.creator.id}/subscription-plans`);
+        subscriptionPlans.value = response.data;
+    } catch (error) {
+        console.error('Failed to load subscription plans:', error);
+    }
+};
+
+loadSubscriptionPlans();
 
 const saveChanges = () => {
     form.put(`/admin/creators/${props.creator.id}`, {
@@ -148,6 +185,69 @@ const formatCurrency = (amount: number) => {
         style: 'currency',
         currency: 'CNY'
     }).format(amount);
+};
+
+const addNewPlan = () => {
+    if (subscriptionPlans.value.filter(p => p.is_active).length >= 3) {
+        alert('最多只能创建3个订阅计划');
+        return;
+    }
+    editingPlan.value = null;
+    planForm.value = {
+        name: '',
+        description: '',
+        duration_days: 30,
+        price: 0,
+        sort_order: subscriptionPlans.value.length,
+    };
+    showPlanForm.value = true;
+};
+
+const editPlan = (plan: SubscriptionPlan) => {
+    editingPlan.value = plan;
+    planForm.value = {
+        name: plan.name,
+        description: plan.description || '',
+        duration_days: plan.duration_days,
+        price: plan.price,
+        sort_order: plan.sort_order,
+    };
+    showPlanForm.value = true;
+};
+
+const savePlan = async () => {
+    try {
+        if (editingPlan.value) {
+            // Update existing plan
+            await axios.put(`/admin/creator-subscription-plans/${editingPlan.value.id}`, planForm.value);
+        } else {
+            // Create new plan
+            await axios.post(`/admin/creators/${props.creator.id}/subscription-plans`, planForm.value);
+        }
+        await loadSubscriptionPlans();
+        showPlanForm.value = false;
+    } catch (error: any) {
+        alert(error.response?.data?.message || '保存失败');
+    }
+};
+
+const deletePlan = async (plan: SubscriptionPlan) => {
+    if (!confirm(`确定要删除订阅计划"${plan.name}"吗？`)) return;
+
+    try {
+        await axios.delete(`/admin/creator-subscription-plans/${plan.id}`);
+        await loadSubscriptionPlans();
+    } catch (error) {
+        alert('删除失败');
+    }
+};
+
+const getDurationLabel = (days: number) => {
+    if (days === 7) return '1周';
+    if (days === 30) return '1个月';
+    if (days === 90) return '3个月';
+    if (days === 365) return '1年';
+    return `${days}天`;
 };
 </script>
 
@@ -435,6 +535,113 @@ const formatCurrency = (amount: number) => {
                                 <span v-if="!editMode" class="text-sm">
                                     {{ creator.creator_profile?.is_featured ? '是' : '否' }}
                                 </span>
+                            </div>
+
+                            <!-- Platform Commission Rate -->
+                            <div>
+                                <Label>平台佣金比例 (%)</Label>
+                                <Input
+                                    v-if="editMode"
+                                    v-model.number="form.profile.platform_commission_rate"
+                                    type="number"
+                                    min="0"
+                                    max="100"
+                                    step="0.01"
+                                    class="mt-1"
+                                />
+                                <p v-else class="mt-1 text-sm">{{ creator.creator_profile?.platform_commission_rate || 30 }}%</p>
+                                <p class="mt-1 text-xs text-gray-500">默认30%，平台从订阅收入中抽取的比例</p>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <!-- Subscription Plans -->
+                    <Card>
+                        <CardHeader>
+                            <div class="flex items-center justify-between">
+                                <CardTitle>订阅计划</CardTitle>
+                                <Button
+                                    @click="addNewPlan"
+                                    size="sm"
+                                    variant="outline"
+                                    :disabled="subscriptionPlans.filter(p => p.is_active).length >= 3"
+                                >
+                                    <Plus class="h-4 w-4 mr-1" />
+                                    添加计划
+                                </Button>
+                            </div>
+                            <CardDescription>最多可创建3个订阅计划</CardDescription>
+                        </CardHeader>
+                        <CardContent class="space-y-3">
+                            <div
+                                v-for="plan in subscriptionPlans.filter(p => p.is_active)"
+                                :key="plan.id"
+                                class="p-3 border rounded-lg"
+                            >
+                                <div class="flex items-start justify-between">
+                                    <div class="flex-1">
+                                        <h4 class="font-medium">{{ plan.name }}</h4>
+                                        <p class="text-sm text-gray-600 dark:text-gray-400">
+                                            {{ getDurationLabel(plan.duration_days) }} - {{ plan.price }} 金币
+                                        </p>
+                                        <p v-if="plan.description" class="text-xs text-gray-500 mt-1">
+                                            {{ plan.description }}
+                                        </p>
+                                    </div>
+                                    <div class="flex gap-1">
+                                        <Button
+                                            @click="editPlan(plan)"
+                                            size="sm"
+                                            variant="ghost"
+                                        >
+                                            <EditIcon class="h-3 w-3" />
+                                        </Button>
+                                        <Button
+                                            @click="deletePlan(plan)"
+                                            size="sm"
+                                            variant="ghost"
+                                            class="text-red-600 hover:text-red-700"
+                                        >
+                                            <Trash2 class="h-3 w-3" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p v-if="subscriptionPlans.filter(p => p.is_active).length === 0" class="text-sm text-gray-500 text-center py-4">
+                                暂无订阅计划
+                            </p>
+
+                            <!-- Plan Form Modal -->
+                            <div v-if="showPlanForm" class="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                                <div class="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4">
+                                    <h3 class="text-lg font-semibold mb-4">
+                                        {{ editingPlan ? '编辑订阅计划' : '添加订阅计划' }}
+                                    </h3>
+                                    <div class="space-y-4">
+                                        <div>
+                                            <Label>计划名称</Label>
+                                            <Input v-model="planForm.name" placeholder="例如：月度订阅" class="mt-1" />
+                                        </div>
+                                        <div>
+                                            <Label>描述（可选）</Label>
+                                            <Textarea v-model="planForm.description" rows="2" class="mt-1" />
+                                        </div>
+                                        <div>
+                                            <Label>时长（天）</Label>
+                                            <Input v-model.number="planForm.duration_days" type="number" min="1" class="mt-1" />
+                                            <p class="text-xs text-gray-500 mt-1">常用：7天、30天、90天、365天</p>
+                                        </div>
+                                        <div>
+                                            <Label>价格（金币）</Label>
+                                            <Input v-model.number="planForm.price" type="number" min="0" step="0.01" class="mt-1" />
+                                        </div>
+                                    </div>
+                                    <div class="flex gap-2 mt-6">
+                                        <Button @click="savePlan" class="flex-1">保存</Button>
+                                        <Button @click="showPlanForm = false" variant="outline" class="flex-1">取消</Button>
+                                    </div>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>

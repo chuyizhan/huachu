@@ -41,6 +41,13 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'admin']
     Route::post('creators/{id}/reject', [App\Http\Controllers\Admin\CreatorController::class, 'reject'])->name('creators.reject');
     Route::post('creators/{id}/toggle-featured', [App\Http\Controllers\Admin\CreatorController::class, 'toggleFeatured'])->name('creators.toggle-featured');
 
+    // Creator Subscription Plans Management
+    Route::prefix('creators/{creator}/subscription-plans')->name('creator-subscription-plans.')->group(function () {
+        Route::get('/', [App\Http\Controllers\Admin\CreatorSubscriptionPlanController::class, 'index'])->name('index');
+        Route::post('/', [App\Http\Controllers\Admin\CreatorSubscriptionPlanController::class, 'store'])->name('store');
+    });
+    Route::resource('creator-subscription-plans', App\Http\Controllers\Admin\CreatorSubscriptionPlanController::class)->only(['update', 'destroy']);
+
     // Post Review Routes
     Route::get('post-reviews', [App\Http\Controllers\Admin\PostReviewController::class, 'index'])->name('post-reviews.index');
     Route::get('post-reviews/{id}', [App\Http\Controllers\Admin\PostReviewController::class, 'show'])->name('post-reviews.show');
@@ -133,7 +140,14 @@ Route::prefix('vip')->name('vip.')->middleware('auth')->group(function () {
     Route::delete('/subscriptions/{id}/cancel', [VipController::class, 'cancel'])->name('cancel');
 });
 
-// Plan Subscriptions routes
+// Creator subscription routes
+Route::prefix('subscriptions')->name('subscriptions.')->middleware('auth')->group(function () {
+    Route::get('/', [App\Http\Controllers\CreatorSubscriptionController::class, 'mySubscriptions'])->name('index');
+    Route::post('/plans/{plan}/subscribe', [App\Http\Controllers\CreatorSubscriptionController::class, 'subscribe'])->name('subscribe');
+    Route::post('/{subscription}/cancel', [App\Http\Controllers\CreatorSubscriptionController::class, 'cancel'])->name('cancel');
+});
+
+// Plan Subscriptions routes (legacy - will be deprecated)
 Route::prefix('plan-subscriptions')->name('plan-subscriptions.')->middleware('auth')->group(function () {
     Route::get('/', [App\Http\Controllers\PlanSubscriptionController::class, 'index'])->name('index');
     Route::get('/create', [App\Http\Controllers\PlanSubscriptionController::class, 'create'])->name('create');
