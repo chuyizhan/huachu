@@ -501,31 +501,19 @@ const closeImageModal = () => {
                     <div v-else-if="isLocked" class="mb-8">
                         <div class="bg-[#374151] border border-[#ff6e02] rounded-lg p-8 text-center">
                             <div class="text-6xl mb-4">🔒</div>
-                            <h3 class="text-xl font-bold text-white mb-2">此内容需要付费解锁</h3>
+                            <h3 class="text-xl font-bold text-white mb-2">此内容需要订阅解锁</h3>
                             <p class="text-[#999999] mb-6 text-sm">
-                                作者设置此内容需要 <span class="text-[#ff6e02] font-bold">{{ post.price }}</span> 金币才能查看
+                                这是会员专享内容，订阅 <span class="text-[#ff6e02] font-bold">{{ post.user.creator_profile?.display_name || post.user.name }}</span> 即可查看所有专享内容
                             </p>
 
-                            <div v-if="post.free_after" class="mb-4 text-xs text-[#999999]">
-                                ⏰ 将在 {{ formatDate(post.free_after) }} 后免费开放
-                            </div>
-
-                            <div v-if="isAuthenticated" class="space-y-4">
-                                <div class="text-sm text-[#999999]">
-                                    你的金币余额: <span class="text-white font-semibold">{{ userCreditsRef }}</span>
-                                </div>
-
+                            <div v-if="isAuthenticated">
                                 <Button
-                                    v-if="userCreditsRef >= post.price"
-                                    @click="purchasePost"
-                                    :disabled="isPurchasing"
+                                    as="a"
+                                    :href="`/creator/${post.user.id}`"
                                     class="w-full bg-[#ff6e02] hover:bg-[#e55a00] text-white h-12 rounded-lg"
                                 >
-                                    {{ isPurchasing ? '购买中...' : `立即购买 ( 金币：${post.price} )` }}
+                                    查看订阅计划
                                 </Button>
-                                <div v-else class="text-red-400 text-sm">
-                                    金币不足，需要 {{ post.price - userCreditsRef }} 更多金币
-                                </div>
                             </div>
 
                             <div v-else>
@@ -534,7 +522,7 @@ const closeImageModal = () => {
                                     href="/login"
                                     class="w-full bg-[#ff6e02] hover:bg-[#e55a00] text-white h-12 rounded-lg"
                                 >
-                                    登录后购买
+                                    登录后订阅
                                 </Button>
                             </div>
                         </div>
