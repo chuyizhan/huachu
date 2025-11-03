@@ -59,6 +59,61 @@ class CategoryController extends Controller
     }
 
     /**
+     * Show the form for creating a new category.
+     */
+    public function create(): Response
+    {
+        return Inertia::render('Admin/Categories/Create');
+    }
+
+    /**
+     * Store a newly created category.
+     */
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'slug' => 'required|string|max:255|unique:post_categories,slug',
+            'description' => 'nullable|string',
+            'color' => 'required|string|size:7|regex:/^#[0-9A-Fa-f]{6}$/',
+            'icon' => 'nullable|string|max:255',
+            'icon_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'category_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'sort_order' => 'required|integer',
+            'is_active' => 'boolean',
+            'is_nav_item' => 'boolean',
+            'nav_route' => 'nullable|string|max:255',
+        ]);
+
+        // Convert checkbox values properly
+        $validated['is_active'] = $request->boolean('is_active', true);
+        $validated['is_nav_item'] = $request->boolean('is_nav_item', false);
+
+        // Clear nav_route if is_nav_item is false
+        if (!$validated['is_nav_item']) {
+            $validated['nav_route'] = null;
+        }
+
+        // Handle icon image upload
+        if ($request->hasFile('icon_image')) {
+            $iconImage = $request->file('icon_image');
+            $iconPath = $iconImage->store('categories/icons', 'public');
+            $validated['icon_image'] = $iconPath;
+        }
+
+        // Handle category image upload
+        if ($request->hasFile('category_image')) {
+            $categoryImage = $request->file('category_image');
+            $categoryPath = $categoryImage->store('categories/images', 'public');
+            $validated['category_image'] = $categoryPath;
+        }
+
+        PostCategory::create($validated);
+
+        return redirect()->route('admin.categories.index')->with('success', '分类已创建');
+    }
+
+    /**
      * Show the form for editing the specified category.
      */
     public function edit(PostCategory $category): Response
