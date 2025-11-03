@@ -64,9 +64,7 @@ const form = useForm({
     video_temp_upload_id: null as number | null,
     videos: [] as string[],
     tags: [] as string[],
-    is_premium: false,
-    price: null as number | null,
-    free_after: null as string | null,
+    is_premium: isCreator.value, // Default to true for creators
     status: 'draft'
 });
 
@@ -809,37 +807,23 @@ function publishPost() {
                                 <CardTitle class="text-white">发布设置</CardTitle>
                             </CardHeader>
                             <CardContent class="space-y-4">
-                                <!-- Paid Content (Creators Only) -->
+                                <!-- Premium Content Toggle (Creators Only) -->
                                 <div v-if="isCreator" class="space-y-4">
-                                    <div>
-                                        <Label for="price" class="text-white flex items-center gap-2">
-                                            💰 内容定价
-                                        </Label>
-                                        <p class="text-xs text-[#999999] mb-2">设置用户需要支付的积分数量才能查看此帖子</p>
-                                        <Input
-                                            id="price"
-                                            v-model.number="form.price"
-                                            type="number"
-                                            min="0"
-                                            step="0.01"
-                                            placeholder="0 = 免费"
-                                            class="bg-[#1c1c1c] border-[#4B5563] text-white placeholder:text-[#999999]"
+                                    <div class="flex items-start space-x-3 p-3 rounded-lg bg-[#1c1c1c] border border-[#4B5563]">
+                                        <input
+                                            id="is_premium"
+                                            v-model="form.is_premium"
+                                            type="checkbox"
+                                            class="mt-1 w-4 h-4 text-[#ff6e02] bg-[#374151] border-[#4B5563] rounded focus:ring-[#ff6e02] focus:ring-2"
                                         />
-                                        <p class="text-xs text-[#999999] mt-1">留空或输入0表示免费</p>
-                                    </div>
-
-                                    <div v-if="form.price && form.price > 0">
-                                        <Label for="free_after" class="text-white flex items-center gap-2">
-                                            ⏰ 免费开放时间
-                                        </Label>
-                                        <p class="text-xs text-[#999999] mb-2">设置该日期后此内容将自动变为免费</p>
-                                        <Input
-                                            id="free_after"
-                                            v-model="form.free_after"
-                                            type="datetime-local"
-                                            class="bg-[#1c1c1c] border-[#4B5563] text-white"
-                                        />
-                                        <p class="text-xs text-[#999999] mt-1">可选：留空表示永久收费</p>
+                                        <div class="flex-1">
+                                            <Label for="is_premium" class="text-white font-medium cursor-pointer">
+                                                🔒 会员专享内容
+                                            </Label>
+                                            <p class="text-xs text-[#999999] mt-1">
+                                                开启后，仅订阅你的用户可以查看此内容
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
 

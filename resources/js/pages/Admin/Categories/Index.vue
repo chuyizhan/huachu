@@ -143,6 +143,11 @@ const deleteCategory = (id: number) => {
                     <div class="p-6 text-gray-900 dark:text-gray-100">
                         <div class="mb-6 flex items-center justify-between">
                             <h1 class="text-2xl font-semibold">分类管理</h1>
+                            <Link href="/admin/categories/create">
+                                <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                    创建分类
+                                </button>
+                            </Link>
                         </div>
 
                         <!-- Search and Filters -->

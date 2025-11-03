@@ -15,9 +15,14 @@ import {
     Eye,
     UserPlus,
     UserMinus,
-    ArrowLeft
+    ArrowLeft,
+    Check,
+    Coins,
+    Clock,
+    X
 } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
+import { router } from '@inertiajs/vue3';
 
 interface Creator {
     id: number;
@@ -65,6 +70,21 @@ interface Post {
     };
 }
 
+interface SubscriptionPlan {
+    id: number;
+    name: string;
+    description: string | null;
+    duration_days: number;
+    price: number;
+    is_active: boolean;
+}
+
+interface ActiveSubscription {
+    id: number;
+    expires_at: string;
+    creator_subscription_plan_id: number;
+}
+
 interface Props {
     creator: Creator;
     posts: {
@@ -74,6 +94,10 @@ interface Props {
     };
     isFollowing: boolean;
     canFollow: boolean;
+    subscriptionPlans: SubscriptionPlan[];
+    hasActiveSubscription: boolean;
+    activeSubscription: ActiveSubscription | null;
+    userCredits: number;
 }
 
 const props = defineProps<Props>();
@@ -81,6 +105,23 @@ const props = defineProps<Props>();
 const isFollowingState = ref(props.isFollowing);
 const followersCount = ref(props.creator.followers_count || 0);
 const isLoading = ref(false);
+const showSubscribeModal = ref(false);
+const selectedPlan = ref<SubscriptionPlan | null>(null);
+const isSubscribing = ref(false);
+
+// Parse userCredits to ensure it's a number
+const userCreditsValue = computed(() => {
+    const credits = typeof props.userCredits === 'number'
+        ? props.userCredits
+        : parseFloat(String(props.userCredits)) || 0;
+    return credits;
+});
+
+// Debug: Log user credits on component mount
+console.log('Creator Show - User Credits (raw):', props.userCredits, typeof props.userCredits);
+console.log('Creator Show - User Credits (parsed):', userCreditsValue.value);
+console.log('Has Active Subscription:', props.hasActiveSubscription);
+console.log('Subscription Plans:', props.subscriptionPlans);
 
 const postTypeLabels = {
     discussion: '讨论',
@@ -152,6 +193,64 @@ const toggleFollow = async () => {
     } finally {
         isLoading.value = false;
     }
+};
+
+const openSubscribeModal = (plan: SubscriptionPlan) => {
+    selectedPlan.value = plan;
+    showSubscribeModal.value = true;
+};
+
+const closeSubscribeModal = () => {
+    showSubscribeModal.value = false;
+    selectedPlan.value = null;
+};
+
+const confirmSubscribe = () => {
+    if (!selectedPlan.value || isSubscribing.value) {
+        console.log('Cannot subscribe:', { selectedPlan: selectedPlan.value, isSubscribing: isSubscribing.value });
+        return;
+    }
+
+    console.log('Starting subscription for plan:', selectedPlan.value.id);
+    isSubscribing.value = true;
+
+    router.post(`/subscriptions/plans/${selectedPlan.value.id}/subscribe`, {}, {
+        preserveScroll: true,
+        onSuccess: (page) => {
+            console.log('Subscription successful', page);
+            alert('订阅成功！');
+            closeSubscribeModal();
+            // Reload to get updated subscription status
+            router.reload({ only: ['subscriptionPlans', 'hasActiveSubscription', 'activeSubscription', 'userCredits'] });
+        },
+        onError: (errors) => {
+            console.error('Subscription error:', errors);
+            const errorMessage = typeof errors === 'string'
+                ? errors
+                : Object.values(errors).flat().join('\n');
+            alert(errorMessage || '订阅失败，请重试');
+        },
+        onFinish: () => {
+            console.log('Subscription request finished');
+            isSubscribing.value = false;
+        }
+    });
+};
+
+const getDurationLabel = (days: number) => {
+    if (days === 7) return '1周';
+    if (days === 30) return '1个月';
+    if (days === 90) return '3个月';
+    if (days === 365) return '1年';
+    return `${days}天`;
+};
+
+const formatExpiryDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('zh-CN', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
 };
 </script>
 
@@ -272,6 +371,70 @@ const toggleFollow = async () => {
                     </CardContent>
                 </Card>
 
+                <!-- Subscription Plans Section -->
+                <div v-if="subscriptionPlans.length > 0" class="mb-8">
+                    <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
+                        <Coins class="h-7 w-7 text-[#ff6e02]" />
+                        订阅计划
+                    </h2>
+
+                    <!-- Active Subscription Notice -->
+                    <div v-if="hasActiveSubscription && activeSubscription" class="mb-6">
+                        <Card class="bg-green-900/20 border-green-500/30">
+                            <CardContent class="p-4">
+                                <div class="flex items-center gap-3">
+                                    <Check class="h-5 w-5 text-green-400" />
+                                    <div>
+                                        <p class="text-green-400 font-medium">已订阅</p>
+                                        <p class="text-sm text-green-300">
+                                            有效期至：{{ formatExpiryDate(activeSubscription.expires_at) }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    <!-- Subscription Plans Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <Card
+                            v-for="plan in subscriptionPlans"
+                            :key="plan.id"
+                            class="bg-[#374151] border-[#4B5563] hover:border-[#ff6e02] transition-colors"
+                        >
+                            <CardContent class="p-6">
+                                <div class="text-center mb-4">
+                                    <h3 class="text-xl font-bold text-white mb-2">{{ plan.name }}</h3>
+                                    <div class="flex items-baseline justify-center gap-2 mb-1">
+                                        <span class="text-3xl font-bold text-[#ff6e02]">{{ plan.price }}</span>
+                                        <span class="text-[#999999]">金币</span>
+                                    </div>
+                                    <p class="text-sm text-[#999999]">{{ getDurationLabel(plan.duration_days) }}</p>
+                                </div>
+
+                                <p v-if="plan.description" class="text-sm text-[#cccccc] text-center mb-4">
+                                    {{ plan.description }}
+                                </p>
+
+                                <Button
+                                    v-if="!hasActiveSubscription"
+                                    @click="openSubscribeModal(plan)"
+                                    class="w-full bg-[#ff6e02] hover:bg-[#e55a00] text-white"
+                                >
+                                    立即订阅
+                                </Button>
+                                <Button
+                                    v-else
+                                    disabled
+                                    class="w-full bg-gray-600 text-gray-400 cursor-not-allowed"
+                                >
+                                    已订阅
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </div>
+
                 <!-- Posts Section -->
                 <div class="mb-8">
                     <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
@@ -367,6 +530,113 @@ const toggleFollow = async () => {
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Subscribe Modal -->
+        <div
+            v-if="showSubscribeModal && selectedPlan"
+            class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4"
+            @click.self="closeSubscribeModal"
+        >
+            <Card class="bg-[#374151] border-[#4B5563] max-w-md w-full">
+                <CardContent class="p-6">
+                    <div class="flex justify-between items-start mb-6">
+                        <h3 class="text-2xl font-bold text-white">确认订阅</h3>
+                        <button
+                            @click="closeSubscribeModal"
+                            class="text-[#999999] hover:text-white transition-colors"
+                        >
+                            <X class="h-6 w-6" />
+                        </button>
+                    </div>
+
+                    <div class="space-y-4 mb-6">
+                        <!-- Creator Info -->
+                        <div class="flex items-center gap-3 p-3 bg-[#1f2937] rounded-lg">
+                            <Avatar class="h-12 w-12">
+                                <AvatarImage
+                                    v-if="creator.user.avatar"
+                                    :src="creator.user.avatar"
+                                    :alt="creator.display_name"
+                                />
+                                <AvatarFallback class="bg-[#ff6e02] text-white">
+                                    {{ getInitials(creator.display_name) }}
+                                </AvatarFallback>
+                            </Avatar>
+                            <div>
+                                <p class="text-white font-medium">{{ creator.display_name }}</p>
+                                <p class="text-sm text-[#999999]">{{ creator.specialty }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Plan Details -->
+                        <div class="p-4 bg-[#1f2937] rounded-lg">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-[#cccccc]">订阅计划</span>
+                                <span class="text-white font-medium">{{ selectedPlan.name }}</span>
+                            </div>
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-[#cccccc]">时长</span>
+                                <span class="text-white font-medium">{{ getDurationLabel(selectedPlan.duration_days) }}</span>
+                            </div>
+                            <div class="flex justify-between items-center text-lg border-t border-[#4B5563] pt-3 mt-3">
+                                <span class="text-white font-bold">支付金额</span>
+                                <div class="flex items-baseline gap-1">
+                                    <span class="text-2xl font-bold text-[#ff6e02]">{{ selectedPlan.price }}</span>
+                                    <span class="text-[#999999]">金币</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Credits Balance -->
+                        <div class="p-3 rounded-lg" :class="userCreditsValue >= selectedPlan.price ? 'bg-green-900/20' : 'bg-red-900/20'">
+                            <div class="flex justify-between items-center">
+                                <span class="text-sm" :class="userCreditsValue >= selectedPlan.price ? 'text-green-300' : 'text-red-300'">
+                                    当前余额
+                                </span>
+                                <div class="flex items-baseline gap-1">
+                                    <span class="font-bold" :class="userCreditsValue >= selectedPlan.price ? 'text-green-400' : 'text-red-400'">
+                                        {{ userCreditsValue.toFixed(2) }}
+                                    </span>
+                                    <span class="text-sm" :class="userCreditsValue >= selectedPlan.price ? 'text-green-300' : 'text-red-300'">
+                                        金币
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="text-xs text-gray-400 mt-1">
+                                需要: {{ selectedPlan.price }} 金币
+                            </div>
+                        </div>
+
+                        <!-- Insufficient Credits Warning -->
+                        <div v-if="userCreditsValue < selectedPlan.price" class="p-3 bg-red-900/20 border border-red-500/30 rounded-lg">
+                            <p class="text-red-400 text-sm">
+                                余额不足，请先充值
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="flex gap-3">
+                        <Button
+                            @click="confirmSubscribe"
+                            :disabled="isSubscribing || userCreditsValue < selectedPlan.price"
+                            class="flex-1 bg-[#ff6e02] hover:bg-[#e55a00] text-white disabled:bg-gray-600 disabled:cursor-not-allowed"
+                        >
+                            <Coins v-if="!isSubscribing" class="h-4 w-4 mr-2" />
+                            {{ isSubscribing ? '处理中...' : '确认订阅' }}
+                        </Button>
+                        <Button
+                            @click="closeSubscribeModal"
+                            variant="outline"
+                            class="flex-1 border-[#4B5563] text-white hover:bg-[#4B5563]"
+                            :disabled="isSubscribing"
+                        >
+                            取消
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
         </div>
     </WebLayout>
 </template>

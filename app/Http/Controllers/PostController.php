@@ -268,8 +268,9 @@ class PostController extends Controller
             'status' => 'required|in:draft,published',
         ]);
 
-        // Validate that either content or media exists
-        if (empty($request->content) &&
+        // Validate that either content or media exists (only for published posts)
+        if ($request->status === 'published' &&
+            empty($request->content) &&
             empty($request->image_temp_upload_ids) &&
             !$request->hasFile('images') &&
             empty($request->video_temp_upload_id)) {
@@ -457,8 +458,14 @@ class PostController extends Controller
             }
         }
 
+        // Redirect based on status
+        if ($post->status === 'draft') {
+            return redirect()->route('posts.index')
+                ->with('success', '草稿已保存！');
+        }
+
         return redirect()->route('posts.show', $post->slug)
-            ->with('success', 'Post created successfully!');
+            ->with('success', '帖子已发布成功！');
     }
 
     public function edit($id)

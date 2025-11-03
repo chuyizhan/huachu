@@ -29,6 +29,9 @@ class CreatorProfile extends Model
         'following_count',
         'rating',
         'review_count',
+        'platform_commission_rate',
+        'total_earnings',
+        'total_platform_share',
     ];
 
     protected function casts(): array
@@ -39,6 +42,9 @@ class CreatorProfile extends Model
             'verified_at' => 'datetime',
             'is_featured' => 'boolean',
             'rating' => 'decimal:2',
+            'platform_commission_rate' => 'decimal:2',
+            'total_earnings' => 'decimal:2',
+            'total_platform_share' => 'decimal:2',
         ];
     }
 
@@ -48,6 +54,14 @@ class CreatorProfile extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get all subscription plans for this creator.
+     */
+    public function subscriptionPlans()
+    {
+        return $this->hasMany(CreatorSubscriptionPlan::class, 'creator_id', 'user_id');
     }
 
     /**

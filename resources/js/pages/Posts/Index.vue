@@ -291,7 +291,7 @@ function deletePost(postId: number, postTitle: string) {
                                 </div>
 
                                 <!-- Post Content -->
-                                <Link :href="`/posts/${post.slug}`" class="block">
+                                <Link :href="post.status === 'draft' ? `/posts/${post.id}/edit` : `/posts/${post.slug}`" class="block">
                                     <!-- Title -->
                                     <h3 class="text-lg font-semibold text-white hover:text-[#ff6e02] transition-colors mb-2 line-clamp-2">
                                         {{ post.title }}
