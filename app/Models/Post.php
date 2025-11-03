@@ -149,22 +149,41 @@ class Post extends Model implements HasMedia
     }
 
     /**
-     * Check if a user can view this post (free or purchased).
+     * Check if a user can view this post (free or subscribed to creator).
      */
     public function canBeViewedBy(?User $user): bool
     {
-        // Post is free
-        if ($this->isFree()) {
-            return true;
-        }
-
-        // User is the author
+        // User is the author - always can view
         if ($user && $user->id === $this->user_id) {
             return true;
         }
 
-        // User has purchased
-        if ($user && $this->isPurchasedBy($user)) {
+        // Post is not premium - everyone can view
+        if (!$this->is_premium) {
+            return true;
+        }
+
+        // Post is premium - check if user has active subscription to creator
+        if (!$user) {
+            return false;
+        }
+
+        // Check if user has an active subscription to this post's creator
+        $hasActiveSubscription = \App\Models\UserSubscription::where('subscriber_id', $user->id)
+            ->where('creator_id', $this->user_id)
+            ->where('status', 'active')
+            ->where(function ($query) {
+                $query->whereNull('expires_at')
+                    ->orWhere('expires_at', '>', now());
+            })
+            ->exists();
+
+        if ($hasActiveSubscription) {
+            return true;
+        }
+
+        // Legacy: Check if user has purchased this specific post (backward compatibility)
+        if ($this->isPurchasedBy($user)) {
             return true;
         }
 
@@ -262,11 +281,11 @@ class Post extends Model implements HasMedia
     }
 
     /**
-     * Check if this post is currently locked (requires payment).
+     * Check if this post is currently locked (requires subscription).
      */
     public function isLocked(): bool
     {
-        return $this->isPaid() && !$this->isFree();
+        return $this->is_premium;
     }
 
     /**
