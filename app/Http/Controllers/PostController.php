@@ -129,37 +129,37 @@ class PostController extends Controller
         $isLocked = $post->isLocked();
         $isPurchased = $user ? $post->isPurchasedBy($user) : false;
 
-        // Always show all images regardless of access
-        $post->image_urls = $post->getMedia('images')->map(function ($media) {
-            // Generate signed URL for Wasabi/S3 (valid for 24 hours), use regular URL for local storage
-            $isCloudStorage = $media->disk === 'wasabi' || $media->disk === 's3';
-
-            $url = $isCloudStorage
-                ? \Storage::disk($media->disk)->temporaryUrl($media->getPathRelativeToRoot(), now()->addHours(24))
-                : $media->getUrl();
-
-            $thumbUrl = $media->hasGeneratedConversion('thumb')
-                ? ($isCloudStorage
-                    ? \Storage::disk($media->disk)->temporaryUrl($media->getPath('thumb'), now()->addHours(24))
-                    : $media->getUrl('thumb'))
-                : $url;
-
-            $mediumUrl = $media->hasGeneratedConversion('medium')
-                ? ($isCloudStorage
-                    ? \Storage::disk($media->disk)->temporaryUrl($media->getPath('medium'), now()->addHours(24))
-                    : $media->getUrl('medium'))
-                : $url;
-
-            return [
-                'id' => $media->id,
-                'url' => $url,
-                'thumb' => $thumbUrl,
-                'medium' => $mediumUrl,
-            ];
-        });
-
-        // Only show full content and videos if user can view
+        // Show media only if user has access
         if ($canView) {
+            // User has access - show all images
+            $post->image_urls = $post->getMedia('images')->map(function ($media) {
+                // Generate signed URL for Wasabi/S3 (valid for 24 hours), use regular URL for local storage
+                $isCloudStorage = $media->disk === 'wasabi' || $media->disk === 's3';
+
+                $url = $isCloudStorage
+                    ? \Storage::disk($media->disk)->temporaryUrl($media->getPathRelativeToRoot(), now()->addHours(24))
+                    : $media->getUrl();
+
+                $thumbUrl = $media->hasGeneratedConversion('thumb')
+                    ? ($isCloudStorage
+                        ? \Storage::disk($media->disk)->temporaryUrl($media->getPath('thumb'), now()->addHours(24))
+                        : $media->getUrl('thumb'))
+                    : $url;
+
+                $mediumUrl = $media->hasGeneratedConversion('medium')
+                    ? ($isCloudStorage
+                        ? \Storage::disk($media->disk)->temporaryUrl($media->getPath('medium'), now()->addHours(24))
+                        : $media->getUrl('medium'))
+                    : $url;
+
+                return [
+                    'id' => $media->id,
+                    'url' => $url,
+                    'thumb' => $thumbUrl,
+                    'medium' => $mediumUrl,
+                ];
+            });
+
             // User has access - show videos
             $post->video_urls = $post->getMedia('videos')->map(function ($media) {
                 // Generate signed URL for Wasabi/S3 (valid for 24 hours)
@@ -175,9 +175,10 @@ class PostController extends Controller
                 ];
             });
         } else {
-            // User doesn't have access - hide text content and videos
+            // User doesn't have access - hide all content and media
             $post->content = null;
             $post->excerpt = null;
+            $post->image_urls = [];
             $post->video_urls = [];
             $post->videos = [];
         }
