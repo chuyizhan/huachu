@@ -1,5 +1,0 @@
-<<<<<<<< HEAD:public/build/assets/CardHeader.vue_vue_type_script_setup_true_lang-524FjrKc.js
-import{c as o}from"./Primitive-Ctm7kvjE.js";import{d as e,i as t,o as n,B as c,n as d,e as i}from"./app-CFoezxJ4.js";const u=e({__name:"CardHeader",props:{class:{}},setup(a){const r=a;return(s,l)=>(n(),t("div",{"data-slot":"card-header",class:d(i(o)("@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-1.5 px-6 has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-6",r.class))},[c(s.$slots,"default")],2))}});export{u as _};
-========
-import{c as o}from"./Primitive-BE7hyEE5.js";import{d as e,i as t,o as n,A as c,n as d,e as i}from"./app-kob8CVRK.js";const u=e({__name:"CardHeader",props:{class:{}},setup(a){const r=a;return(s,l)=>(n(),t("div",{"data-slot":"card-header",class:d(i(o)("@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-1.5 px-6 has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-6",r.class))},[c(s.$slots,"default")],2))}});export{u as _};
->>>>>>>> main:public/build/assets/CardHeader.vue_vue_type_script_setup_true_lang-ClevN_XI.js
