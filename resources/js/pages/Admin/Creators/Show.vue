@@ -47,6 +47,7 @@ interface Creator {
     email: string;
     is_creator: boolean;
     is_top_creator: boolean;
+    avatar: string | null;
     creator_profile: CreatorProfile;
     created_at: string;
 }
@@ -269,13 +270,29 @@ const getDurationLabel = (days: number) => {
                     </Button>
                 </div>
                 <div class="flex items-center justify-between">
-                    <div>
-                        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
-                            {{ creator.creator_profile?.display_name || creator.name }}
-                        </h1>
-                        <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                            {{ creator.email }}
-                        </p>
+                    <div class="flex items-center gap-4">
+                        <!-- Avatar -->
+                        <img
+                            v-if="creator.avatar"
+                            :src="creator.avatar.startsWith('http') ? creator.avatar : `/storage/${creator.avatar}`"
+                            :alt="creator.name"
+                            class="w-20 h-20 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600"
+                        />
+                        <div
+                            v-else
+                            class="w-20 h-20 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-gray-600 dark:text-gray-300 font-bold text-2xl border-2 border-gray-200 dark:border-gray-600"
+                        >
+                            {{ (creator.creator_profile?.display_name || creator.name).charAt(0).toUpperCase() }}
+                        </div>
+                        <!-- Name & Email -->
+                        <div>
+                            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">
+                                {{ creator.creator_profile?.display_name || creator.name }}
+                            </h1>
+                            <p class="mt-2 text-sm text-gray-600 dark:text-gray-400">
+                                {{ creator.email }}
+                            </p>
+                        </div>
                     </div>
                     <div class="flex items-center gap-2">
                         <Badge

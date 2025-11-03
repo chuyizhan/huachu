@@ -156,12 +156,19 @@ const getSex = (sex: number | null) => {
                                     <CardDescription>用户的基本资料</CardDescription>
                                 </CardHeader>
                                 <CardContent class="space-y-4">
-                                    <div v-if="user.avatar" class="flex justify-center">
+                                    <div class="flex justify-center">
                                         <img
-                                            :src="user.avatar"
+                                            v-if="user.avatar"
+                                            :src="user.avatar.startsWith('http') ? user.avatar : `/storage/${user.avatar}`"
                                             :alt="user.name"
-                                            class="w-24 h-24 rounded-full object-cover"
+                                            class="w-24 h-24 rounded-full object-cover border-2 border-gray-200 dark:border-gray-600"
                                         />
+                                        <div
+                                            v-else
+                                            class="w-24 h-24 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center text-gray-600 dark:text-gray-300 font-bold text-3xl border-2 border-gray-200 dark:border-gray-600"
+                                        >
+                                            {{ user.name.charAt(0).toUpperCase() }}
+                                        </div>
                                     </div>
                                     <div>
                                         <div class="text-sm font-medium text-gray-500 dark:text-gray-400">用户ID</div>
