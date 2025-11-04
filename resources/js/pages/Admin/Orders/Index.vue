@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ShoppingCart, DollarSign, CheckCircle2, Clock, XCircle } from 'lucide-vue-next'
+import { usePagination } from '@/composables/usePagination'
 
 interface Order {
     id: number
@@ -65,6 +66,8 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+const { translatePaginationLabel } = usePagination()
 
 const search = ref(props.filters.search || '')
 const type = ref(props.filters.type || '')
@@ -316,7 +319,7 @@ const getPaymentMethodText = (method: string) => {
                                         index === 0 ? 'rounded-l-md' : '',
                                         index === orders.links.length - 1 ? 'rounded-r-md' : '',
                                     ]"
-                                    v-html="link.label"
+                                    v-html="translatePaginationLabel(link.label)"
                                     :disabled="!link.url"
                                 />
                             </nav>

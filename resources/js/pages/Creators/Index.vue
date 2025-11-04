@@ -55,6 +55,12 @@ const formatDate = (dateString: string) => {
         month: 'long',
     });
 };
+
+const translatePaginationLabel = (label: string) => {
+    return label
+        .replace(/&laquo;\s*Previous/i, '&laquo; 上一页')
+        .replace(/Next\s*&raquo;/i, '下一页 &raquo;');
+};
 </script>
 
 <template>
@@ -85,8 +91,8 @@ const formatDate = (dateString: string) => {
                 </div>
 
                 <!-- Creators Grid -->
-                <div v-if="creators?.data" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <Card v-for="creator in creators.data" :key="creator.id" class="bg-[#374151] border-[#4B5563] hover:border-[#6B7280] transition-all">
+                <div v-if="creators?.data" class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+                    <Card v-for="creator in creators.data" :key="creator.id" class="bg-[#374151] border-[#4B5563] hover:border-[#6B7280] transition-all flex flex-col h-full">
                         <CardHeader class="text-center pb-3">
                             <!-- Avatar -->
                             <div class="flex justify-center mb-4">
@@ -124,7 +130,7 @@ const formatDate = (dateString: string) => {
                             </CardTitle>
 
                             <!-- Specialty -->
-                            <CardDescription v-if="creator.specialty" class="text-[#999999]">
+                            <CardDescription v-if="creator.specialty" class="text-[#999999] line-clamp-1">
                                 {{ creator.specialty }}
                             </CardDescription>
 
@@ -145,9 +151,9 @@ const formatDate = (dateString: string) => {
                             </div>
                         </CardHeader>
 
-                        <CardContent class="space-y-4">
+                        <CardContent class="space-y-4 flex flex-col flex-1">
                             <!-- Bio -->
-                            <p v-if="creator.bio" class="text-sm text-[#999999] line-clamp-3">
+                            <p v-if="creator.bio" class="text-sm text-[#999999] line-clamp-2">
                                 {{ creator.bio }}
                             </p>
                             <p v-else class="text-sm text-[#666666] italic">
@@ -161,7 +167,7 @@ const formatDate = (dateString: string) => {
                             </div>
 
                             <!-- View Profile Button -->
-                            <Button class="w-full bg-[#ff6e02] hover:bg-[#e55a00] text-white" as-child>
+                            <Button class="w-full bg-[#ff6e02] hover:bg-[#e55a00] text-white mt-auto" as-child>
                                 <Link :href="`/creators/${creator.creator_profile?.id || creator.id}`">
                                     查看主页
                                 </Link>
@@ -188,7 +194,7 @@ const formatDate = (dateString: string) => {
                         :disabled="!link.url"
                         size="sm"
                         @click="link.url && router.visit(link.url, { preserveState: true })"
-                        v-html="link.label"
+                        v-html="translatePaginationLabel(link.label)"
                         :class="{
                             'bg-[#ff6e02] hover:bg-[#e55a00]': link.active,
                             'border-[#4B5563] text-white hover:bg-[#4B5563]': !link.active

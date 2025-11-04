@@ -246,7 +246,7 @@ const getStatusColor = (status: string) => {
                     </Link>
 
                     <!-- 2. My Credits -->
-                    <Link href="/recharge" class="flex items-center justify-between u-p-25 border-b border-[#374151]">
+                    <Link href="/recharge/history" class="flex items-center justify-between u-p-25 border-b border-[#374151]">
                         <div class="flex items-center">
                             <Coins class="w-7 h-7 text-white" />
                             <span class="font28 colorfff u-p-l-15">我的金币</span>
@@ -257,8 +257,8 @@ const getStatusColor = (status: string) => {
                         </div>
                     </Link>
 
-                    <!-- 3. VIP -->
-                    <Link href="/plan-subscriptions/create" class="flex items-center justify-between u-p-25 border-b border-[#374151]">
+                    <!-- 3. VIP - Hidden (legacy feature) -->
+                    <Link v-if="false" href="/plan-subscriptions/create" class="flex items-center justify-between u-p-25 border-b border-[#374151]">
                         <div class="flex items-center">
                             <Crown class="w-7 h-7 text-white" />
                             <span class="font28 colorfff u-p-l-15">VIP会员</span>
@@ -291,8 +291,8 @@ const getStatusColor = (status: string) => {
                         </div>
                     </Link>
 
-                    <!-- 6. My Points -->
-                    <Link href="/points/rules" class="flex items-center justify-between u-p-25 border-b border-[#374151]">
+                    <!-- 6. My Points - Hidden (legacy feature) -->
+                    <Link v-if="false" href="/points/rules" class="flex items-center justify-between u-p-25 border-b border-[#374151]">
                         <div class="flex items-center">
                             <Star class="w-7 h-7 text-white" />
                             <span class="font28 colorfff u-p-l-15">我的积分</span>
@@ -303,8 +303,8 @@ const getStatusColor = (status: string) => {
                         </div>
                     </Link>
 
-                    <!-- 7. My Plan Subscriptions -->
-                    <Link href="/plan-subscriptions" class="flex items-center justify-between u-p-25 border-b border-[#374151]">
+                    <!-- 7. My Plan Subscriptions - Hidden (legacy feature) -->
+                    <Link v-if="false" href="/plan-subscriptions" class="flex items-center justify-between u-p-25 border-b border-[#374151]">
                         <div class="flex items-center">
                             <Users class="w-7 h-7 text-white" />
                             <span class="font28 colorfff u-p-l-15">我的会员订阅</span>
@@ -314,7 +314,41 @@ const getStatusColor = (status: string) => {
                         </div>
                     </Link>
 
-                    <!-- 8. My Favorites -->
+                    <!-- 7. Creator Subscriptions -->
+                    <Link href="/my-subscriptions" class="flex items-center justify-between u-p-25 border-b border-[#374151]">
+                        <div class="flex items-center">
+                            <UserPlus class="w-7 h-7 text-white" />
+                            <span class="font28 colorfff u-p-l-15">博主订阅</span>
+                        </div>
+                        <div class="flex items-center">
+                            <ChevronRight class="w-5 h-5 text-[#999999]" />
+                        </div>
+                    </Link>
+
+                    <!-- 7.5. My Subscribers (Creators Only) -->
+                    <Link v-if="user.is_creator" href="/my-subscribers" class="flex items-center justify-between u-p-25 border-b border-[#374151]">
+                        <div class="flex items-center">
+                            <Users class="w-7 h-7 text-white" />
+                            <span class="font28 colorfff u-p-l-15">我的被订阅记录</span>
+                        </div>
+                        <div class="flex items-center">
+                            <ChevronRight class="w-5 h-5 text-[#999999]" />
+                        </div>
+                    </Link>
+
+                    <!-- 8. My Following -->
+                    <Link href="/my-following" class="flex items-center justify-between u-p-25 border-b border-[#374151]">
+                        <div class="flex items-center">
+                            <UserPlus class="w-7 h-7 text-white" />
+                            <span class="font28 colorfff u-p-l-15">我的关注</span>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="colorz font32 u-p-r-20">{{ stats.following_count }}</span>
+                            <ChevronRight class="w-5 h-5 text-[#999999]" />
+                        </div>
+                    </Link>
+
+                    <!-- 9. My Favorites -->
                     <Link href="/favorites" class="flex items-center justify-between u-p-25 border-b border-[#374151]">
                         <div class="flex items-center">
                             <Heart class="w-7 h-7 text-white" />
@@ -326,7 +360,7 @@ const getStatusColor = (status: string) => {
                         </div>
                     </Link>
 
-                    <!-- 9. Points Rules -->
+                    <!-- 10. Points Rules -->
                     <Link href="/points/rules" class="flex items-center justify-between u-p-25 border-b border-[#374151]">
                         <div class="flex items-center">
                             <Gift class="w-7 h-7 text-white" />

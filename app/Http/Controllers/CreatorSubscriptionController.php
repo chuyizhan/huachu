@@ -23,8 +23,15 @@ class CreatorSubscriptionController extends Controller
      */
     public function subscribe(Request $request, CreatorSubscriptionPlan $plan)
     {
+        $user = Auth::user();
+
+        // Prevent users from subscribing to themselves
+        if ($user->id === $plan->creator_id) {
+            return redirect()->back()->with('error', '不能订阅自己的内容');
+        }
+
         try {
-            $subscription = $this->subscriptionService->subscribe(Auth::user(), $plan);
+            $subscription = $this->subscriptionService->subscribe($user, $plan);
 
             return redirect()->back()->with('success', '订阅成功！');
         } catch (Exception $e) {

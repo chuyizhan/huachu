@@ -509,7 +509,7 @@ const closeImageModal = () => {
                             <div v-if="isAuthenticated">
                                 <Button
                                     as="a"
-                                    :href="`/creator/${post.user.id}`"
+                                    :href="`/creators/${post.user.id}`"
                                     class="w-full bg-[#ff6e02] hover:bg-[#e55a00] text-white h-12 rounded-lg"
                                 >
                                     查看订阅计划

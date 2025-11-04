@@ -16,7 +16,13 @@
       "Bash(aws s3api put-bucket-cors:*)",
       "Bash(npm install:*)",
       "Bash(npm uninstall:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(for:*)",
+      "Bash(do echo \"=== $file ===\")",
+      "Bash(grep:*)",
+      "Bash(done)",
+      "Bash(find:*)",
+      "Bash(head:*)"
     ],
     "deny": [],
     "ask": []

@@ -4,6 +4,7 @@ namespace App\Observers;
 
 use App\Models\User;
 use App\Models\CreatorProfile;
+use App\Models\CreatorSubscriptionPlan;
 
 class UserObserver
 {
@@ -63,7 +64,7 @@ class UserObserver
      */
     private function createCreatorProfile(User $user): void
     {
-        CreatorProfile::create([
+        $creatorProfile = CreatorProfile::create([
             'user_id' => $user->id,
             'display_name' => $user->name,
             'bio' => '',
@@ -82,6 +83,17 @@ class UserObserver
             'following_count' => 0,
             'rating' => 0,
             'review_count' => 0,
+        ]);
+
+        // Create default subscription plan (30 days for 100 credits)
+        CreatorSubscriptionPlan::create([
+            'creator_id' => $user->id,
+            'name' => '月订阅',
+            'description' => '订阅后可查看所有专享内容',
+            'duration_days' => 30,
+            'price' => 100.00,
+            'is_active' => true,
+            'sort_order' => 0,
         ]);
     }
 }

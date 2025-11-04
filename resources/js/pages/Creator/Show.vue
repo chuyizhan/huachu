@@ -22,7 +22,7 @@ import {
     X
 } from 'lucide-vue-next';
 import { ref, computed } from 'vue';
-import { router } from '@inertiajs/vue3';
+import { router, usePage } from '@inertiajs/vue3';
 
 interface Creator {
     id: number;
@@ -101,6 +101,12 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+const page = usePage();
+
+// Check if current user is viewing their own profile
+const isOwnProfile = computed(() => {
+    return page.props.auth?.user?.id === props.creator.user_id;
+});
 
 const isFollowingState = ref(props.isFollowing);
 const followersCount = ref(props.creator.followers_count || 0);
@@ -371,8 +377,8 @@ const formatExpiryDate = (dateString: string) => {
                     </CardContent>
                 </Card>
 
-                <!-- Subscription Plans Section -->
-                <div v-if="subscriptionPlans.length > 0" class="mb-8">
+                <!-- Subscription Plans Section (hidden for own profile) -->
+                <div v-if="subscriptionPlans.length > 0 && !isOwnProfile" class="mb-8">
                     <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-3">
                         <Coins class="h-7 w-7 text-[#ff6e02]" />
                         订阅计划

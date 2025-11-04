@@ -110,6 +110,12 @@ const getSocialIcon = (platform: string) => {
     return icons[platform as keyof typeof icons] || ExternalLink;
 };
 
+const translatePaginationLabel = (label: string) => {
+    return label
+        .replace(/&laquo;\s*Previous/i, '&laquo; 上一页')
+        .replace(/Next\s*&raquo;/i, '下一页 &raquo;');
+};
+
 const applyFilters = () => {
     const params = new URLSearchParams();
 
@@ -364,7 +370,7 @@ watch([searchQuery, selectedSpecialty, selectedLocation, selectedFeatured, selec
                     :disabled="!link.url"
                     size="sm"
                     @click="link.url && router.visit(link.url, { preserveState: true })"
-                    v-html="link.label"
+                    v-html="translatePaginationLabel(link.label)"
                 />
             </div>
         </div>

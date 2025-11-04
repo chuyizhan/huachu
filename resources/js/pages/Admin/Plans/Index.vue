@@ -5,6 +5,7 @@ import AppLayout from '@/layouts/AppLayout.vue'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
+import { usePagination } from '@/composables/usePagination'
 
 interface Plan {
     id: number
@@ -46,6 +47,8 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+const { translatePaginationLabel } = usePagination()
 
 const search = ref(props.filters.search || '')
 const isActive = ref(props.filters.is_active || '')
@@ -217,7 +220,7 @@ const deletePlan = (id: number) => {
                                         index === 0 ? 'rounded-l-md' : '',
                                         index === plans.links.length - 1 ? 'rounded-r-md' : '',
                                     ]"
-                                    v-html="link.label"
+                                    v-html="translatePaginationLabel(link.label)"
                                     :disabled="!link.url"
                                 />
                             </nav>

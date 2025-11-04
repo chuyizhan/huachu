@@ -229,4 +229,35 @@ class RechargeController extends Controller
             'userCredits' => (float) $user->credits,
         ]);
     }
+
+    /**
+     * Show recharge history page
+     */
+    public function history(): Response
+    {
+        $user = Auth::user();
+
+        // Get all recharge transactions for the user
+        $transactions = CreditTransaction::where('user_id', $user->id)
+            ->where('type', 'earned')
+            ->where('reason', 'recharge')
+            ->with('related')
+            ->latest()
+            ->paginate(20);
+
+        // Transform to add order data
+        $transactions->through(function ($transaction) {
+            $data = $transaction->toArray();
+            // If related is an Order, add it as 'order' for easier access in frontend
+            if ($transaction->related instanceof Order) {
+                $data['order'] = $transaction->related;
+            }
+            return $data;
+        });
+
+        return Inertia::render('Recharge/History', [
+            'transactions' => $transactions,
+            'userCredits' => (float) $user->credits,
+        ]);
+    }
 }

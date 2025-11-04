@@ -60,6 +60,13 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'verified', 'admin']
 // User favorites
 Route::get('/favorites', [PostFavoriteController::class, 'index'])->middleware('auth')->name('favorites');
 
+// User subscriptions (creator subscriptions)
+Route::get('/my-subscriptions', [App\Http\Controllers\UserSubscriptionController::class, 'index'])->middleware('auth')->name('my-subscriptions');
+Route::get('/my-subscribers', [App\Http\Controllers\UserSubscriptionController::class, 'mySubscribers'])->middleware('auth')->name('my-subscribers');
+
+// User following
+Route::get('/my-following', [App\Http\Controllers\FollowController::class, 'myFollowing'])->middleware('auth')->name('my-following');
+
 // Profile route
 Route::get('/profile', [ProfileController::class, 'index'])->middleware('auth')->name('profile');
 
@@ -75,6 +82,7 @@ Route::prefix('recharge')->name('recharge.')->middleware('auth')->group(function
     Route::get('/', [RechargeController::class, 'index'])->name('index');
     Route::post('/process', [RechargeController::class, 'process'])->name('process');
     Route::get('/success/{order}', [RechargeController::class, 'success'])->name('success');
+    Route::get('/history', [RechargeController::class, 'history'])->name('history');
 });
 
 // Comment routes
