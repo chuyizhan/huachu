@@ -3,6 +3,7 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { ChevronUp, ChevronDown } from 'lucide-vue-next';
+import { usePagination } from '@/composables/usePagination';
 
 interface User {
     id: number;
@@ -53,6 +54,8 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+const { translatePaginationLabel } = usePagination();
 
 const search = ref(props.filters.search || '');
 const isAdmin = ref(props.filters.is_admin || '');
@@ -451,7 +454,7 @@ const formatDate = (dateString: string) => {
                                             : 'bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700',
                                         !link.url && 'cursor-not-allowed opacity-50',
                                     ]"
-                                    v-html="link.label"
+                                    v-html="translatePaginationLabel(link.label)"
                                 />
                             </nav>
                         </div>

@@ -177,11 +177,11 @@ const bannerSlides = [
                 </div>
 
                 <!-- Creators Horizontal Scroll -->
-                <div class="flex gap-3 overflow-x-auto pb-4 scrollbar-hide">
+                <div class="flex gap-3 overflow-x-auto pb-4 scroll-smooth snap-x snap-mandatory">
                     <div
                         v-for="creator in featuredCreators"
                         :key="creator.id"
-                        class="flex-shrink-0 w-24"
+                        class="flex-shrink-0 w-24 snap-start"
                     >
                         <CreatorCard :creator="creator" variant="home" />
                     </div>

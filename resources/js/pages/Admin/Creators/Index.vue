@@ -3,6 +3,7 @@ import { Head, Link, router } from '@inertiajs/vue3';
 import { ref } from 'vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import { ChevronUp, ChevronDown, Check, X, Star, StarOff, Trash2 } from 'lucide-vue-next';
+import { usePagination } from '@/composables/usePagination';
 
 interface CreatorProfile {
     id: number;
@@ -56,6 +57,8 @@ interface Props {
 }
 
 const props = defineProps<Props>();
+
+const { translatePaginationLabel } = usePagination();
 
 const search = ref(props.filters.search || '');
 const verificationStatus = ref(props.filters.verification_status || '');
@@ -490,7 +493,7 @@ const formatCurrency = (amount: number | undefined) => {
                                         index === creators.links.length - 1 ? 'rounded-r-md' : '',
                                         !link.url ? 'cursor-not-allowed opacity-50' : ''
                                     ]"
-                                    v-html="link.label"
+                                    v-html="translatePaginationLabel(link.label)"
                                 >
                                 </Link>
                             </nav>

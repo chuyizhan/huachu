@@ -52,12 +52,13 @@ class CreatorController extends Controller
         // Get creator's posts with pagination
         $posts = $creator->user->posts()
             ->published()
+            ->where('review_status', 'approved')
             ->with(['category', 'user.creatorProfile'])
             ->latest('published_at')
             ->paginate(12);
 
         // Calculate stats
-        $postsCount = $creator->user->posts()->published()->count();
+        $postsCount = $creator->user->posts()->published()->where('review_status', 'approved')->count();
         $likesReceived = $creator->user->posts()->sum('like_count');
 
         // Get followers count
@@ -95,7 +96,7 @@ class CreatorController extends Controller
         }
 
         // Get user's current credits
-        $userCredits = Auth::check() ? Auth::user()->credits : 0;
+        $userCredits = Auth::check() ? (float) Auth::user()->credits : 0;
 
         return Inertia::render('Creator/Show', [
             'creator' => $creator,

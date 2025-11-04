@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { TrendingUp, DollarSign, Users, Activity } from 'lucide-vue-next'
+import { usePagination } from '@/composables/usePagination'
 
 interface PlatformTransaction {
     id: number
@@ -64,6 +65,8 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+
+const { translatePaginationLabel } = usePagination()
 
 const search = ref(props.filters.search || '')
 const creatorId = ref(props.filters.creator_id || '')
@@ -276,7 +279,7 @@ const formatDate = (date: string) => {
                                         index === 0 ? 'rounded-l-md' : '',
                                         index === transactions.links.length - 1 ? 'rounded-r-md' : '',
                                     ]"
-                                    v-html="link.label"
+                                    v-html="translatePaginationLabel(link.label)"
                                     :disabled="!link.url"
                                 />
                             </nav>

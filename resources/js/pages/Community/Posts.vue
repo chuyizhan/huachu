@@ -145,6 +145,12 @@ const postTypes = [
     { value: 'showcase', label: '展示', icon: '🎨' },
     { value: 'question', label: '问答', icon: '❓' }
 ];
+
+const translatePaginationLabel = (label: string) => {
+    return label
+        .replace(/&laquo;\s*Previous/i, '&laquo; 上一页')
+        .replace(/Next\s*&raquo;/i, '下一页 &raquo;');
+};
 </script>
 
 <template>
@@ -340,7 +346,7 @@ const postTypes = [
                                             ? 'bg-[#374151] text-white hover:bg-[#1f2937]'
                                             : 'bg-[#374151] text-[#999999] cursor-not-allowed'
                                 ]"
-                                v-html="link.label"
+                                v-html="translatePaginationLabel(link.label)"
                             />
                         </div>
                     </div>
