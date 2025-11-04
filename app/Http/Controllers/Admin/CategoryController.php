@@ -83,11 +83,18 @@ class CategoryController extends Controller
             'is_active' => 'boolean',
             'is_nav_item' => 'boolean',
             'nav_route' => 'nullable|string|max:255',
+            'allowed_user_types' => 'nullable|array',
+            'allowed_user_types.*' => 'in:all,creator,regular,admin',
         ]);
 
         // Convert checkbox values properly
         $validated['is_active'] = $request->boolean('is_active', true);
         $validated['is_nav_item'] = $request->boolean('is_nav_item', false);
+
+        // Set default allowed_user_types if not provided
+        if (!isset($validated['allowed_user_types']) || empty($validated['allowed_user_types'])) {
+            $validated['allowed_user_types'] = ['all'];
+        }
 
         // Clear nav_route if is_nav_item is false
         if (!$validated['is_nav_item']) {
@@ -156,11 +163,18 @@ class CategoryController extends Controller
             'is_active' => 'boolean',
             'is_nav_item' => 'boolean',
             'nav_route' => 'nullable|string|max:255',
+            'allowed_user_types' => 'nullable|array',
+            'allowed_user_types.*' => 'in:all,creator,regular,admin',
         ]);
 
         // Convert checkbox values properly
         $validated['is_active'] = $request->boolean('is_active');
         $validated['is_nav_item'] = $request->boolean('is_nav_item');
+
+        // Set default allowed_user_types if not provided
+        if (!isset($validated['allowed_user_types']) || empty($validated['allowed_user_types'])) {
+            $validated['allowed_user_types'] = ['all'];
+        }
 
         // Clear nav_route if is_nav_item is false
         if (!$validated['is_nav_item']) {

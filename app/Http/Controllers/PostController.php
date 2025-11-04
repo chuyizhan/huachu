@@ -235,7 +235,13 @@ class PostController extends Controller
 
     public function create()
     {
-        $categories = PostCategory::active()->orderBy('sort_order')->get();
+        $user = Auth::user();
+
+        // Filter categories based on user type
+        $categories = PostCategory::active()
+            ->allowedForUser($user)
+            ->orderBy('sort_order')
+            ->get();
 
         // Check if using Wasabi/S3 for images
         $imagesDisk = config('media.collections.images.disk', config('media.disk', 'public'));
@@ -268,6 +274,14 @@ class PostController extends Controller
             'free_after' => 'nullable|date|after:now',
             'status' => 'required|in:draft,published',
         ]);
+
+        // Check if user can post to this category
+        $category = PostCategory::findOrFail($request->post_category_id);
+        if (!$category->canUserPost($user)) {
+            return back()->withErrors([
+                'post_category_id' => '你没有权限在此分类下发帖。'
+            ])->withInput();
+        }
 
         // Validate that either content or media exists (only for published posts)
         if ($request->status === 'published' &&
@@ -471,8 +485,14 @@ class PostController extends Controller
 
     public function edit($id)
     {
-        $post = Post::where('user_id', Auth::id())->findOrFail($id);
-        $categories = PostCategory::active()->orderBy('sort_order')->get();
+        $user = Auth::user();
+        $post = Post::where('user_id', $user->id)->findOrFail($id);
+
+        // Filter categories based on user type
+        $categories = PostCategory::active()
+            ->allowedForUser($user)
+            ->orderBy('sort_order')
+            ->get();
 
         // Load existing media
         $post->existing_images = $post->getMedia('images')->map(function ($media) {
@@ -505,7 +525,8 @@ class PostController extends Controller
 
     public function update(Request $request, $id)
     {
-        $post = Post::where('user_id', Auth::id())->findOrFail($id);
+        $user = Auth::user();
+        $post = Post::where('user_id', $user->id)->findOrFail($id);
 
         $request->validate([
             'title' => 'required|string|max:255',
@@ -523,6 +544,14 @@ class PostController extends Controller
             'is_premium' => 'boolean',
             'status' => 'required|in:draft,published',
         ]);
+
+        // Check if user can post to this category
+        $category = PostCategory::findOrFail($request->post_category_id);
+        if (!$category->canUserPost($user)) {
+            return back()->withErrors([
+                'post_category_id' => '你没有权限在此分类下发帖。'
+            ])->withInput();
+        }
 
         // Calculate if post will have any media after this update
         $hasExistingImages = $post->getMedia('images')->count() > 0;
