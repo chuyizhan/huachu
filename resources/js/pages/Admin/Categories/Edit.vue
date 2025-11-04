@@ -22,6 +22,7 @@ interface Category {
     is_active: boolean
     is_nav_item: boolean
     nav_route: string | null
+    allowed_user_types: string[]
     posts_count: number
     created_at: string
     updated_at: string
@@ -47,6 +48,7 @@ const form = useForm({
     is_active: props.category.is_active,
     is_nav_item: props.category.is_nav_item,
     nav_route: props.category.nav_route || '',
+    allowed_user_types: props.category.allowed_user_types || ['all'],
 })
 
 const iconImagePreview = ref<string | null>(
@@ -373,6 +375,97 @@ const goBack = () => {
                                                 {{ form.errors.nav_route }}
                                             </p>
                                         </div>
+                                    </div>
+
+                                    <!-- Allowed User Types -->
+                                    <div class="space-y-2">
+                                        <Label>允许发帖的用户类型</Label>
+                                        <div class="space-y-2">
+                                            <div class="flex items-center space-x-2">
+                                                <input
+                                                    id="type_all"
+                                                    type="checkbox"
+                                                    value="all"
+                                                    :checked="form.allowed_user_types.includes('all')"
+                                                    @change="(e) => {
+                                                        const checked = (e.target as HTMLInputElement).checked;
+                                                        if (checked) {
+                                                            form.allowed_user_types = ['all'];
+                                                        } else {
+                                                            form.allowed_user_types = form.allowed_user_types.filter(t => t !== 'all');
+                                                        }
+                                                    }"
+                                                    class="rounded"
+                                                />
+                                                <Label for="type_all" class="cursor-pointer">所有用户</Label>
+                                            </div>
+                                            <div class="flex items-center space-x-2">
+                                                <input
+                                                    id="type_creator"
+                                                    type="checkbox"
+                                                    value="creator"
+                                                    :checked="form.allowed_user_types.includes('creator')"
+                                                    :disabled="form.allowed_user_types.includes('all')"
+                                                    @change="(e) => {
+                                                        const checked = (e.target as HTMLInputElement).checked;
+                                                        if (checked) {
+                                                            form.allowed_user_types = form.allowed_user_types.filter(t => t !== 'all');
+                                                            form.allowed_user_types.push('creator');
+                                                        } else {
+                                                            form.allowed_user_types = form.allowed_user_types.filter(t => t !== 'creator');
+                                                        }
+                                                    }"
+                                                    class="rounded"
+                                                />
+                                                <Label for="type_creator" class="cursor-pointer">仅创作者</Label>
+                                            </div>
+                                            <div class="flex items-center space-x-2">
+                                                <input
+                                                    id="type_regular"
+                                                    type="checkbox"
+                                                    value="regular"
+                                                    :checked="form.allowed_user_types.includes('regular')"
+                                                    :disabled="form.allowed_user_types.includes('all')"
+                                                    @change="(e) => {
+                                                        const checked = (e.target as HTMLInputElement).checked;
+                                                        if (checked) {
+                                                            form.allowed_user_types = form.allowed_user_types.filter(t => t !== 'all');
+                                                            form.allowed_user_types.push('regular');
+                                                        } else {
+                                                            form.allowed_user_types = form.allowed_user_types.filter(t => t !== 'regular');
+                                                        }
+                                                    }"
+                                                    class="rounded"
+                                                />
+                                                <Label for="type_regular" class="cursor-pointer">仅普通用户</Label>
+                                            </div>
+                                            <div class="flex items-center space-x-2">
+                                                <input
+                                                    id="type_admin"
+                                                    type="checkbox"
+                                                    value="admin"
+                                                    :checked="form.allowed_user_types.includes('admin')"
+                                                    :disabled="form.allowed_user_types.includes('all')"
+                                                    @change="(e) => {
+                                                        const checked = (e.target as HTMLInputElement).checked;
+                                                        if (checked) {
+                                                            form.allowed_user_types = form.allowed_user_types.filter(t => t !== 'all');
+                                                            form.allowed_user_types.push('admin');
+                                                        } else {
+                                                            form.allowed_user_types = form.allowed_user_types.filter(t => t !== 'admin');
+                                                        }
+                                                    }"
+                                                    class="rounded"
+                                                />
+                                                <Label for="type_admin" class="cursor-pointer">仅管理员</Label>
+                                            </div>
+                                        </div>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                                            选择哪些类型的用户可以在此分类下发帖。管理员始终可以发帖。
+                                        </p>
+                                        <p v-if="form.errors.allowed_user_types" class="text-sm text-red-500">
+                                            {{ form.errors.allowed_user_types }}
+                                        </p>
                                     </div>
 
                                     <!-- Category Stats -->

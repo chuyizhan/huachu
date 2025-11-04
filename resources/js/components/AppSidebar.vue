@@ -54,11 +54,11 @@ const mainNavItems: NavItem[] = [
         icon: FileText,
     },
     
-    {
-        title: '套餐管理',
-        href: '/admin/plans',
-        icon: Package,
-    },
+    // {
+    //     title: '套餐管理',
+    //     href: '/admin/plans',
+    //     icon: Package,
+    // },
     {
         title: '积分交易',
         href: '/admin/point-transactions',
