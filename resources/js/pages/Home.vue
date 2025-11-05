@@ -177,7 +177,7 @@ const bannerSlides = [
                 </div>
 
                 <!-- Creators Horizontal Scroll -->
-                <div class="flex gap-3 overflow-x-auto pb-4 scroll-smooth snap-x snap-mandatory">
+                <div class="flex gap-2 overflow-x-auto pb-4 scroll-smooth snap-x snap-mandatory">
                     <div
                         v-for="creator in featuredCreators"
                         :key="creator.id"
@@ -190,7 +190,7 @@ const bannerSlides = [
         </section>
 
         <!-- Hot Posts Section -->
-        <section class="py-12 bg-background">
+        <section class="py-12">
             <div class="max-w-[1000px] mx-auto px-0">
                 <!-- Section Title -->
                 <div class="flex items-center justify-between mb-6 px-2">
