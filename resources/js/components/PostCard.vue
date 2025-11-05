@@ -115,12 +115,12 @@ const getPostTypeText = (type: string) => {
     <Link
         v-if="variant === 'home'"
         :href="`/posts/${post.slug}`"
-        class="block"
+        class=""
     >
-        <Card class="bg-transparent border-0 shadow-none overflow-hidden">
-            <CardContent class="p-4">
+        <div class="border-b border-gray-600 shadow-none py-2 ">
+            <CardContent class="px-4">
                 <!-- Author Section (Top) -->
-                <div class="flex items-start gap-3 mb-4">
+                <div class="flex items-start gap-3 mb-1">
                     <!-- Avatar -->
                     <img
                         :src="post.user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(post.user.creator_profile?.display_name || post.user.name)}&size=48&background=ff6e02&color=fff`"
@@ -157,11 +157,11 @@ const getPostTypeText = (type: string) => {
 
                 <!-- Post Images Grid (Max 3) -->
                 <div v-if="showImages && post.post_images && post.post_images.length > 0" class="mb-4 rounded-lg overflow-hidden">
-                    <div class="grid gap-1 grid-cols-3">
+                    <div class="flex space-x-2">
                         <div
                             v-for="(image, index) in post.post_images.slice(0, 3)"
                             :key="index"
-                            class="relative overflow-hidden bg-[#1c1c1c] aspect-square"
+                            class="relative overflow-hidden bg-[#1c1c1c] max-w-28 aspect-square"
                         >
                             <img
                                 :src="image.thumb || image.url"
@@ -178,7 +178,7 @@ const getPostTypeText = (type: string) => {
                 </div>
 
                 <!-- Stats (Bottom) -->
-                <div class="flex items-center gap-6 text-sm text-[#999999] pt-3 border-t border-[#4B5563]">
+                <div class=" flex items-center gap-6 text-sm text-gray-300 pt-0">
                     <span class="flex items-center gap-1.5 hover:text-[#ff6e02] transition-colors cursor-pointer">
                         <MessageSquare class="h-4 w-4" />
                         <span>{{ post.comment_count || 0 }}</span>
@@ -193,7 +193,7 @@ const getPostTypeText = (type: string) => {
                     </span>
                 </div>
             </CardContent>
-        </Card>
+        </div>
     </Link>
 
     <!-- List Variant - Twitter-like Layout for Posts Page -->
