@@ -132,10 +132,10 @@ const bannerSlides = [
 
 
         <!-- 赚钱大佬推荐 -->
-        <section class="py-12 bg-background">
-            <div class="max-w-[1000px] mx-auto px-4">
+        <section class="py-0">
+            <div class="max-w-[1000px] mx-auto px-2">
                 
-                <div class="grid grid-cols-4 gap-6">
+                <div class="grid grid-cols-4 gap-0">
                     <Link
                         v-for="category in categories"
                         :key="category.id"
@@ -152,7 +152,7 @@ const bannerSlides = [
                             />
                             <span v-else class="text-2xl">{{ category.icon || '📁' }}</span>
                         </div>
-                        <div class="text-center text-sm text-white font-medium mt-1 truncate max-w-[64px]">
+                        <div class="text-center text-md text-white font-medium mt-1 truncate max-w-full">
                             {{ category.name }}
                         </div>
                     </Link>
