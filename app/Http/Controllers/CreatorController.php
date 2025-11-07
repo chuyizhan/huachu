@@ -140,11 +140,51 @@ class CreatorController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->creatorProfile) {
-            return redirect()->route('creator.profile');
+        // Define available specialties
+        $specialties = [
+            'Chinese Cuisine',
+            'Western Cuisine',
+            'Japanese Cuisine',
+            'Korean Cuisine',
+            'Italian Cuisine',
+            'French Cuisine',
+            'Mexican Cuisine',
+            'Thai Cuisine',
+            'Indian Cuisine',
+            'Mediterranean Cuisine',
+            'Pastry & Baking',
+            'Vegetarian & Vegan',
+            'Seafood',
+            'BBQ & Grilling',
+            'Fusion Cuisine',
+            'Other',
+        ];
+
+        $hasExistingApplication = $user->creatorProfile !== null;
+        $existingApplication = null;
+
+        if ($hasExistingApplication) {
+            $profile = $user->creatorProfile;
+            $existingApplication = [
+                'display_name' => $profile->display_name,
+                'bio' => $profile->bio,
+                'specialty' => $profile->specialty,
+                'location' => $profile->location ?? '',
+                'experience_years' => $profile->experience_years,
+                'portfolio_url' => $profile->portfolio_url ?? '',
+                'instagram_url' => $profile->social_links['instagram'] ?? '',
+                'twitter_url' => $profile->social_links['twitter'] ?? '',
+                'youtube_url' => $profile->social_links['youtube'] ?? '',
+                'website_url' => $profile->website ?? '',
+                'status' => $profile->verification_status,
+            ];
         }
 
-        return Inertia::render('Creators/Apply');
+        return Inertia::render('Creators/Apply', [
+            'specialties' => $specialties,
+            'hasExistingApplication' => $hasExistingApplication,
+            'existingApplication' => $existingApplication,
+        ]);
     }
 
     public function storeApplication(Request $request)
@@ -152,21 +192,36 @@ class CreatorController extends Controller
         $user = Auth::user();
 
         if ($user->creatorProfile) {
-            return redirect()->route('creator.profile')
-                ->with('error', 'You already have a creator profile.');
+            return redirect()->route('creator.apply')
+                ->with('error', 'You already have a creator application.');
         }
 
         $request->validate([
             'display_name' => 'required|string|max:255',
-            'bio' => 'required|string|max:1000',
+            'bio' => 'required|string|max:500',
             'specialty' => 'required|string|max:255',
             'experience_years' => 'required|integer|min:0|max:50',
-            'certifications' => 'nullable|array',
             'location' => 'nullable|string|max:255',
-            'website' => 'nullable|url',
-            'social_links' => 'nullable|array',
             'portfolio_url' => 'nullable|url',
+            'instagram_url' => 'nullable|url',
+            'twitter_url' => 'nullable|url',
+            'youtube_url' => 'nullable|url',
+            'website_url' => 'nullable|url',
+            'portfolio_file' => 'nullable|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:10240',
+            'terms_accepted' => 'required|accepted',
         ]);
+
+        // Build social links array
+        $socialLinks = [];
+        if ($request->instagram_url) {
+            $socialLinks['instagram'] = $request->instagram_url;
+        }
+        if ($request->twitter_url) {
+            $socialLinks['twitter'] = $request->twitter_url;
+        }
+        if ($request->youtube_url) {
+            $socialLinks['youtube'] = $request->youtube_url;
+        }
 
         $profile = CreatorProfile::create([
             'user_id' => $user->id,
@@ -174,16 +229,22 @@ class CreatorController extends Controller
             'bio' => $request->bio,
             'specialty' => $request->specialty,
             'experience_years' => $request->experience_years,
-            'certifications' => $request->certifications ?? [],
+            'certifications' => [],
             'location' => $request->location,
-            'website' => $request->website,
-            'social_links' => $request->social_links ?? [],
+            'website' => $request->website_url,
+            'social_links' => $socialLinks,
             'portfolio_url' => $request->portfolio_url,
             'verification_status' => 'pending',
         ]);
 
-        return redirect()->route('creator.profile')
-            ->with('success', 'Creator profile created successfully! Verification is pending.');
+        // TODO: Handle portfolio file upload when portfolio_file column is added to database
+        // if ($request->hasFile('portfolio_file')) {
+        //     $path = $request->file('portfolio_file')->store('portfolios', 'public');
+        //     $profile->update(['portfolio_file' => $path]);
+        // }
+
+        return redirect()->route('creator.apply')
+            ->with('success', 'Creator application submitted successfully! We will review your application within 5-7 business days.');
     }
 
     public function edit()

@@ -112,6 +112,45 @@ const getStatusText = (status: string) => {
                 </AlertDescription>
             </Alert>
 
+            <!-- How to Become a Master Chef -->
+            <Card>
+                <CardHeader>
+                    <CardTitle class="flex items-center gap-2">
+                        <div class="text-xl">📋</div>
+                        How to Become a Master Chef
+                    </CardTitle>
+                    <CardDescription>Requirements and steps to join our verified creator community</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div class="space-y-4">
+                        <p class="text-sm text-muted-foreground">
+                            To become a verified Master Chef on our platform, you'll need to meet the following criteria:
+                        </p>
+                        <ul class="space-y-3 text-sm">
+                            <li class="flex items-start gap-2">
+                                <span class="text-primary font-semibold mt-0.5">•</span>
+                                <span><strong>Professional Experience:</strong> At least 2+ years of culinary experience or formal culinary training</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-primary font-semibold mt-0.5">•</span>
+                                <span><strong>Portfolio:</strong> Showcase your work through social media, website, or uploaded portfolio samples</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-primary font-semibold mt-0.5">•</span>
+                                <span><strong>Content Quality:</strong> Demonstrate consistent, high-quality culinary content and expertise in your specialty</span>
+                            </li>
+                            <li class="flex items-start gap-2">
+                                <span class="text-primary font-semibold mt-0.5">•</span>
+                                <span><strong>Community Standards:</strong> Agree to our creator guidelines and maintain professional conduct</span>
+                            </li>
+                        </ul>
+                        <p class="text-sm text-muted-foreground mt-4">
+                            Once approved, you'll receive a verified badge and access to exclusive creator features to grow your culinary brand.
+                        </p>
+                    </div>
+                </CardContent>
+            </Card>
+
             <!-- Benefits Section -->
             <Card>
                 <CardHeader>
