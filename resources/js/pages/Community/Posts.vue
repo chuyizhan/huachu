@@ -280,6 +280,15 @@ const translatePaginationLabel = (label: string) => {
                                     {{ category.posts_count }}
                                 </span>
                             </button>
+
+                            <!-- View All Categories Link -->
+                            <Link
+                                href="/categories"
+                                class="w-full text-center p-2 rounded-lg transition-colors flex items-center justify-center gap-2 text-[#ff6e02] hover:text-white hover:bg-[#1f2937] border border-[#ff6e02]/30 mt-3"
+                            >
+                                <Grid class="w-4 h-4" />
+                                <span class="text-sm font-medium">查看全部分类</span>
+                            </Link>
                         </CardContent>
                     </Card>
 

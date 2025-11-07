@@ -9,6 +9,7 @@ use App\Http\Controllers\PostLikeController;
 use App\Http\Controllers\PostFavoriteController;
 use App\Http\Controllers\PostPurchaseController;
 use App\Http\Controllers\CreatorController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\VipController;
 use App\Http\Controllers\RechargeController;
 use App\Http\Controllers\CommentController;
@@ -99,6 +100,9 @@ Route::prefix('community')->name('community.')->group(function () {
     Route::get('/creators', [CommunityController::class, 'creators'])->name('creators');
     Route::get('/leaderboard', [CommunityController::class, 'leaderboard'])->name('leaderboard');
 });
+
+// Categories routes
+Route::get('/categories', [CategoryController::class, 'index'])->name('categories.index');
 
 // Posts routes
 Route::prefix('posts')->name('posts.')->group(function () {
