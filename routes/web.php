@@ -125,18 +125,21 @@ Route::prefix('posts')->name('posts.')->group(function () {
 // Creator routes
 Route::prefix('creators')->name('creator.')->group(function () {
     Route::get('/', [CreatorController::class, 'index'])->name('index');
-    Route::get('/{id}', [CreatorController::class, 'show'])->name('show');
 
     Route::middleware('auth')->group(function () {
-        // Follow functionality
-        Route::post('/{id}/follow', [CreatorController::class, 'toggleFollow'])->name('follow');
+        // Apply route - must come before /{id} to avoid route conflict
+        Route::get('/apply', [CreatorController::class, 'apply'])->name('apply');
 
         Route::get('/profile/me', [CreatorController::class, 'profile'])->name('profile');
-        Route::get('/apply', [CreatorController::class, 'apply'])->name('apply');
-        Route::post('/apply', [CreatorController::class, 'storeApplication'])->name('apply.store');
         Route::get('/profile/edit', [CreatorController::class, 'edit'])->name('edit');
         Route::put('/profile', [CreatorController::class, 'update'])->name('update');
+
+        // Follow functionality
+        Route::post('/{id}/follow', [CreatorController::class, 'toggleFollow'])->name('follow');
     });
+
+    // Dynamic {id} route must come last to avoid catching specific routes like /apply
+    Route::get('/{id}', [CreatorController::class, 'show'])->name('show');
 });
 
 // VIP routes
