@@ -15,7 +15,9 @@ class CategoryController extends Controller
      */
     public function index(Request $request): Response
     {
-        $query = PostCategory::query()->withCount('posts');
+        $query = PostCategory::query()
+            ->with(['parent', 'children'])
+            ->withCount('posts');
 
         // Search by name, slug, or description
         if ($search = $request->input('search')) {
@@ -63,7 +65,14 @@ class CategoryController extends Controller
      */
     public function create(): Response
     {
-        return Inertia::render('Admin/Categories/Create');
+        // Get all active categories as potential parents
+        $availableParents = PostCategory::active()
+            ->orderBy('name')
+            ->get(['id', 'name', 'parent_id']);
+
+        return Inertia::render('Admin/Categories/Create', [
+            'availableParents' => $availableParents,
+        ]);
     }
 
     /**
@@ -85,6 +94,7 @@ class CategoryController extends Controller
             'nav_route' => 'nullable|string|max:255',
             'allowed_user_types' => 'nullable|array',
             'allowed_user_types.*' => 'in:all,creator,regular,admin',
+            'parent_id' => 'nullable|exists:post_categories,id',
         ]);
 
         // Convert checkbox values properly
@@ -126,10 +136,38 @@ class CategoryController extends Controller
     public function edit(PostCategory $category): Response
     {
         $category->loadCount('posts');
+        $category->load(['parent', 'children']);
+
+        // Get all categories except this one and its descendants as potential parents
+        $descendantIds = $this->getDescendantIds($category);
+        $excludeIds = array_merge([$category->id], $descendantIds);
+
+        $availableParents = PostCategory::active()
+            ->whereNotIn('id', $excludeIds)
+            ->orderBy('name')
+            ->get(['id', 'name', 'parent_id']);
 
         return Inertia::render('Admin/Categories/Edit', [
             'category' => $category,
+            'availableParents' => $availableParents,
         ]);
+    }
+
+    /**
+     * Get all descendant IDs of a category (recursively)
+     */
+    private function getDescendantIds(PostCategory $category): array
+    {
+        $descendantIds = [];
+
+        $children = PostCategory::where('parent_id', $category->id)->get();
+
+        foreach ($children as $child) {
+            $descendantIds[] = $child->id;
+            $descendantIds = array_merge($descendantIds, $this->getDescendantIds($child));
+        }
+
+        return $descendantIds;
     }
 
     /**
@@ -165,7 +203,18 @@ class CategoryController extends Controller
             'nav_route' => 'nullable|string|max:255',
             'allowed_user_types' => 'nullable|array',
             'allowed_user_types.*' => 'in:all,creator,regular,admin',
+            'parent_id' => 'nullable|exists:post_categories,id',
         ]);
+
+        // Prevent circular dependency
+        if ($request->has('parent_id') && $request->parent_id) {
+            $descendantIds = $this->getDescendantIds($category);
+            if ($request->parent_id == $category->id || in_array($request->parent_id, $descendantIds)) {
+                return back()->withErrors([
+                    'parent_id' => '不能将分类设置为自己或其子分类的父分类'
+                ])->withInput();
+            }
+        }
 
         // Convert checkbox values properly
         $validated['is_active'] = $request->boolean('is_active');
@@ -237,6 +286,10 @@ class CategoryController extends Controller
     {
         if ($category->posts()->count() > 0) {
             return redirect()->back()->with('error', '无法删除有关联帖子的分类');
+        }
+
+        if ($category->children()->count() > 0) {
+            return redirect()->back()->with('error', '无法删除有子分类的分类，请先删除或移动子分类');
         }
 
         // Delete associated images

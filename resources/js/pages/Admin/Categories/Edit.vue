@@ -24,12 +24,25 @@ interface Category {
     nav_route: string | null
     allowed_user_types: string[]
     posts_count: number
+    parent_id: number | null
+    parent?: {
+        id: number
+        name: string
+    }
+    children?: Category[]
     created_at: string
     updated_at: string
 }
 
+interface ParentCategory {
+    id: number
+    name: string
+    parent_id?: number
+}
+
 interface Props {
     category: Category
+    availableParents: ParentCategory[]
 }
 
 const props = defineProps<Props>()
@@ -49,6 +62,7 @@ const form = useForm({
     is_nav_item: props.category.is_nav_item,
     nav_route: props.category.nav_route || '',
     allowed_user_types: props.category.allowed_user_types || ['all'],
+    parent_id: props.category.parent_id,
 })
 
 const iconImagePreview = ref<string | null>(
@@ -190,6 +204,35 @@ const goBack = () => {
                                         />
                                         <p v-if="form.errors.description" class="text-sm text-red-500">
                                             {{ form.errors.description }}
+                                        </p>
+                                    </div>
+
+                                    <!-- Parent Category -->
+                                    <div class="space-y-2">
+                                        <Label for="parent_id">父分类</Label>
+                                        <select
+                                            id="parent_id"
+                                            v-model="form.parent_id"
+                                            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                            :class="{ 'border-red-500': form.errors.parent_id }"
+                                        >
+                                            <option :value="null">无 (顶级分类)</option>
+                                            <option
+                                                v-for="parent in availableParents"
+                                                :key="parent.id"
+                                                :value="parent.id"
+                                            >
+                                                {{ parent.name }}
+                                            </option>
+                                        </select>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                                            当前分类 <span v-if="category.parent">(父分类: {{ category.parent.name }})</span>
+                                            <span v-if="category.children && category.children.length > 0" class="text-orange-500">
+                                                · 此分类有 {{ category.children.length }} 个子分类
+                                            </span>
+                                        </p>
+                                        <p v-if="form.errors.parent_id" class="text-sm text-red-500">
+                                            {{ form.errors.parent_id }}
                                         </p>
                                     </div>
 
