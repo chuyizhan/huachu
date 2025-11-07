@@ -82,16 +82,16 @@ const props = defineProps<Props>();
 // Banner slides using static images from /public/slides
 const bannerSlides = [
     {
-        image: '/slides/slide1.png',
-        title: '属于餐饮人的学习社区'
+        image: '/slides/slide1.jpg',
+        title: ''
     },
     {
         image: '/slides/slide2.png',
-        title: '分享美食，交流技艺'
+        title: ''
     },
     {
-        image: '/slides/slide3.png',
-        title: '共同成长，创造价值'
+        image: '/slides/slide1.jpg',
+        title: ''
     }
 ];
 </script>
@@ -101,7 +101,7 @@ const bannerSlides = [
         <!-- Hero Banner Section with Carousel -->
         <section class="bg-background border-b border-[#333333]">
             <div class="max-w-[1000px] mx-auto py-6 lg:py-12 px-0">
-                <div class="relative rounded-xl overflow-hidden shadow-lg" style="height: 350px;">
+                <div class="relative  overflow-hidden shadow-lg" style="height: 350px;">
                     <Carousel
                         v-if="bannerSlides.length > 0"
                         :autoplay="5000"
@@ -115,7 +115,7 @@ const bannerSlides = [
                                     class="w-full h-full object-cover"
                                     :alt="slide.title"
                                 />
-                                <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                                <!-- <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div> -->
                                 <div class="absolute bottom-0 left-0 right-0 p-8 text-white">
                                     <h2 class="text-2xl lg:text-4xl font-bold mb-2">{{ slide.title }}</h2>
                                 </div>
