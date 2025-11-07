@@ -4,7 +4,7 @@
 
 <template>
     <div class="flex items-center gap-2">
-        <img src="/logo.png" alt="Logo" class="h-8 w-auto" />
+        <img src="/logo.jpg" alt="Logo" class="w-14 h-auto" />
         
     </div>
 </template>
