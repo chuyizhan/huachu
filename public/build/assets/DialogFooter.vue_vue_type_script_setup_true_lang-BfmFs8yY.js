@@ -1,1 +1,0 @@
-import{c as a}from"./Primitive-JW2Arx4n.js";import{d as r,i as t,o as l,n,e as c,B as f}from"./app-3t97i28o.js";const d=r({__name:"DialogFooter",props:{class:{}},setup(e){const s=e;return(o,m)=>(l(),t("div",{"data-slot":"dialog-footer",class:n(c(a)("flex flex-col-reverse gap-2 sm:flex-row sm:justify-end",s.class))},[f(o.$slots,"default")],2))}});export{d as _};

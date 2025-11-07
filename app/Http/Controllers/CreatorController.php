@@ -138,52 +138,7 @@ class CreatorController extends Controller
 
     public function apply()
     {
-        $user = Auth::user();
-
-        if ($user->creatorProfile) {
-            return redirect()->route('creator.profile');
-        }
-
         return Inertia::render('Creators/Apply');
-    }
-
-    public function storeApplication(Request $request)
-    {
-        $user = Auth::user();
-
-        if ($user->creatorProfile) {
-            return redirect()->route('creator.profile')
-                ->with('error', 'You already have a creator profile.');
-        }
-
-        $request->validate([
-            'display_name' => 'required|string|max:255',
-            'bio' => 'required|string|max:1000',
-            'specialty' => 'required|string|max:255',
-            'experience_years' => 'required|integer|min:0|max:50',
-            'certifications' => 'nullable|array',
-            'location' => 'nullable|string|max:255',
-            'website' => 'nullable|url',
-            'social_links' => 'nullable|array',
-            'portfolio_url' => 'nullable|url',
-        ]);
-
-        $profile = CreatorProfile::create([
-            'user_id' => $user->id,
-            'display_name' => $request->display_name,
-            'bio' => $request->bio,
-            'specialty' => $request->specialty,
-            'experience_years' => $request->experience_years,
-            'certifications' => $request->certifications ?? [],
-            'location' => $request->location,
-            'website' => $request->website,
-            'social_links' => $request->social_links ?? [],
-            'portfolio_url' => $request->portfolio_url,
-            'verification_status' => 'pending',
-        ]);
-
-        return redirect()->route('creator.profile')
-            ->with('success', 'Creator profile created successfully! Verification is pending.');
     }
 
     public function edit()
