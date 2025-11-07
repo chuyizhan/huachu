@@ -44,7 +44,7 @@ const user = computed(() => auth.value?.user);
             <div class="lg:hidden flex items-center justify-between u-p-20">
                 <!-- Logo -->
                 <Link href="/" class="flex items-center">
-                    <img src="/logo.png" alt="Logo" class="w-12 h-auto" />
+                    <img src="/logo.jpg" alt="Logo" class="w-14 h-auto" />
                 </Link>
 
                 <!-- Center Menu Items -->
