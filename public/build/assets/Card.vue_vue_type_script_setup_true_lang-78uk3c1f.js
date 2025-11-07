@@ -1,1 +1,0 @@
-import{c as o}from"./Primitive-BAQBOfwU.js";import{d as r,i as n,o as t,B as c,n as l,e as d}from"./app-D7JLHZQu.js";const i=r({__name:"Card",props:{class:{}},setup(s){const a=s;return(e,p)=>(t(),n("div",{"data-slot":"card",class:l(d(o)("bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm",a.class))},[c(e.$slots,"default")],2))}});export{i as _};

@@ -237,8 +237,9 @@ class PostController extends Controller
     {
         $user = Auth::user();
 
-        // Filter categories based on user type
+        // Filter categories based on user type - only show leaf categories (no children)
         $categories = PostCategory::active()
+            ->leaf()
             ->allowedForUser($user)
             ->orderBy('sort_order')
             ->get();
@@ -280,6 +281,13 @@ class PostController extends Controller
         if (!$category->canUserPost($user)) {
             return back()->withErrors([
                 'post_category_id' => '你没有权限在此分类下发帖。'
+            ])->withInput();
+        }
+
+        // Check if category can have posts (must be leaf category)
+        if (!$category->canHavePosts()) {
+            return back()->withErrors([
+                'post_category_id' => '该分类是父分类，不能直接发帖。请选择其子分类。'
             ])->withInput();
         }
 
@@ -488,8 +496,9 @@ class PostController extends Controller
         $user = Auth::user();
         $post = Post::where('user_id', $user->id)->findOrFail($id);
 
-        // Filter categories based on user type
+        // Filter categories based on user type - only show leaf categories (no children)
         $categories = PostCategory::active()
+            ->leaf()
             ->allowedForUser($user)
             ->orderBy('sort_order')
             ->get();
@@ -550,6 +559,13 @@ class PostController extends Controller
         if (!$category->canUserPost($user)) {
             return back()->withErrors([
                 'post_category_id' => '你没有权限在此分类下发帖。'
+            ])->withInput();
+        }
+
+        // Check if category can have posts (must be leaf category)
+        if (!$category->canHavePosts()) {
+            return back()->withErrors([
+                'post_category_id' => '该分类是父分类，不能直接发帖。请选择其子分类。'
             ])->withInput();
         }
 
