@@ -9,6 +9,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ArrowLeft, X } from 'lucide-vue-next'
 import { ref } from 'vue'
 
+interface Category {
+    id: number
+    name: string
+    parent_id?: number
+}
+
+interface Props {
+    availableParents: Category[]
+}
+
+const props = defineProps<Props>()
+
 const form = useForm({
     name: '',
     slug: '',
@@ -22,6 +34,7 @@ const form = useForm({
     is_nav_item: false,
     nav_route: '',
     allowed_user_types: ['all'] as string[],
+    parent_id: null as number | null,
 })
 
 const iconImagePreview = ref<string | null>(null)
@@ -150,6 +163,32 @@ const goBack = () => {
                                         />
                                         <p v-if="form.errors.description" class="text-sm text-red-500">
                                             {{ form.errors.description }}
+                                        </p>
+                                    </div>
+
+                                    <!-- Parent Category -->
+                                    <div class="space-y-2">
+                                        <Label for="parent_id">父分类</Label>
+                                        <select
+                                            id="parent_id"
+                                            v-model="form.parent_id"
+                                            class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                            :class="{ 'border-red-500': form.errors.parent_id }"
+                                        >
+                                            <option :value="null">无 (顶级分类)</option>
+                                            <option
+                                                v-for="category in availableParents"
+                                                :key="category.id"
+                                                :value="category.id"
+                                            >
+                                                {{ category.name }}
+                                            </option>
+                                        </select>
+                                        <p class="text-sm text-gray-500 dark:text-gray-400">
+                                            选择父分类可以创建层级结构。只有没有子分类的分类才能接受帖子。
+                                        </p>
+                                        <p v-if="form.errors.parent_id" class="text-sm text-red-500">
+                                            {{ form.errors.parent_id }}
                                         </p>
                                     </div>
 

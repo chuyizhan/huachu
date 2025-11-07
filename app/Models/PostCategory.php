@@ -24,6 +24,7 @@ class PostCategory extends Model
         'points_reward',
         'minimum_images',
         'allowed_user_types',
+        'parent_id',
     ];
 
     protected function casts(): array
@@ -46,11 +47,59 @@ class PostCategory extends Model
     }
 
     /**
+     * Get the parent category.
+     */
+    public function parent()
+    {
+        return $this->belongsTo(PostCategory::class, 'parent_id');
+    }
+
+    /**
+     * Get the child categories.
+     */
+    public function children()
+    {
+        return $this->hasMany(PostCategory::class, 'parent_id')->orderBy('sort_order');
+    }
+
+    /**
      * Scope for active categories.
      */
     public function scopeActive($query)
     {
         return $query->where('is_active', true);
+    }
+
+    /**
+     * Scope for parent categories (no parent).
+     */
+    public function scopeParents($query)
+    {
+        return $query->whereNull('parent_id');
+    }
+
+    /**
+     * Scope for leaf categories (no children) - these can have posts.
+     */
+    public function scopeLeaf($query)
+    {
+        return $query->whereDoesntHave('children');
+    }
+
+    /**
+     * Check if this category has children.
+     */
+    public function hasChildren(): bool
+    {
+        return $this->children()->exists();
+    }
+
+    /**
+     * Check if posts can be created in this category.
+     */
+    public function canHavePosts(): bool
+    {
+        return !$this->hasChildren();
     }
 
     /**
